@@ -85,6 +85,11 @@ test("secondary copy remains opaque and readable over the backdrop", async ({ pa
   const copy = page.locator("#community-title").locator("..").locator("p.text-readable");
   await expect(copy).toHaveCSS("opacity", "1");
   await expect(copy).toHaveCSS("color", "rgb(226, 232, 240)");
+
+  const transparentText = await page.locator("#root :is(h1, h2, h3, h4, h5, h6, p, a, button, label, li, dt, dd, summary, span)").evaluateAll((elements) =>
+    elements.filter((element) => getComputedStyle(element).opacity !== "1").map((element) => element.textContent?.trim()).filter(Boolean),
+  );
+  expect(transparentText).toEqual([]);
 });
 
 test("application form validates and submits", async ({ page }) => {
