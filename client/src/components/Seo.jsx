@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const SITE_URL = import.meta.env.VITE_SITE_URL || "https://0x00space.ru";
+const SITE_URL = import.meta.env.VITE_SITE_URL || "https://0x00space.vercel.app";
 const DEFAULT_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 export default function Seo({ title, description, path = "/", image = DEFAULT_IMAGE, type = "website", structuredData }) {

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://0x00space.ru/</loc>
+    <loc>https://0x00space.vercel.app/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-  <url><loc>https://0x00space.ru/guides</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://0x00space.ru/videos</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://0x00space.ru/materials</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://0x00space.ru/seeds</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://0x00space.ru/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://0x00space.ru/faq</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://0x00space.ru/events</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://0x00space.ru/contacts</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://0x00space.ru/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://0x00space.vercel.app/guides</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://0x00space.vercel.app/videos</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://0x00space.vercel.app/materials</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://0x00space.vercel.app/seeds</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://0x00space.vercel.app/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://0x00space.vercel.app/faq</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://0x00space.vercel.app/events</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://0x00space.vercel.app/contacts</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://0x00space.vercel.app/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>

@@ -132,7 +132,7 @@ docker compose up --build
 Vercel должен использовать Root Directory `client`; `client/vercel.json` задаёт сборку Vite (`npm run build` и `dist`) и fallback всех SPA-маршрутов на `index.html`.
 
 - `VITE_API_BASE_URL` — публичный URL backend с суффиксом `/api`.
-- `VITE_SITE_URL` — канонический URL сайта для metadata (по умолчанию `https://0x00space.ru`).
+- `VITE_SITE_URL` — канонический URL сайта для metadata (по умолчанию `https://0x00space.vercel.app`).
 - `VITE_GA_MEASUREMENT_ID` — необязательно; без него аналитика отключена.
 
 Переменные с префиксом `VITE_` попадают в браузер. Не размещайте в них API-ключи, токены или пароли.
