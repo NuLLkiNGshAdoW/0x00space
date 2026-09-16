@@ -58,8 +58,9 @@ export default function ProfileBackdrop() {
           style={style}
           src={url}
           onError={() => setCustomFailed(true)}
-          autoPlay
-          muted
+           autoPlay
+           preload="metadata"
+           muted
           loop
           playsInline
           aria-hidden="true"

@@ -66,3 +66,10 @@ test("application form validates and submits", async ({ page }) => {
   await form.getByRole("button", { name: "Отправить заявку" }).click();
   await expect(form.getByRole("status")).toContainText("Заявка отправлена");
 });
+
+test("unknown route exposes a keyboard reachable 404", async ({ page }) => {
+  await page.goto("/does-not-exist");
+  await expect(page.getByText("404", { exact: true })).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(page.locator(":focus")).toBeVisible();
+});

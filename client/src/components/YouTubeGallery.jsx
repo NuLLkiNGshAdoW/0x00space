@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Radio, Search } from "lucide-react";
-import { getLatestVideos, ApiError } from "../services/api.js";
+import { getLatestVideos, ApiError, LATEST_VIDEOS_QUERY_KEY } from "../services/api.js";
+import Button from "./Button.jsx";
 import VideoCard from "./VideoCard.jsx";
 import VideoCardSkeleton from "./VideoCardSkeleton.jsx";
 import { cn } from "../lib/utils.js";
@@ -12,35 +14,14 @@ const TABS = [
 ];
 
 export default function YouTubeGallery() {
-  const [videos, setVideos] = useState([]);
-  const [status, setStatus] = useState("loading"); // loading | ready | error
-  const [errorMessage, setErrorMessage] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    getLatestVideos(6)
-      .then((data) => {
-        if (cancelled) return;
-        setVideos(data);
-        setStatus("ready");
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setErrorMessage(
-          err instanceof ApiError
-            ? err.message
-            : "Не удалось получить видео. Проверьте соединение и попробуйте снова.",
-        );
-        setStatus("error");
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data: videos = [], isPending, isError, error, refetch } = useQuery({
+    queryKey: LATEST_VIDEOS_QUERY_KEY,
+    queryFn: () => getLatestVideos(6),
+  });
+  const status = isPending ? "loading" : isError ? "error" : "ready";
+  const errorMessage = error instanceof ApiError ? error.message : "Не удалось получить видео. Проверьте соединение и попробуйте снова.";
 
   const filteredVideos = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
@@ -132,7 +113,7 @@ export default function YouTubeGallery() {
           <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
             <AlertTriangle className="h-8 w-8 text-violet" strokeWidth={1.6} />
             <p className="text-sm text-mute">{errorMessage}</p>
-            <button type="button" onClick={() => window.location.reload()} className="rounded-lg border border-line px-4 py-2 text-sm text-ink hover:border-emerald/50">Повторить</button>
+              <Button type="button" variant="secondary" onClick={() => refetch()}>Повторить</Button>
           </div>
         )}
 

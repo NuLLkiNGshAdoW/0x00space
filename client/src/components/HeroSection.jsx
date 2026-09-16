@@ -1,16 +1,16 @@
 import { Play, CalendarPlus, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getLatestVideos } from "../services/api.js";
+import { getLatestVideos, LATEST_VIDEOS_QUERY_KEY } from "../services/api.js";
+import { trackEvent } from "../lib/analytics.js";
 
 export default function HeroSection() {
-  const { data: latestVideos = [], isError } = useQuery({
-    queryKey: ["videos", "hero"],
-    queryFn: () => getLatestVideos(1),
+  const { data: latestVideo, isError } = useQuery({
+    queryKey: LATEST_VIDEOS_QUERY_KEY,
+    queryFn: () => getLatestVideos(6),
+    select: (videos) => videos[0],
     retry: false,
   });
-  const latestVideo = latestVideos[0];
-
   return (
     <section id="top" className="relative overflow-hidden">
       {/* Тонкая координатная сетка на фоне — намёк на "координаты/мир", не декоративный шум */}
@@ -28,7 +28,7 @@ export default function HeroSection() {
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-emerald" />
             </span>
-            новые ролики каждую неделю
+             новые истории и материалы
           </div>
 
           <h1 className="max-w-3xl font-display text-4xl font-semibold leading-[1.06] tracking-[-0.035em] text-ink sm:text-5xl lg:text-6xl">
@@ -56,6 +56,7 @@ export default function HeroSection() {
               href="https://youtube.com/@0x00space?sub_confirmation=1"
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackEvent("youtube_open", { source: "hero" })}
               className="button-secondary border-violet/40 bg-violet-soft/20 hover:border-violet hover:text-violet"
             >
               <Youtube className="h-4 w-4" />

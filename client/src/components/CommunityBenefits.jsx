@@ -10,27 +10,27 @@ export default function CommunityBenefits() {
             id="community-title"
             className="mt-3 font-display text-2xl font-semibold text-ink sm:text-3xl"
           >
-            Здесь зрители становятся участниками
+            Как пользоваться сайтом
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-mute">
-            Смотри ролики, находи полезные материалы и присоединяйся к совместным игровым событиям.
+            Смотрите ролики, открывайте материалы и отправляйте заявку, если хотите предложить участие в игровом событии.
           </p>
         </div>
         <div className="mt-7 grid gap-4 sm:grid-cols-3">
           <Benefit
             icon={Compass}
             title="Открывай новое"
-            text="Гайды, сиды и идеи для следующего прохождения."
+            text="Откройте раздел материалов, чтобы найти доступные гайды и сиды."
           />
           <Benefit
             icon={HeartHandshake}
             title="Играй вместе"
-            text="Подавай заявку и находи команду для ивента."
+            text="Заполните форму и оставьте контакт для связи по событию."
           />
           <Benefit
             icon={Sparkles}
             title="Предлагай идеи"
-            text="Твои предложения могут стать будущим роликом."
+            text="Опишите идею для ролика или совместной игры в заявке."
           />
         </div>
       </div>

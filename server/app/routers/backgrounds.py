@@ -1,12 +1,11 @@
 """API для публичного активного фона и защищённого управления им."""
 import json
-import secrets
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, File, Header, HTTPException, UploadFile
+from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
 
-from app.config import get_settings
+from app.services.admin_auth import authenticate
 
 router = APIRouter(prefix="/backgrounds", tags=["backgrounds"])
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,11 +30,8 @@ def _write_meta(data):
     META_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _check_admin(token: str | None):
-    settings = get_settings()
-    configured = settings.ADMIN_PASSWORD or settings.ADMIN_TOKEN
-    if not configured or not token or not secrets.compare_digest(token, configured):
-        raise HTTPException(status_code=401, detail="Неверный пароль администратора")
+def _check_admin(request: Request, token: str | None):
+    authenticate(request, token)
 
 
 @router.get("")
@@ -45,8 +41,8 @@ def get_backgrounds():
 
 
 @router.put("/settings")
-def update_settings(payload: dict, x_admin_token: str | None = Header(default=None)):
-    _check_admin(x_admin_token)
+def update_settings(payload: dict, request: Request, x_admin_token: str | None = Header(default=None)):
+    _check_admin(request, x_admin_token)
     data = _read_meta()
     settings = {**DEFAULT_SETTINGS, **data.get("settings", {})}
     for key in DEFAULT_SETTINGS:
@@ -64,8 +60,8 @@ def update_settings(payload: dict, x_admin_token: str | None = Header(default=No
 
 
 @router.post("/reset")
-def reset_background(x_admin_token: str | None = Header(default=None)):
-    _check_admin(x_admin_token)
+def reset_background(request: Request, x_admin_token: str | None = Header(default=None)):
+    _check_admin(request, x_admin_token)
     data = _read_meta()
     data["active"] = None
     _write_meta(data)
@@ -73,8 +69,8 @@ def reset_background(x_admin_token: str | None = Header(default=None)):
 
 
 @router.post("/upload", status_code=201)
-async def upload_background(file: UploadFile = File(...), x_admin_token: str | None = Header(default=None)):
-    _check_admin(x_admin_token)
+async def upload_background(request: Request, file: UploadFile = File(...), x_admin_token: str | None = Header(default=None)):
+    _check_admin(request, x_admin_token)
     extension = ALLOWED.get(file.content_type or "")
     if not extension:
         raise HTTPException(status_code=415, detail="Разрешены JPG, PNG, WebP, MP4 и WebM")
@@ -97,8 +93,8 @@ async def upload_background(file: UploadFile = File(...), x_admin_token: str | N
 
 
 @router.post("/{background_id}/activate")
-def activate_background(background_id: str, x_admin_token: str | None = Header(default=None)):
-    _check_admin(x_admin_token)
+def activate_background(background_id: str, request: Request, x_admin_token: str | None = Header(default=None)):
+    _check_admin(request, x_admin_token)
     data = _read_meta()
     item = next((entry for entry in data.get("items", []) if entry["id"] == background_id), None)
     if not item:
@@ -109,8 +105,8 @@ def activate_background(background_id: str, x_admin_token: str | None = Header(d
 
 
 @router.delete("/{background_id}")
-def delete_background(background_id: str, x_admin_token: str | None = Header(default=None)):
-    _check_admin(x_admin_token)
+def delete_background(background_id: str, request: Request, x_admin_token: str | None = Header(default=None)):
+    _check_admin(request, x_admin_token)
     data = _read_meta()
     item = next((entry for entry in data.get("items", []) if entry["id"] == background_id), None)
     if not item:

@@ -2,21 +2,22 @@ import { Play, Eye, Clock3 } from "lucide-react";
 import { formatDuration, formatViews, formatRelativeDate } from "../lib/utils.js";
 import { trackEvent } from "../lib/analytics.js";
 import { Link } from "react-router-dom";
+import Card from "./Card.jsx";
 
 export default function VideoCard({ video }) {
   return (
-    <Link
+    <Card
+      as={Link}
       to={`/videos/${video.video_id}`}
-      onClick={() =>
-        trackEvent("video_open", { video_id: video.video_id, video_title: video.title })
-      }
-      className="group glass glass-hover overflow-hidden rounded-xl"
+      onClick={() => trackEvent("video_open", { video_id: video.video_id })}
+      className="group"
     >
       <div className="relative aspect-video overflow-hidden bg-panel2">
         <img
           src={video.thumbnail_url}
           alt={video.title}
           loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
@@ -51,6 +52,6 @@ export default function VideoCard({ video }) {
           </span>
         </div>
       </div>
-    </Link>
+    </Card>
   );
 }

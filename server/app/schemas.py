@@ -80,3 +80,8 @@ class YoutubeVideoOut(BaseModel):
     url: str
     duration_seconds: int
     view_count: int
+
+
+class YoutubeVideoDetailOut(BaseModel):
+    video: YoutubeVideoOut
+    related: list[YoutubeVideoOut]

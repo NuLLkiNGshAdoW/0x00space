@@ -5,9 +5,10 @@ import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ProfileBackdrop from "../components/ProfileBackdrop.jsx";
 import VideoCard from "../components/VideoCard.jsx";
-import { getLatestVideos } from "../services/api.js";
+import { getVideo } from "../services/api.js";
 import ShareButton from "../components/ShareButton.jsx";
 import Seo from "../components/Seo.jsx";
+import Button from "../components/Button.jsx";
 
 export default function VideoDetailPage({ videoId }) {
   const [video, setVideo] = useState(null);
@@ -19,17 +20,16 @@ export default function VideoDetailPage({ videoId }) {
     setVideo(null);
     setRelated([]);
     setErrorMessage("");
-    getLatestVideos(50)
-      .then((videos) => {
-        const current = videos.find((item) => item.video_id === videoId);
-        setVideo(current || null);
-        setRelated(videos.filter((item) => item.video_id !== videoId).slice(0, 3));
-        setStatus(current ? "ready" : "missing");
-        if (!current) setErrorMessage("Возможно, ролик ещё не загрузился или был удалён.");
+    getVideo(videoId)
+      .then(({ video: current, related: relatedVideos }) => {
+        setVideo(current);
+        setRelated(relatedVideos);
+        setStatus("ready");
       })
-      .catch(() => {
-        setErrorMessage("Не удалось загрузить ролик. Проверьте соединение и попробуйте снова.");
-        setStatus("error");
+      .catch((error) => {
+        const missing = error.status === 404;
+        setErrorMessage(missing ? "Возможно, ролик ещё не загрузился или был удалён." : "Не удалось загрузить ролик. Проверьте соединение и попробуйте снова.");
+        setStatus(missing ? "missing" : "error");
       });
   }, [videoId]);
 
@@ -87,7 +87,7 @@ export default function VideoDetailPage({ videoId }) {
               {status === "error" ? "Не удалось загрузить видео" : "Видео не найдено"}
             </h1>
             <p className="mt-3 text-mute">{errorMessage}</p>
-            {status === "error" && <button type="button" onClick={() => window.location.reload()} className="button-primary mt-6">Повторить</button>}
+              {status === "error" && <Button type="button" className="mt-6" onClick={() => { setStatus("loading"); getVideo(videoId).then(({ video: current, related: relatedVideos }) => { setVideo(current); setRelated(relatedVideos); setStatus("ready"); }).catch(() => setStatus("error")); }}>Повторить</Button>}
           </div>
         )}
         {video && (
@@ -96,6 +96,8 @@ export default function VideoDetailPage({ videoId }) {
               <img
                 src={video.thumbnail_url}
                 alt={video.title}
+                fetchPriority="high"
+                decoding="async"
                 className="aspect-video w-full object-cover"
               />
             </div>

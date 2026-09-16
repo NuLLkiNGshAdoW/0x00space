@@ -31,6 +31,9 @@ VITE_API_BASE_URL=https://zerox00space-api.onrender.com/api
 
 ```env
 VITE_API_BASE_URL=https://0x00space-api.onrender.com/api
+VITE_SITE_URL=https://ваш-проект.vercel.app
+# optional, leave empty for a no-op integration
+VITE_SENTRY_DSN=
 ```
 
 5. Нажмите **Deploy**.
@@ -42,3 +45,7 @@ VITE_API_BASE_URL=https://0x00space-api.onrender.com/api
 - Локальные загрузки фонов на Render не являются постоянным хранилищем.
 - Для фоновых видео подключите Supabase Storage или Cloudinary.
 - Не добавляйте секреты в GitHub и frontend-переменные `VITE_*`.
+
+## Админ-сессия
+
+Браузер получает короткоживущую HttpOnly cookie через `/api/auth/login`; пароль в `localStorage` больше не используется. Задайте `ADMIN_SESSION_SECRET` и включите `COOKIE_SECURE=true` на HTTPS. Старый `ADMIN_PASSWORD`/`ADMIN_TOKEN` и заголовок `X-Admin-Token` оставлены для совместимости скриптов. Неудачные логины ограничиваются в памяти процесса, поэтому для нескольких реплик нужен общий rate-limit на reverse proxy.

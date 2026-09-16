@@ -9,6 +9,7 @@
 4. Результат кешируем на YOUTUBE_CACHE_TTL_SECONDS, чтобы не жечь суточную квоту API.
 """
 import httpx
+import re
 from datetime import datetime
 from typing import List
 
@@ -18,10 +19,39 @@ from app.services.cache import cache
 
 YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3"
 CACHE_KEY = "youtube:latest_videos"
+VIDEO_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 
 
 class YoutubeApiError(Exception):
     """Обёртка над ошибками при обращении к YouTube API."""
+
+
+def is_valid_video_id(video_id: str) -> bool:
+    return bool(VIDEO_ID_RE.fullmatch(video_id))
+
+
+async def fetch_video(video_id: str) -> YoutubeVideoOut | None:
+    cached = cache.get(f"youtube:video:{video_id}")
+    if cached is not None:
+        return cached
+    settings = get_settings()
+    if not settings.YOUTUBE_API_KEY:
+        raise YoutubeApiError("YOUTUBE_API_KEY должен быть задан в .env")
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{YOUTUBE_API_BASE}/videos", params={"part": "contentDetails,snippet,statistics", "id": video_id, "key": settings.YOUTUBE_API_KEY})
+            response.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise YoutubeApiError("YouTube API временно недоступен") from exc
+    items = response.json().get("items", [])
+    if not items:
+        return None
+    video = items[0]
+    snippet = video["snippet"]
+    duration = _parse_iso8601_duration_to_seconds(video["contentDetails"]["duration"])
+    result = YoutubeVideoOut(video_id=video["id"], title=snippet["title"], description=snippet.get("description", ""), thumbnail_url=snippet["thumbnails"].get("high", snippet["thumbnails"]["default"])["url"], published_at=datetime.fromisoformat(snippet["publishedAt"].replace("Z", "+00:00")), is_short=duration <= 60, url=f"https://www.youtube.com/watch?v={video['id']}", duration_seconds=duration, view_count=int(video.get("statistics", {}).get("viewCount", 0)))
+    cache.set(f"youtube:video:{video_id}", result, settings.YOUTUBE_CACHE_TTL_SECONDS)
+    return result
 
 
 def _parse_iso8601_duration_to_seconds(duration: str) -> int:

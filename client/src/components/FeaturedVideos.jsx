@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Play } from "lucide-react";
-import { getLatestVideos } from "../services/api.js";
+import { LATEST_VIDEOS_QUERY_KEY } from "../services/api.js";
 import { trackEvent } from "../lib/analytics.js";
 import { Link } from "react-router-dom";
 
 export default function FeaturedVideos() {
   const { data: videos = [] } = useQuery({
-    queryKey: ["videos", 3],
-    queryFn: () => getLatestVideos(3),
+    queryKey: LATEST_VIDEOS_QUERY_KEY,
+    select: (videos) => videos.slice(0, 3),
   });
   if (!videos.length) return null;
   return (
@@ -41,13 +41,15 @@ export default function FeaturedVideos() {
             href={video.url}
             target="_blank"
             rel="noreferrer"
-            onClick={() => trackEvent("featured_video_open", { video_id: video.video_id })}
+            onClick={() => trackEvent("youtube_open", { video_id: video.video_id, source: "featured" })}
             className="group relative overflow-hidden rounded-2xl border border-line bg-panel/70 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-emerald/50"
           >
             <img
               src={video.thumbnail_url}
-              alt={video.title}
-              loading={index === 0 ? "eager" : "lazy"}
+             alt={video.title}
+             loading={index === 0 ? "eager" : "lazy"}
+             fetchPriority={index === 0 ? "high" : "auto"}
+             decoding="async"
               className="aspect-video w-full object-cover transition duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-void via-transparent to-transparent" />

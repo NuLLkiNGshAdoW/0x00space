@@ -19,6 +19,8 @@ if (measurementId && !document.querySelector(`[data-ga="${measurementId}"]`)) {
   window.gtag("config", measurementId, { anonymize_ip: true });
 }
 
+// Deployments can inject window.Sentry; no SDK or DSN is required locally.
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 1, refetchOnWindowFocus: false } },
 });

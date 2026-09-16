@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     # Админка: задайте пароль в server/.env. ADMIN_TOKEN сохранён для обратной совместимости.
     ADMIN_PASSWORD: str = ""
     ADMIN_TOKEN: str = ""
+    ADMIN_SESSION_SECRET: str = ""
+    ADMIN_SESSION_TTL_SECONDS: int = 1800
+    ADMIN_LOGIN_MAX_FAILURES: int = 5
+    ADMIN_LOGIN_WINDOW_SECONDS: int = 900
+    COOKIE_SECURE: bool = False
+    SENTRY_DSN: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

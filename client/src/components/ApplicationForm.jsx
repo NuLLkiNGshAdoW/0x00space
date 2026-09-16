@@ -4,6 +4,7 @@ import { submitApplication, ApiError } from "../services/api.js";
 import { cn } from "../lib/utils.js";
 import { trackEvent } from "../lib/analytics.js";
 import { Link } from "react-router-dom";
+import Button from "./Button.jsx";
 
 const GAME_OPTIONS = ["Minecraft", "Phasmophobia", "Lethal Company", "Другая игра"];
 
@@ -73,10 +74,11 @@ export default function ApplicationForm() {
         video_idea: form.videoIdea.trim(),
       });
       setStatus("success");
-      trackEvent("application_submit", { game: form.game });
+      trackEvent("application_submit", { game: form.game, status: "success" });
       setForm(INITIAL_FORM);
       setConsent(false);
     } catch (err) {
+      trackEvent("application_error", { status: err instanceof ApiError ? err.status : "network" });
       setServerError(
         err instanceof ApiError
           ? err.message
@@ -202,10 +204,10 @@ export default function ApplicationForm() {
             </Field>
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={status === "submitting"}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald py-3 text-sm font-medium text-void transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-6 w-full"
           >
             {status === "submitting" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -213,7 +215,7 @@ export default function ApplicationForm() {
               <Send className="h-4 w-4" />
             )}
             {status === "submitting" ? "Отправляем…" : "Отправить заявку"}
-          </button>
+          </Button>
 
           {status === "success" && (
             <div className="mt-4 flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald-soft px-4 py-3 text-sm text-emerald" role="status" aria-live="polite">

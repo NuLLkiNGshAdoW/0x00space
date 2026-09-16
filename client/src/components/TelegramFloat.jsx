@@ -1,5 +1,6 @@
 import { Send, X } from "lucide-react";
 import { useState } from "react";
+import { trackEvent } from "../lib/analytics.js";
 
 export default function TelegramFloat() {
   const [visible, setVisible] = useState(true);
@@ -18,6 +19,7 @@ export default function TelegramFloat() {
         href="https://t.me/space_0x00"
         target="_blank"
         rel="noreferrer"
+        onClick={() => trackEvent("telegram_open", { source: "floating_button" })}
         aria-label="Открыть Telegram-канал 0x00 SPACE"
         className="button-glow inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#229ED9] px-4 py-3 text-sm font-semibold text-white transition-transform hover:scale-105 sm:flex-none"
       >

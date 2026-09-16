@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Check, ImagePlus, Trash2, Video } from "lucide-react";
-import { API_BASE_URL, API_ORIGIN } from "../services/api.js";
+import { API_BASE_URL, API_ORIGIN, checkAdmin, loginAdmin, logoutAdmin } from "../services/api.js";
+
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
 
 export default function AdminPage() {
-  const [password, setPassword] = useState(
-    () => localStorage.getItem("admin_password") || localStorage.getItem("admin_token") || "",
-  );
+  const [password, setPassword] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
   const [items, setItems] = useState([]);
   const [active, setActive] = useState(null);
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [message, setMessage] = useState("");
+  const [progress, setProgress] = useState(null);
   const [settings, setSettings] = useState({
     shade: 0.68,
     blur: 0,
@@ -21,20 +24,29 @@ export default function AdminPage() {
   });
   const load = () =>
     fetch(`${API_BASE_URL}/backgrounds`)
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) throw new Error(r.status === 500 ? "Сервер временно недоступен" : "Не удалось загрузить фоны");
+        return r.json();
+      })
       .then((data) => {
         setItems(data.items || []);
         setActive(data.active);
         setSettings((current) => ({ ...current, ...(data.settings || {}) }));
       });
   useEffect(() => {
-    load().catch(() => setMessage("Backend недоступен"));
+    Promise.all([load(), checkAdmin().then(() => setAuthenticated(true)).catch(() => {})]).catch(() => setMessage("Backend недоступен"));
   }, []);
 
+  useEffect(() => () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
   const request = async (url, options = {}) => {
+    if (!authenticated) throw new Error("Сначала войдите в админку");
     const response = await fetch(`${API_BASE_URL}${url}`, {
       ...options,
-      headers: { ...(options.headers || {}), "X-Admin-Token": password },
+      credentials: "include",
+      headers: { ...(options.headers || {}) },
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || "Операция не выполнена");
@@ -43,20 +55,59 @@ export default function AdminPage() {
 
   const upload = async (event) => {
     event.preventDefault();
-    if (!file || !password) return setMessage("Введите пароль и выберите файл");
+    if (!file || !authenticated) return setMessage("Войдите и выберите файл");
+    if (!ALLOWED_TYPES.has(file.type)) return setMessage("Разрешены только JPG, PNG, WebP, MP4 и WebM");
+    if (file.size > MAX_FILE_SIZE) return setMessage("Файл слишком большой. Максимум 100 МБ");
     try {
       const form = new FormData();
       form.append("file", file);
-      await request("/backgrounds/upload", { method: "POST", body: form });
-      localStorage.setItem("admin_password", password);
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${API_BASE_URL}/backgrounds/upload`);
+         xhr.withCredentials = true;
+        xhr.upload.onprogress = (progressEvent) => {
+          if (progressEvent.lengthComputable) setProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(xhr.status === 401 ? "Неверный пароль администратора" : "Не удалось загрузить файл"));
+        };
+        xhr.onerror = () => reject(new Error("Сервер недоступен"));
+        xhr.send(form);
+      });
       setFile(null);
-      setPreviewUrl("");
+      setPreviewUrl((current) => { if (current) URL.revokeObjectURL(current); return ""; });
+      setProgress(null);
       event.target.reset();
       setMessage("Фон загружен");
       await load();
     } catch (error) {
+      setProgress(null);
       setMessage(error.message);
     }
+  };
+
+  const chooseFile = (selected) => {
+    if (!selected) return;
+    if (!ALLOWED_TYPES.has(selected.type)) return setMessage("Разрешены только JPG, PNG, WebP, MP4 и WebM");
+    if (selected.size > MAX_FILE_SIZE) return setMessage("Файл слишком большой. Максимум 100 МБ");
+    setMessage("");
+    setFile(selected);
+    setPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return URL.createObjectURL(selected);
+    });
+  };
+
+  const logout = () => {
+    logoutAdmin().catch(() => {}).finally(() => setAuthenticated(false));
+    setPassword("");
+    setMessage("Сессия завершена");
+  };
+  const login = async (event) => {
+    event.preventDefault();
+    try { await loginAdmin(password); setAuthenticated(true); setPassword(""); setMessage("Вход выполнен"); await load(); }
+    catch (error) { setMessage(error.message); }
   };
   const activate = async (id) => {
     try {
@@ -108,7 +159,7 @@ export default function AdminPage() {
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-mute">
           Загрузите изображение или живые обои MP4/WebM. Максимальный размер файла — 100 МБ.
         </p>
-        <form onSubmit={upload} className="glass mt-8 max-w-xl rounded-2xl p-5">
+        <form onSubmit={authenticated ? upload : login} className="glass mt-8 max-w-xl rounded-2xl p-5">
           <label className="block text-sm text-ink">
             Пароль администратора
             <input
@@ -119,7 +170,11 @@ export default function AdminPage() {
               placeholder="Пароль из ADMIN_PASSWORD в Render"
             />
           </label>
-          <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-line p-4 text-sm text-mute hover:border-emerald/50">
+          <label
+            className="mt-5 flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-line p-4 text-sm text-mute hover:border-emerald/50"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => { event.preventDefault(); chooseFile(event.dataTransfer.files?.[0]); }}
+          >
             <ImagePlus className="h-5 w-5 text-emerald" />
             <span>{file ? file.name : "Выбрать JPG, PNG, WebP, MP4 или WebM"}</span>
             <input
@@ -127,8 +182,7 @@ export default function AdminPage() {
               accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
               onChange={(e) => {
                 const selected = e.target.files?.[0] || null;
-                setFile(selected);
-                setPreviewUrl(selected ? URL.createObjectURL(selected) : "");
+                 chooseFile(selected);
               }}
               className="sr-only"
             />
@@ -149,9 +203,11 @@ export default function AdminPage() {
                 className="mt-4 aspect-video w-full rounded-lg object-cover"
               />
             ))}
-          <button className="mt-5 w-full rounded-lg bg-emerald py-3 text-sm font-semibold text-void">
-            Загрузить фон
-          </button>
+           <button disabled={progress !== null} className="mt-5 w-full rounded-lg bg-emerald py-3 text-sm font-semibold text-void disabled:opacity-60">
+              {authenticated ? "Загрузить фон" : "Войти"}
+           </button>
+           {progress !== null && <progress className="mt-3 h-2 w-full accent-emerald" value={progress} max="100" aria-label={`Загрузка ${progress}%`} />}
+           <button type="button" onClick={logout} className="mt-3 w-full rounded-lg border border-line py-2 text-sm text-mute hover:text-ink">Выйти и очистить пароль</button>
           {message && (
             <p role="status" className="mt-4 text-sm text-emerald">
               {message}

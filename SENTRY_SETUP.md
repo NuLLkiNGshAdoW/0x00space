@@ -5,16 +5,20 @@
 
 ## Frontend
 
-Установите `@sentry/react`, создайте проект в Sentry и добавьте в `client/.env`:
+При необходимости подключите `@sentry/react` или другой SDK в оболочке хостинга,
+экспортируйте его как `window.Sentry` и добавьте в `client/.env`:
 
 ```env
 VITE_SENTRY_DSN=https://...@sentry.io/...
 ```
 
-Инициализируйте Sentry в `client/src/main.jsx` до рендера приложения.
+Приложение вызывает только `window.Sentry.captureException`, если SDK присутствует;
+без SDK и DSN работает no-op режим. Ошибки API и React render errors уже проходят
+через безопасный bridge без отправки формы, cookies или query-параметров.
 
 ## Production
 
 - настройте уведомления о падении healthcheck `/api/health`;
 - храните DSN и секреты только в переменных окружения;
 - не отправляйте в Sentry поля заявок (ник, возраст, контакты и текст идеи).
+- для backend оставьте `SENTRY_DSN` пустым локально; встроенный logging hook не требует внешнего сервиса.
