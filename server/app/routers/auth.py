@@ -23,7 +23,10 @@ def login(payload: LoginPayload, request: Request, response: Response):
     if not secrets.compare_digest(payload.password, configured):
         record_failure(ip)
         raise HTTPException(status_code=401, detail="Неверный пароль администратора")
-    response.set_cookie(COOKIE_NAME, create_session(), httponly=True, secure=settings.COOKIE_SECURE, samesite="lax", max_age=settings.ADMIN_SESSION_TTL_SECONDS, path="/")
+    # Vercel и Render имеют разные домены, поэтому production-cookie должна
+    # отправляться в cross-site fetch. Secure=True требует SameSite=None.
+    same_site = "none" if settings.COOKIE_SECURE else "lax"
+    response.set_cookie(COOKIE_NAME, create_session(), httponly=True, secure=settings.COOKIE_SECURE, samesite=same_site, max_age=settings.ADMIN_SESSION_TTL_SECONDS, path="/")
     return {"authenticated": True}
 
 

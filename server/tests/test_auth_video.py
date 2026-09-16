@@ -23,6 +23,20 @@ def test_admin_cookie_login_and_logout(monkeypatch):
     assert client.get("/api/auth/check").status_code == 401
 
 
+def test_production_cookie_allows_cross_site_frontend(monkeypatch):
+    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
+    monkeypatch.setenv("ADMIN_SESSION_SECRET", "test-session-secret")
+    monkeypatch.setenv("COOKIE_SECURE", "true")
+    get_settings.cache_clear()
+    client = TestClient(app)
+
+    response = client.post("/api/auth/login", json={"password": "test-password"})
+
+    assert response.status_code == 200
+    assert "samesite=none" in response.headers["set-cookie"].lower()
+    assert "Secure" in response.headers["set-cookie"]
+
+
 def test_video_detail_validates_id_and_returns_related(monkeypatch):
     video = YoutubeVideoOut(
         video_id="abcdefghijk", title="Test", description="", thumbnail_url="https://example.com/a.jpg",

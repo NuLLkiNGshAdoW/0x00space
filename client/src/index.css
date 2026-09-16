@@ -81,7 +81,7 @@
     background: linear-gradient(
       180deg,
       rgba(5, 7, 13, 0.58),
-      rgba(5, 7, 13, max(var(--profile-shade, 0.9), 0.78)) 76%,
+      rgba(5, 7, 13, max(var(--profile-shade, 0.68), 0.64)) 76%,
       #05070d 100%
     );
   }
@@ -135,7 +135,7 @@
 @layer components {
   /* Стеклянная панель — базовый строительный блок карточек и Navbar */
   .glass {
-    @apply border border-line bg-panel/90 backdrop-blur-md;
+    @apply border border-line bg-panel/75 backdrop-blur-md;
     box-shadow: 0 14px 45px rgba(0, 0, 0, 0.14);
   }
 
