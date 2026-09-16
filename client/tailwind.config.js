@@ -7,18 +7,18 @@ export default {
         void: "#05070d", // фон страницы
         panel: "#0d1420", // база под стеклянные карточки
         panel2: "#101a29", // чуть светлее панель (hover, вложенные блоки)
-        line: "rgba(148, 163, 184, 0.14)", // тонкие рамки на тёмном фоне
+        line: "#475569", // непрозрачные рамки на тёмном фоне
         ink: "#f1f5f9", // основной текст
         mute: "#cbd5e1", // вторичный текст, AA на тёмных панелях
         emerald: {
           DEFAULT: "#34d399",
-          soft: "rgba(16, 185, 129, 0.14)",
-          glow: "rgba(16, 185, 129, 0.45)",
+          soft: "#12382f",
+          glow: "#34d399",
         },
         violet: {
           DEFAULT: "#b69cff",
-          soft: "rgba(139, 92, 246, 0.14)",
-          glow: "rgba(139, 92, 246, 0.45)",
+          soft: "#282044",
+          glow: "#8b5cf6",
         },
         danger: "#fca5a5",
       },
@@ -28,8 +28,8 @@ export default {
         mono: ["'JetBrains Mono'", "monospace"],
       },
       backgroundImage: {
-        "grid-fade":
-          "linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.06) 1px, transparent 1px)",
+          "grid-fade":
+            "linear-gradient(#475569 1px, #05070d 1px), linear-gradient(90deg, #475569 1px, #05070d 1px)",
       },
       keyframes: {
         scanline: {
@@ -38,7 +38,7 @@ export default {
         },
         pulseDot: {
           "0%, 100%": { opacity: 1 },
-          "50%": { opacity: 0.35 },
+          "50%": { opacity: 1 },
         },
       },
       animation: {

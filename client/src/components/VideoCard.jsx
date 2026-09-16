@@ -25,19 +25,19 @@ export default function VideoCard({ video }) {
            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
-        <div className="absolute inset-0 flex items-center justify-center bg-void/0 transition-colors group-hover:bg-void/40">
+        <div className="absolute inset-0 flex items-center justify-center bg-void transition-colors group-hover:bg-void">
           <Play
-            className="h-10 w-10 text-ink opacity-0 drop-shadow-lg transition-opacity group-hover:opacity-100"
+            className="h-10 w-10 text-ink drop-shadow-lg"
             fill="currentColor"
           />
         </div>
 
-        <span className="absolute bottom-2 right-2 rounded bg-void/85 px-1.5 py-0.5 font-mono text-[11px] text-ink">
+        <span className="absolute bottom-2 right-2 rounded bg-void px-1.5 py-0.5 font-mono text-[11px] text-ink">
           {formatDuration(video.duration_seconds)}
         </span>
 
         {video.is_short && (
-           <span className="absolute left-2 top-2 rounded-full bg-violet/90 px-2 py-0.5 text-[11px] font-medium text-void">
+           <span className="absolute left-2 top-2 rounded-full bg-violet px-2 py-0.5 text-[11px] font-medium text-void">
             Shorts
           </span>
         )}
