@@ -14,7 +14,7 @@ UPLOAD_DIR = ROOT / "uploads" / "backgrounds"
 META_FILE = UPLOAD_DIR / "metadata.json"
 ALLOWED = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "video/mp4": ".mp4", "video/webm": ".webm"}
 MAX_SIZE = 100 * 1024 * 1024
-DEFAULT_SETTINGS = {"shade": 0.88, "blur": 0, "position": "center", "speed": 1, "rotation_minutes": 0}
+DEFAULT_SETTINGS = {"shade": 0.68, "blur": 0, "position": "center", "speed": 1, "rotation_minutes": 0}
 
 
 def _read_meta():
@@ -32,9 +32,10 @@ def _write_meta(data):
 
 
 def _check_admin(token: str | None):
-    configured = get_settings().ADMIN_TOKEN
+    settings = get_settings()
+    configured = settings.ADMIN_PASSWORD or settings.ADMIN_TOKEN
     if not configured or not token or not secrets.compare_digest(token, configured):
-        raise HTTPException(status_code=401, detail="Неверный токен администратора")
+        raise HTTPException(status_code=401, detail="Неверный пароль администратора")
 
 
 @router.get("")
@@ -51,7 +52,7 @@ def update_settings(payload: dict, x_admin_token: str | None = Header(default=No
     for key in DEFAULT_SETTINGS:
         if key in payload:
             settings[key] = payload[key]
-    settings["shade"] = max(0, min(0.98, float(settings["shade"])))
+    settings["shade"] = max(0, min(0.72, float(settings["shade"])))
     settings["blur"] = max(0, min(20, float(settings["blur"])))
     settings["speed"] = max(0.25, min(2, float(settings["speed"])))
     settings["rotation_minutes"] = max(0, min(1440, int(settings["rotation_minutes"])))

@@ -35,7 +35,8 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_ADMIN_CHAT_ID: str = ""  # ID чата/канала админа, куда падают заявки
 
-    # Админка: задайте длинный случайный токен в server/.env.
+    # Админка: задайте пароль в server/.env. ADMIN_TOKEN сохранён для обратной совместимости.
+    ADMIN_PASSWORD: str = ""
     ADMIN_TOKEN: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

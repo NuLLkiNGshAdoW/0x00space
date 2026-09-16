@@ -4,14 +4,16 @@ import { ArrowLeft, Check, ImagePlus, Trash2, Video } from "lucide-react";
 import { API_BASE_URL, API_ORIGIN } from "../services/api.js";
 
 export default function AdminPage() {
-  const [token, setToken] = useState(() => localStorage.getItem("admin_token") || "");
+  const [password, setPassword] = useState(
+    () => localStorage.getItem("admin_password") || localStorage.getItem("admin_token") || "",
+  );
   const [items, setItems] = useState([]);
   const [active, setActive] = useState(null);
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [message, setMessage] = useState("");
   const [settings, setSettings] = useState({
-    shade: 0.88,
+    shade: 0.68,
     blur: 0,
     position: "center",
     speed: 1,
@@ -32,7 +34,7 @@ export default function AdminPage() {
   const request = async (url, options = {}) => {
     const response = await fetch(`${API_BASE_URL}${url}`, {
       ...options,
-      headers: { ...(options.headers || {}), "X-Admin-Token": token },
+      headers: { ...(options.headers || {}), "X-Admin-Token": password },
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.detail || "Операция не выполнена");
@@ -41,12 +43,12 @@ export default function AdminPage() {
 
   const upload = async (event) => {
     event.preventDefault();
-    if (!file || !token) return setMessage("Введите токен и выберите файл");
+    if (!file || !password) return setMessage("Введите пароль и выберите файл");
     try {
       const form = new FormData();
       form.append("file", file);
       await request("/backgrounds/upload", { method: "POST", body: form });
-      localStorage.setItem("admin_token", token);
+      localStorage.setItem("admin_password", password);
       setFile(null);
       setPreviewUrl("");
       event.target.reset();
@@ -108,13 +110,13 @@ export default function AdminPage() {
         </p>
         <form onSubmit={upload} className="glass mt-8 max-w-xl rounded-2xl p-5">
           <label className="block text-sm text-ink">
-            Токен администратора
+            Пароль администратора
             <input
               type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="mt-2 w-full rounded-lg border border-line bg-void/60 px-3 py-2.5 text-ink"
-              placeholder="ADMIN_TOKEN"
+              placeholder="Пароль из ADMIN_PASSWORD в Render"
             />
           </label>
           <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-line p-4 text-sm text-mute hover:border-emerald/50">
@@ -163,7 +165,7 @@ export default function AdminPage() {
             <input
               type="range"
               min="0"
-              max="0.98"
+               max="0.72"
               step="0.01"
               value={settings.shade}
               onChange={(e) => setSettings({ ...settings, shade: Number(e.target.value) })}

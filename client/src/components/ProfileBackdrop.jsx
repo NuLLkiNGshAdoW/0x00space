@@ -5,7 +5,7 @@ export default function ProfileBackdrop() {
   const [background, setBackground] = useState(null);
   const [customFailed, setCustomFailed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [settings, setSettings] = useState({ shade: 0.88, blur: 0, position: "center", speed: 1 });
+  const [settings, setSettings] = useState({ shade: 0.68, blur: 0, position: "center", speed: 1 });
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -42,8 +42,11 @@ export default function ProfileBackdrop() {
   }, []);
 
   const url = background?.url ? `${API_ORIGIN}${background.url}` : null;
+  // Текст должен оставаться читаемым даже если в старых настройках сохранено
+  // слишком сильное затемнение фона.
+  const readableShade = Math.min(Number(settings.shade) || 0.68, 0.72);
   const style = {
-    "--profile-shade": settings.shade,
+    "--profile-shade": readableShade,
     "--profile-blur": `${settings.blur}px`,
     "--profile-position": settings.position,
   };
@@ -75,7 +78,7 @@ export default function ProfileBackdrop() {
       )}
       <div
         className="profile-backdrop-shade"
-        style={{ "--profile-shade": settings.shade }}
+        style={{ "--profile-shade": readableShade }}
         aria-hidden="true"
       />
     </>

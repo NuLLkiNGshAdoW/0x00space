@@ -13,7 +13,7 @@ export default function FeaturedVideos() {
   return (
     <section
       aria-labelledby="featured-title"
-      className="container-app -mt-4 pb-16 sm:-mt-8 sm:pb-20"
+      className="container-app -mt-4 hidden pb-16 sm:block sm:-mt-8 sm:pb-20"
     >
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
