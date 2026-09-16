@@ -84,7 +84,7 @@ test("secondary copy remains opaque and readable over the backdrop", async ({ pa
   await page.goto("/");
   const copy = page.locator("#community-title").locator("..").locator("p.text-readable");
   await expect(copy).toHaveCSS("opacity", "1");
-  await expect(copy).toHaveCSS("color", "rgb(241, 245, 249)");
+  await expect(copy).toHaveCSS("color", "rgb(226, 232, 240)");
 
   const transparentText = await page.locator("#root :is(h1, h2, h3, h4, h5, h6, p, a, button, label, li, dt, dd, summary, span)").evaluateAll((elements) =>
     elements.filter((element) => getComputedStyle(element).opacity !== "1").map((element) => element.textContent?.trim()).filter(Boolean),
