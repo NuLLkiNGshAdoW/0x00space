@@ -18,6 +18,12 @@ YOUTUBE_CHANNEL_ID=...
 
 ## 2. Frontend на Vercel
 
+Для текущего backend используйте API URL:
+
+```env
+VITE_API_BASE_URL=https://zerox00space-api.onrender.com/api
+```
+
 1. В Vercel выберите **Import Project**.
 2. Root Directory: `client`.
 3. Framework: Vite.
