@@ -86,8 +86,10 @@ async def upload_background(request: Request, file: UploadFile = File(...), x_ad
     item = {"id": file_id, "name": file.filename or filename, "url": f"/media/backgrounds/{filename}", "type": "video" if extension in {".mp4", ".webm"} else "image"}
     data = _read_meta()
     data["items"] = [*data.get("items", []), item]
-    if not data.get("active"):
-        data["active"] = item
+    # Новая загрузка сразу становится глобальным активным фоном. Раньше
+    # preview был виден только в окне админки, потому что старый active
+    # оставался включённым для всех остальных клиентов.
+    data["active"] = item
     _write_meta(data)
     return item
 

@@ -6,6 +6,7 @@ from app.config import get_settings
 from app.main import app
 from app.schemas import YoutubeVideoOut
 import app.routers.youtube as youtube_router
+import app.routers.backgrounds as backgrounds_router
 
 
 def test_admin_cookie_login_and_logout(monkeypatch):
@@ -51,6 +52,25 @@ def test_video_detail_validates_id_and_returns_related(monkeypatch):
     assert response.status_code == 200
     assert response.json()["video"]["video_id"] == "abcdefghijk"
     assert response.json()["related"] == []
+
+
+def test_uploaded_background_becomes_global_active(monkeypatch, tmp_path):
+    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
+    monkeypatch.setenv("ADMIN_SESSION_SECRET", "test-session-secret")
+    get_settings.cache_clear()
+    monkeypatch.setattr(backgrounds_router, "UPLOAD_DIR", tmp_path)
+    monkeypatch.setattr(backgrounds_router, "META_FILE", tmp_path / "metadata.json")
+    client = TestClient(app)
+
+    assert client.post("/api/auth/login", json={"password": "test-password"}).status_code == 200
+    response = client.post(
+        "/api/backgrounds/upload",
+        files={"file": ("background.png", b"png-data", "image/png")},
+    )
+
+    assert response.status_code == 201
+    public = client.get("/api/backgrounds").json()
+    assert public["active"]["id"] == response.json()["id"]
 
 
 async def _immediate(value):
