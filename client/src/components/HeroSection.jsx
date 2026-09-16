@@ -39,7 +39,7 @@ export default function HeroSection() {
             <span className="mt-1 block text-ink">на одной частоте эфира</span>
           </h1>
 
-          <p className="mt-6 max-w-lg text-base leading-relaxed text-mute sm:text-lg">
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-ink sm:text-lg">
             0x00 SPACE — игровой контент, выживание, ивенты и приключения. Проходим Minecraft,
             кооперативные экшены и хорроры вместе с теми, кто это смотрит.
           </p>
@@ -82,7 +82,7 @@ export default function HeroSection() {
                 <Play className="ml-auto h-4 w-4 shrink-0 text-emerald" fill="currentColor" aria-hidden="true" />
               </Link>
             ) : (
-              <p className="text-sm text-mute">
+              <p className="text-sm text-ink">
                 {isError ? "Свежие ролики временно недоступны." : "Загружаем последний ролик с канала…"}
               </p>
             )}
@@ -143,7 +143,7 @@ export default function HeroSection() {
             </div>
 
              {/* Подпись уточняет, что панель ведёт к реальному контенту канала. */}
-             <div className="absolute inset-x-4 bottom-4 rounded-lg border border-line bg-void/60 p-3 font-mono text-[11px] text-mute backdrop-blur-sm">
+              <div className="absolute inset-x-4 bottom-4 rounded-lg border border-line bg-void p-3 font-mono text-[11px] text-ink">
                <div className="flex items-center justify-between">
                  <span>ФОРМАТ</span>
                  <span className="text-emerald">ВИДЕО</span>

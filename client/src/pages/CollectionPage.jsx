@@ -16,7 +16,7 @@ export default function CollectionPage({ type }) {
       <Navbar />
       <main id="main-content" className="pt-8">
         <div className="container-app mb-2">
-          <Link to="/" className="text-sm text-mute hover:text-emerald">
+          <Link to="/" className="text-sm text-ink hover:text-emerald">
             ← На главную
           </Link>
         </div>

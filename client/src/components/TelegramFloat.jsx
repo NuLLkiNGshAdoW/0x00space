@@ -11,7 +11,7 @@ export default function TelegramFloat() {
         type="button"
         onClick={() => setVisible(false)}
         aria-label="Скрыть кнопку Telegram"
-         className="icon-button h-11 w-11 rounded-full bg-void/80 text-mute backdrop-blur"
+         className="icon-button h-11 w-11 rounded-full bg-void text-ink"
       >
         <X className="h-3 w-3" />
       </button>

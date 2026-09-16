@@ -29,7 +29,7 @@ export default function FeaturedVideos() {
         </div>
         <Link
           to="/videos"
-          className="hidden items-center gap-1 text-sm text-mute hover:text-emerald sm:inline-flex"
+          className="hidden items-center gap-1 text-sm text-ink hover:text-emerald sm:inline-flex"
         >
           Все видео <ArrowUpRight className="h-4 w-4" />
         </Link>
@@ -68,7 +68,7 @@ export default function FeaturedVideos() {
       </div>
       <Link
         to="/videos"
-        className="mt-5 inline-flex items-center gap-1 text-sm text-mute hover:text-emerald sm:hidden"
+        className="mt-5 inline-flex items-center gap-1 text-sm text-ink hover:text-emerald sm:hidden"
       >
         Все видео <ArrowUpRight className="h-4 w-4" />
       </Link>

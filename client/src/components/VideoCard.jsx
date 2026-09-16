@@ -45,7 +45,7 @@ export default function VideoCard({ video }) {
 
       <div className="p-4">
         <h3 className="line-clamp-2 text-sm font-medium leading-snug text-ink">{video.title}</h3>
-        <div className="mt-2.5 flex items-center gap-3.5 font-mono text-xs text-mute">
+        <div className="mt-2.5 flex items-center gap-3.5 font-mono text-xs text-ink">
           <span className="inline-flex items-center gap-1">
             <Eye className="h-3.5 w-3.5" strokeWidth={1.8} />
             {formatViews(video.view_count)}

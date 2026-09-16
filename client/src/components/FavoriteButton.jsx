@@ -35,7 +35,7 @@ export default function FavoriteButton({ id, label = "Добавить в изб
       aria-pressed={favorite}
       className={cn(
         "rounded-md p-1.5 transition-colors",
-        favorite ? "text-amber-300" : "text-mute hover:text-amber-300",
+        favorite ? "text-amber-300" : "text-ink hover:text-amber-300",
       )}
     >
       <Star className="h-4 w-4" fill={favorite ? "currentColor" : "none"} />
