@@ -1,6 +1,16 @@
 import { Play, CalendarPlus, Youtube } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getLatestVideos } from "../services/api.js";
 
 export default function HeroSection() {
+  const { data: latestVideos = [], isError } = useQuery({
+    queryKey: ["videos", "hero"],
+    queryFn: () => getLatestVideos(1),
+    retry: false,
+  });
+  const latestVideo = latestVideos[0];
+
   return (
     <section id="top" className="relative overflow-hidden">
       {/* Тонкая координатная сетка на фоне — намёк на "координаты/мир", не декоративный шум */}
@@ -23,55 +33,58 @@ export default function HeroSection() {
 
           <h1 className="max-w-3xl font-display text-4xl font-semibold leading-[1.06] tracking-[-0.035em] text-ink sm:text-5xl lg:text-6xl">
             Minecraft, выживание,
-            <span className="block bg-gradient-to-r from-emerald via-teal-300 to-violet bg-clip-text text-transparent">кооп и хорроры</span>
+            <span className="block bg-gradient-to-r from-emerald via-teal-300 to-violet bg-clip-text text-transparent">
+              кооп и хорроры
+            </span>
             <span className="mt-1 block text-ink">на одной частоте эфира</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-base leading-relaxed text-mute sm:text-lg">
-            0x00 SPACE — игровой контент, выживание, ивенты и приключения.
-            Проходим Minecraft, кооперативные экшены и хорроры вместе с теми,
-            кто это смотрит.
+            0x00 SPACE — игровой контент, выживание, ивенты и приключения. Проходим Minecraft,
+            кооперативные экшены и хорроры вместе с теми, кто это смотрит.
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <a
-              href="#videos"
-              className="button-glow inline-flex items-center justify-center gap-2 rounded-lg bg-emerald px-6 py-3 text-sm font-semibold text-void transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            <Link
+              to="/videos"
+              className="button-primary button-glow"
             >
               <Play className="h-4 w-4" fill="currentColor" />
               Смотреть ролики
-            </a>
+            </Link>
             <a
               href="https://youtube.com/@0x00space?sub_confirmation=1"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-violet/40 bg-violet-soft/20 px-6 py-3 text-sm font-medium text-ink transition-colors hover:border-violet hover:text-violet"
+              className="button-secondary border-violet/40 bg-violet-soft/20 hover:border-violet hover:text-violet"
             >
               <Youtube className="h-4 w-4" />
               Подписаться на YouTube
             </a>
             <a
               href="#application"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-panel/60 px-6 py-3 text-sm font-medium text-ink backdrop-blur-md transition-colors hover:border-violet/50 hover:text-violet"
+              className="button-secondary bg-panel/60 hover:border-violet/50 hover:text-violet"
             >
               <CalendarPlus className="h-4 w-4" />
               Подать заявку на ивент
             </a>
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-line pt-6">
-            <div>
-              <strong className="font-display text-xl text-ink">∞</strong>
-              <p className="mt-1 text-xs text-mute">идей для роликов</p>
-            </div>
-            <div>
-              <strong className="font-display text-xl text-ink">24/7</strong>
-              <p className="mt-1 text-xs text-mute">на связи с комьюнити</p>
-            </div>
-            <div>
-              <strong className="font-display text-xl text-ink">1</strong>
-              <p className="mt-1 text-xs text-mute">общая игровая частота</p>
-            </div>
+          <div className="mt-10 border-t border-line pt-6">
+            {latestVideo ? (
+              <Link to={`/videos/${latestVideo.video_id}`} className="group inline-flex max-w-xl items-center gap-3 text-left">
+                <img src={latestVideo.thumbnail_url} alt="" className="h-14 w-24 rounded-lg object-cover" />
+                <span>
+                  <span className="block font-mono text-[10px] uppercase tracking-[0.16em] text-emerald">Последний ролик</span>
+                  <span className="mt-1 block line-clamp-2 text-sm font-medium text-ink group-hover:text-emerald">{latestVideo.title}</span>
+                </span>
+                <Play className="ml-auto h-4 w-4 shrink-0 text-emerald" fill="currentColor" aria-hidden="true" />
+              </Link>
+            ) : (
+              <p className="text-sm text-mute">
+                {isError ? "Свежие ролики временно недоступны." : "Загружаем последний ролик с канала…"}
+              </p>
+            )}
           </div>
         </div>
 
@@ -85,9 +98,30 @@ export default function HeroSection() {
 
             {/* Концентрические "орбиты" */}
             <svg viewBox="0 0 300 300" className="absolute inset-0 h-full w-full opacity-70">
-              <circle cx="150" cy="150" r="60" stroke="rgba(16,185,129,0.35)" fill="none" strokeWidth="1" />
-              <circle cx="150" cy="150" r="100" stroke="rgba(139,92,246,0.25)" fill="none" strokeWidth="1" />
-              <circle cx="150" cy="150" r="140" stroke="rgba(148,163,184,0.15)" fill="none" strokeWidth="1" />
+              <circle
+                cx="150"
+                cy="150"
+                r="60"
+                stroke="rgba(16,185,129,0.35)"
+                fill="none"
+                strokeWidth="1"
+              />
+              <circle
+                cx="150"
+                cy="150"
+                r="100"
+                stroke="rgba(139,92,246,0.25)"
+                fill="none"
+                strokeWidth="1"
+              />
+              <circle
+                cx="150"
+                cy="150"
+                r="140"
+                stroke="rgba(148,163,184,0.15)"
+                fill="none"
+                strokeWidth="1"
+              />
             </svg>
 
             <div className="absolute left-5 top-5 rounded-lg border border-emerald/20 bg-void/50 px-3 py-2 font-mono text-[10px] text-emerald backdrop-blur-sm">

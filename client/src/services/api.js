@@ -3,6 +3,7 @@
  * Базовый URL берётся из переменной окружения VITE_API_BASE_URL,
  * с фолбэком на локальный dev-сервер FastAPI.
  */
+import { videosSchema } from "../lib/schemas.js";
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
@@ -20,8 +21,10 @@ export class ApiError extends Error {
  * бросает ApiError с понятным сообщением при неуспешном ответе.
  */
 async function request(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...options,
   });
 
@@ -43,7 +46,7 @@ async function request(path, options = {}) {
 
 /** GET /api/youtube/latest — последние видео/Shorts канала. */
 export function getLatestVideos(limit = 12) {
-  return request(`/youtube/latest?limit=${limit}`);
+  return request(`/youtube/latest?limit=${limit}`).then((data) => videosSchema.parse(data));
 }
 
 /** GET /api/resources — материалы (текстур-паки, шейдеры, моды), опционально по типу файла и/или игре. */

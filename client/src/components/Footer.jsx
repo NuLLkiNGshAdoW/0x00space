@@ -1,5 +1,6 @@
 import LogoMark from "./icons/LogoMark.jsx";
 import { SOCIAL_LINKS } from "../lib/socials.js";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -16,11 +17,22 @@ export default function Footer() {
 
         <p className="text-xs text-mute">© {year} 0x00 SPACE. Все права защищены.</p>
 
-        <nav aria-label="Дополнительные страницы" className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-mute">
-          <a href="/guides" className="hover:text-emerald">Гайды</a>
-          <a href="/events" className="hover:text-emerald">Ивенты</a>
-          <a href="/contacts" className="hover:text-emerald">Контакты</a>
-          <a href="/privacy" className="hover:text-emerald">Конфиденциальность</a>
+        <nav
+          aria-label="Дополнительные страницы"
+          className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-mute"
+        >
+          <Link to="/guides" className="hover:text-emerald">
+            Гайды
+          </Link>
+          <Link to="/events" className="hover:text-emerald">
+            Ивенты
+          </Link>
+          <Link to="/contacts" className="hover:text-emerald">
+            Контакты
+          </Link>
+          <Link to="/privacy" className="hover:text-emerald">
+            Конфиденциальность
+          </Link>
         </nav>
 
         <div className="flex items-center gap-1">

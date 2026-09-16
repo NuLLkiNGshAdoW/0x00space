@@ -27,7 +27,7 @@ export default function CopyButton({ value, label = "Копировать" }) {
         "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors",
         copied
           ? "border-emerald/50 bg-emerald-soft text-emerald"
-          : "border-line text-mute hover:border-emerald/40 hover:text-emerald"
+          : "border-line text-mute hover:border-emerald/40 hover:text-emerald",
       )}
     >
       {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}

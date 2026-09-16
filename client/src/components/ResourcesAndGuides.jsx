@@ -47,7 +47,7 @@ export default function ResourcesAndGuides() {
       .catch((err) => {
         if (cancelled) return;
         setResourcesError(
-          err instanceof ApiError ? err.message : "Не удалось загрузить материалы."
+          err instanceof ApiError ? err.message : "Не удалось загрузить материалы.",
         );
         setResourcesStatus("error");
       });
@@ -67,7 +67,7 @@ export default function ResourcesAndGuides() {
         .filter(Boolean)
         .join(" ")
         .toLocaleLowerCase()
-        .includes(query)
+        .includes(query),
     );
   };
 
@@ -97,17 +97,19 @@ export default function ResourcesAndGuides() {
       <div className="container-app">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-violet">Арсенал игрока</p>
+            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-violet">
+              Арсенал игрока
+            </p>
             <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
               Материалы и сиды
             </h2>
             <p className="mt-2 max-w-md text-sm text-mute">
-              Текстуры, шейдеры, моды, гайды по хоррорам и интересные миры —
-              всё, что упоминается в роликах.
+              Текстуры, шейдеры, моды, гайды по хоррорам и интересные миры — всё, что упоминается в
+              роликах.
             </p>
           </div>
 
-            <div className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start">
+          <div className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start">
             {VIEWS.map((view) => (
               <button
                 key={view.key}
@@ -117,20 +119,28 @@ export default function ResourcesAndGuides() {
                   "rounded-md px-3.5 py-1.5 text-sm transition-colors",
                   activeView === view.key
                     ? "bg-violet text-white font-medium"
-                    : "text-mute hover:text-ink"
+                    : "text-mute hover:text-ink",
                 )}
               >
                 {view.label}
               </button>
             ))}
-            </div>
           </div>
+        </div>
 
-          <label className="relative mt-6 block max-w-md">
-            <span className="sr-only">Поиск по материалам</span>
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute" aria-hidden="true" />
-            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Поиск по материалам и сидам…" className="w-full rounded-lg border border-line bg-void/40 py-2.5 pl-9 pr-3 text-sm text-ink placeholder:text-mute/70 focus:border-emerald/50 focus:outline-none focus:ring-1 focus:ring-emerald/30" />
-          </label>
+        <label className="relative mt-6 block max-w-md">
+          <span className="sr-only">Поиск по материалам</span>
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
+            aria-hidden="true"
+          />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Поиск по материалам и сидам…"
+            className="w-full rounded-lg border border-line bg-void/40 py-2.5 pl-9 pr-3 text-sm text-ink placeholder:text-mute/70 focus:border-emerald/50 focus:outline-none focus:ring-1 focus:ring-emerald/30"
+          />
+        </label>
 
         {activeView === "resources" && (
           <>
@@ -144,7 +154,7 @@ export default function ResourcesAndGuides() {
                     "rounded-full border px-3.5 py-1.5 text-xs transition-colors",
                     gameFilter === filter.key
                       ? "border-emerald/60 bg-emerald-soft text-emerald"
-                      : "border-line text-mute hover:border-emerald/30 hover:text-ink"
+                      : "border-line text-mute hover:border-emerald/30 hover:text-ink",
                   )}
                 >
                   {filter.label}
@@ -174,12 +184,17 @@ export default function ResourcesAndGuides() {
 
               {resourcesStatus === "ready" && filteredResources.length > 0 && (
                 <>
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {visibleResources.map((resource) => (
-                    <ResourceCard key={resource.id} resource={resource} />
-                  ))}
-                </div>
-                <Pagination page={page} total={filteredResources.length} pageSize={pageSize} setPage={setPage} />
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {visibleResources.map((resource) => (
+                      <ResourceCard key={resource.id} resource={resource} />
+                    ))}
+                  </div>
+                  <Pagination
+                    page={page}
+                    total={filteredResources.length}
+                    pageSize={pageSize}
+                    setPage={setPage}
+                  />
                 </>
               )}
             </div>
@@ -201,17 +216,25 @@ export default function ResourcesAndGuides() {
             )}
 
             {seedsStatus === "ready" && filteredSeeds.length === 0 && (
-              <EmptyState icon={PackageOpen} text="Сидов пока нет — они появятся после следующего ролика." />
+              <EmptyState
+                icon={PackageOpen}
+                text="Сидов пока нет — они появятся после следующего ролика."
+              />
             )}
 
             {seedsStatus === "ready" && filteredSeeds.length > 0 && (
               <>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {visibleSeeds.map((seed) => (
-                  <SeedCard key={seed.id} seed={seed} />
-                ))}
-              </div>
-              <Pagination page={page} total={filteredSeeds.length} pageSize={pageSize} setPage={setPage} />
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {visibleSeeds.map((seed) => (
+                    <SeedCard key={seed.id} seed={seed} />
+                  ))}
+                </div>
+                <Pagination
+                  page={page}
+                  total={filteredSeeds.length}
+                  pageSize={pageSize}
+                  setPage={setPage}
+                />
               </>
             )}
           </div>
@@ -226,9 +249,25 @@ function Pagination({ page, total, pageSize, setPage }) {
   if (pages < 2) return null;
   return (
     <nav aria-label="Пагинация" className="mt-7 flex items-center justify-center gap-2">
-      <button type="button" disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-40">Назад</button>
-      <span className="px-2 font-mono text-xs text-mute">{page} / {pages}</span>
-      <button type="button" disabled={page === pages} onClick={() => setPage((value) => value + 1)} className="rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-40">Далее</button>
+      <button
+        type="button"
+        disabled={page === 1}
+        onClick={() => setPage((value) => value - 1)}
+        className="rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-40"
+      >
+        Назад
+      </button>
+      <span className="px-2 font-mono text-xs text-mute">
+        {page} / {pages}
+      </span>
+      <button
+        type="button"
+        disabled={page === pages}
+        onClick={() => setPage((value) => value + 1)}
+        className="rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-40"
+      >
+        Далее
+      </button>
     </nav>
   );
 }
@@ -236,7 +275,10 @@ function Pagination({ page, total, pageSize, setPage }) {
 function EmptyState({ icon: Icon, text, tone = "neutral" }) {
   return (
     <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
-      <Icon className={cn("h-8 w-8", tone === "warning" ? "text-violet" : "text-mute")} strokeWidth={1.6} />
+      <Icon
+        className={cn("h-8 w-8", tone === "warning" ? "text-violet" : "text-mute")}
+        strokeWidth={1.6}
+      />
       <p className="text-sm text-mute">{text}</p>
     </div>
   );

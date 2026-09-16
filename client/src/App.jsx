@@ -1,3 +1,4 @@
+import { BrowserRouter, Route, Routes, useParams } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import HeroSection from "./components/HeroSection.jsx";
 import YouTubeGallery from "./components/YouTubeGallery.jsx";
@@ -10,29 +11,47 @@ import ProfileBackdrop from "./components/ProfileBackdrop.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import TelegramFloat from "./components/TelegramFloat.jsx";
 import FeaturedVideos from "./components/FeaturedVideos.jsx";
+import CommunityBenefits from "./components/CommunityBenefits.jsx";
+import VideoDetailPage from "./pages/VideoDetailPage.jsx";
 import CollectionPage from "./pages/CollectionPage.jsx";
+import Seo from "./components/Seo.jsx";
 
 export default function App() {
-  const path = window.location.pathname.replace(/\/$/, "") || "/";
-  if (path === "/admin") return <AdminPage />;
-  if (path === "/videos") return <CollectionPage type="videos" />;
-  if (path === "/materials") return <CollectionPage type="materials" />;
-  if (path !== "/") return <ContentPage path={path} />;
+  return <BrowserRouter><Routes>
+    <Route path="/" element={<HomePage />} />
+    <Route path="/admin" element={<AdminPage />} />
+    <Route path="/videos" element={<CollectionPage type="videos" />} />
+    <Route path="/videos/:videoId" element={<VideoRoute />} />
+    <Route path="/materials" element={<CollectionPage type="materials" />} />
+    {["guides", "seeds", "about", "faq", "events", "contacts", "privacy"].map((page) => <Route key={page} path={`/${page}`} element={<ContentPage path={`/${page}`} />} />)}
+    <Route path="*" element={<ContentPage path="/not-found" />} />
+  </Routes></BrowserRouter>;
+}
 
-  return (
-    <div className="min-h-screen">
-      <ProfileBackdrop />
-      <Navbar />
-      <main id="main-content">
-        <HeroSection />
-        <FeaturedVideos />
-        <YouTubeGallery />
-        <ResourcesAndGuides />
-        <AboutAndFaq />
-        <ApplicationForm />
-      </main>
-      <TelegramFloat />
-      <Footer />
-    </div>
-  );
+function HomePage() {
+  return <div className="min-h-screen">
+    <Seo
+      title="0x00 SPACE — Minecraft, кооп и хорроры"
+      description="0x00 SPACE — игровой канал о Minecraft, кооперативных играх и хоррорах. Видео, гайды, сиды миров и игровые ивенты."
+      path="/"
+    />
+    <ProfileBackdrop />
+    <Navbar />
+    <main id="main-content">
+      <HeroSection />
+      <FeaturedVideos />
+      <CommunityBenefits />
+      <YouTubeGallery />
+      <ResourcesAndGuides />
+      <AboutAndFaq />
+      <ApplicationForm />
+    </main>
+    <TelegramFloat />
+    <Footer />
+  </div>;
+}
+
+function VideoRoute() {
+  const { videoId } = useParams();
+  return <VideoDetailPage videoId={videoId} />;
 }

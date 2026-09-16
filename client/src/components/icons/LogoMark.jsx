@@ -22,7 +22,14 @@ export default function LogoMark({ className = "h-8 w-8" }) {
       <path d="M13 25 L27 15" stroke="#8b5cf6" strokeWidth="1.6" strokeLinecap="round" />
       <circle cx="20" cy="20" r="2.4" fill="#e7ecf3" />
       <defs>
-        <linearGradient id="logoStroke" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="logoStroke"
+          x1="4"
+          y1="2"
+          x2="36"
+          y2="38"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#10b981" />
           <stop offset="1" stopColor="#8b5cf6" />
         </linearGradient>

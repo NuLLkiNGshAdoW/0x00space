@@ -1,14 +1,15 @@
 import { Play, Eye, Clock3 } from "lucide-react";
 import { formatDuration, formatViews, formatRelativeDate } from "../lib/utils.js";
 import { trackEvent } from "../lib/analytics.js";
+import { Link } from "react-router-dom";
 
 export default function VideoCard({ video }) {
   return (
-    <a
-      href={video.url}
-      onClick={() => trackEvent("video_open", { video_id: video.video_id, video_title: video.title })}
-      target="_blank"
-      rel="noreferrer"
+    <Link
+      to={`/videos/${video.video_id}`}
+      onClick={() =>
+        trackEvent("video_open", { video_id: video.video_id, video_title: video.title })
+      }
       className="group glass glass-hover overflow-hidden rounded-xl"
     >
       <div className="relative aspect-video overflow-hidden bg-panel2">
@@ -38,9 +39,7 @@ export default function VideoCard({ video }) {
       </div>
 
       <div className="p-4">
-        <h3 className="line-clamp-2 text-sm font-medium leading-snug text-ink">
-          {video.title}
-        </h3>
+        <h3 className="line-clamp-2 text-sm font-medium leading-snug text-ink">{video.title}</h3>
         <div className="mt-2.5 flex items-center gap-3.5 font-mono text-xs text-mute">
           <span className="inline-flex items-center gap-1">
             <Eye className="h-3.5 w-3.5" strokeWidth={1.8} />
@@ -52,6 +51,6 @@ export default function VideoCard({ video }) {
           </span>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }

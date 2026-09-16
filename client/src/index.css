@@ -10,8 +10,10 @@
 
   body {
     @apply bg-void text-ink font-body antialiased;
+    font-size: 16px;
+    line-height: 1.6;
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16, 185, 129, 0.10), transparent),
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16, 185, 129, 0.1), transparent),
       radial-gradient(ellipse 60% 40% at 100% 20%, rgba(139, 92, 246, 0.08), transparent);
     background-repeat: no-repeat;
     min-width: 320px;
@@ -23,6 +25,17 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
+  }
+
+  @media (max-width: 640px) {
+    .profile-backdrop-custom {
+      opacity: 0.32;
+      filter: none;
+    }
+
+    video.profile-backdrop-custom {
+      display: none;
+    }
   }
 
   .profile-backdrop {
@@ -43,7 +56,12 @@
 
   .profile-backdrop-shade {
     z-index: 0;
-    background: linear-gradient(180deg, rgba(5, 7, 13, 0.34), rgba(5, 7, 13, var(--profile-shade, 0.90)) 76%, #05070d 100%);
+    background: linear-gradient(
+      180deg,
+      rgba(5, 7, 13, 0.34),
+      rgba(5, 7, 13, var(--profile-shade, 0.9)) 76%,
+      #05070d 100%
+    );
   }
 
   #root {
@@ -56,6 +74,21 @@
     background: rgba(16, 185, 129, 0.32);
   }
 
+  /* Единый контраст вторичного текста на изображениях и видеофонах. */
+  .text-mute {
+    color: #c4cede;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(196, 206, 222, 0.78);
+    opacity: 1;
+  }
+
+  button:disabled {
+    color: #9eabbc;
+  }
+
   /* Видимый keyboard focus — не убираем outline, а стилизуем его под дизайн-систему */
   :focus-visible {
     outline: 2px solid theme("colors.emerald.DEFAULT");
@@ -64,7 +97,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -86,16 +121,34 @@
 
   .glass-hover:hover {
     border-color: rgba(16, 185, 129, 0.38);
-    box-shadow: 0 18px 55px rgba(16, 185, 129, 0.10);
+    box-shadow: 0 18px 55px rgba(16, 185, 129, 0.1);
     transform: translateY(-3px);
   }
 
   .button-glow {
-    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.20);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
   }
 
   .button-glow:hover {
     box-shadow: 0 14px 38px rgba(16, 185, 129, 0.38);
+  }
+
+  .button-primary,
+  .button-secondary,
+  .button-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm transition-colors focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .button-primary {
+    @apply bg-emerald font-semibold text-void hover:bg-emerald/90;
+  }
+
+  .button-secondary {
+    @apply border border-line bg-panel/60 font-medium text-ink backdrop-blur-md hover:border-emerald/50 hover:text-emerald;
+  }
+
+  .button-ghost {
+    @apply px-3 py-2 text-mute hover:bg-panel2 hover:text-ink;
   }
 
   /* Тонкая градиентная рамка (emerald -> violet) для акцентных карточек */
@@ -109,7 +162,9 @@
     padding: 1px;
     border-radius: inherit;
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.5), rgba(139, 92, 246, 0.35));
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -120,6 +175,12 @@
   }
 
   .section-divider {
-    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.25), rgba(139, 92, 246, 0.20), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(16, 185, 129, 0.25),
+      rgba(139, 92, 246, 0.2),
+      transparent
+    );
   }
 }

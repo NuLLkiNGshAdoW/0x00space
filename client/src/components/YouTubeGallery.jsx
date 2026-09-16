@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Radio } from "lucide-react";
+import { AlertTriangle, Radio, Search } from "lucide-react";
 import { getLatestVideos, ApiError } from "../services/api.js";
 import VideoCard from "./VideoCard.jsx";
 import VideoCardSkeleton from "./VideoCardSkeleton.jsx";
@@ -16,6 +16,7 @@ export default function YouTubeGallery() {
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [errorMessage, setErrorMessage] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +32,7 @@ export default function YouTubeGallery() {
         setErrorMessage(
           err instanceof ApiError
             ? err.message
-            : "Не удалось получить видео. Проверьте соединение и попробуйте снова."
+            : "Не удалось получить видео. Проверьте соединение и попробуйте снова.",
         );
         setStatus("error");
       });
@@ -42,17 +43,31 @@ export default function YouTubeGallery() {
   }, []);
 
   const filteredVideos = useMemo(() => {
-    if (activeTab === "videos") return videos.filter((v) => !v.is_short);
-    if (activeTab === "shorts") return videos.filter((v) => v.is_short);
-    return videos;
-  }, [videos, activeTab]);
+    const query = search.trim().toLocaleLowerCase();
+    const byTab =
+      activeTab === "videos"
+        ? videos.filter((v) => !v.is_short)
+        : activeTab === "shorts"
+          ? videos.filter((v) => v.is_short)
+          : videos;
+    return query
+      ? byTab.filter((video) =>
+          `${video.title} ${video.description}`.toLocaleLowerCase().includes(query),
+        )
+      : byTab;
+  }, [videos, activeTab, search]);
 
   return (
     <section id="videos" aria-labelledby="videos-title" className="container-app py-16 sm:py-20">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald">Сигнал канала</p>
-          <h2 id="videos-title" className="font-display text-2xl font-semibold text-ink sm:text-3xl">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald">
+            Сигнал канала
+          </p>
+          <h2
+            id="videos-title"
+            className="font-display text-2xl font-semibold text-ink sm:text-3xl"
+          >
             Последние ролики
           </h2>
           <p className="mt-2 max-w-md text-sm text-mute">
@@ -60,7 +75,11 @@ export default function YouTubeGallery() {
           </p>
         </div>
 
-        <div role="tablist" aria-label="Тип контента" className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start">
+        <div
+          role="tablist"
+          aria-label="Тип контента"
+          className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start"
+        >
           {TABS.map((tab) => (
             <button
               key={tab.key}
@@ -73,7 +92,7 @@ export default function YouTubeGallery() {
                 "rounded-md px-3.5 py-1.5 text-sm transition-colors",
                 activeTab === tab.key
                   ? "bg-emerald text-void font-medium"
-                  : "text-mute hover:text-ink"
+                  : "text-mute hover:text-ink",
               )}
             >
               {tab.label}
@@ -82,9 +101,27 @@ export default function YouTubeGallery() {
         </div>
       </div>
 
+      <label className="relative mt-6 block max-w-md">
+        <span className="sr-only">Поиск по видео</span>
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
+          aria-hidden="true"
+        />
+        <input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Найти ролик…"
+          className="w-full rounded-lg border border-line bg-panel/60 py-2.5 pl-9 pr-3 text-sm text-ink placeholder:text-mute/70 focus:border-emerald/50 focus:outline-none focus:ring-1 focus:ring-emerald/30"
+        />
+      </label>
+
       <div className="mt-8">
         {status === "loading" && (
-           <div id="video-results" role="tabpanel" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            id="video-results"
+            role="tabpanel"
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
             {Array.from({ length: 8 }).map((_, i) => (
               <VideoCardSkeleton key={i} />
             ))}
@@ -95,6 +132,7 @@ export default function YouTubeGallery() {
           <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
             <AlertTriangle className="h-8 w-8 text-violet" strokeWidth={1.6} />
             <p className="text-sm text-mute">{errorMessage}</p>
+            <button type="button" onClick={() => window.location.reload()} className="rounded-lg border border-line px-4 py-2 text-sm text-ink hover:border-emerald/50">Повторить</button>
           </div>
         )}
 

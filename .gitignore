@@ -11,6 +11,8 @@ server/venv/
 # Node/Vite
 client/node_modules/
 client/dist/
+client/test-results/
+client/playwright-report/
 
 # Локальная база и загруженные файлы
 server/*.db
