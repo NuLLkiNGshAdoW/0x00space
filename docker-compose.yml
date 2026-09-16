@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zerox00
+      POSTGRES_PASSWORD: zerox00pass
+      POSTGRES_DB: zerox00space
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  server:
+    build: ./server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://zerox00:zerox00pass@db:5432/zerox00space
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - background_uploads:/app/uploads
+
+  client:
+    build:
+      context: ./client
+      args:
+        VITE_API_BASE_URL: http://localhost:8000/api
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "5173:80"
+
+  # nginx как единая точка входа (reverse-proxy перед client+server) будет
+  # добавлен на Этапе 3 деплоя — сейчас client и server проксируются напрямую по портам
+
+volumes:
+  postgres_data:
+  background_uploads:

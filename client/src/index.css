@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: #05070d;
+  }
+
+  body {
+    @apply bg-void text-ink font-body antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(16, 185, 129, 0.10), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 20%, rgba(139, 92, 246, 0.08), transparent);
+    background-repeat: no-repeat;
+    min-width: 320px;
+  }
+
+  /* Единый backdrop в стиле профиля Steam: остаётся на месте при скролле. */
+  .profile-backdrop,
+  .profile-backdrop-shade {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .profile-backdrop {
+    z-index: 0;
+    background: url("/profile-background.svg") center top / cover no-repeat;
+    opacity: 0.72;
+  }
+
+  .profile-backdrop-custom {
+    background-position: var(--profile-position, center);
+    background-size: cover;
+    background-repeat: no-repeat;
+    object-fit: cover;
+    opacity: 0.78;
+    filter: blur(var(--profile-blur, 0px));
+    transform: scale(1.02);
+  }
+
+  .profile-backdrop-shade {
+    z-index: 0;
+    background: linear-gradient(180deg, rgba(5, 7, 13, 0.20), rgba(5, 7, 13, var(--profile-shade, 0.88)) 76%, #05070d 100%);
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
+  }
+
+  ::selection {
+    color: #05070d;
+    background: #10b981;
+  }
+
+  /* Видимый keyboard focus — не убираем outline, а стилизуем его под дизайн-систему */
+  :focus-visible {
+    outline: 2px solid theme("colors.emerald.DEFAULT");
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Стеклянная панель — базовый строительный блок карточек и Navbar */
+  .glass {
+    @apply border border-line bg-panel/60 backdrop-blur-md;
+    box-shadow: 0 14px 45px rgba(0, 0, 0, 0.14);
+  }
+
+  .glass-hover {
+    @apply transition-all duration-300;
+  }
+
+  .glass-hover:hover {
+    border-color: rgba(16, 185, 129, 0.38);
+    box-shadow: 0 18px 55px rgba(16, 185, 129, 0.10);
+    transform: translateY(-3px);
+  }
+
+  .button-glow {
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.20);
+  }
+
+  .button-glow:hover {
+    box-shadow: 0 14px 38px rgba(16, 185, 129, 0.38);
+  }
+
+  /* Тонкая градиентная рамка (emerald -> violet) для акцентных карточек */
+  .glass-accent-border {
+    position: relative;
+  }
+  .glass-accent-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.5), rgba(139, 92, 246, 0.35));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .container-app {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8;
+  }
+
+  .section-divider {
+    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.25), rgba(139, 92, 246, 0.20), transparent);
+  }
+}
