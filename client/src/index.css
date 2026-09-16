@@ -142,15 +142,6 @@
     color: #6ee7b7 !important;
   }
 
-  /* Основной текст всегда рисуется сплошным белым цветом, без alpha-канала. */
-  .text-ink {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    opacity: 1 !important;
-    mix-blend-mode: normal !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
-  }
-
   .text-violet {
     color: #c4b5fd !important;
   }
