@@ -45,6 +45,12 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = False
     SENTRY_DSN: str = ""
 
+    # Файловое хранилище фоновых изображений/видео. Путь может быть абсолютным
+    # или относительным к рабочему каталогу backend.
+    BACKGROUND_UPLOAD_DIR: str = "uploads/backgrounds"
+    # Необязательный URL каталога, если файлы раздаются CDN/object storage.
+    BACKGROUND_PUBLIC_BASE_URL: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 

@@ -22,6 +22,10 @@ services:
         value: "true"
       - key: SENTRY_DSN
         sync: false
+      - key: BACKGROUND_UPLOAD_DIR
+        value: uploads/backgrounds
+      - key: BACKGROUND_PUBLIC_BASE_URL
+        sync: false
       - key: YOUTUBE_API_KEY
         sync: false
       - key: YOUTUBE_CHANNEL_ID

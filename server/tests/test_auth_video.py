@@ -73,5 +73,23 @@ def test_uploaded_background_becomes_global_active(monkeypatch, tmp_path):
     assert public["active"]["id"] == response.json()["id"]
 
 
+def test_background_delete_rejects_path_traversal(monkeypatch, tmp_path):
+    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
+    monkeypatch.setenv("ADMIN_SESSION_SECRET", "test-session-secret")
+    get_settings.cache_clear()
+    monkeypatch.setattr(backgrounds_router, "UPLOAD_DIR", tmp_path)
+    monkeypatch.setattr(backgrounds_router, "META_FILE", tmp_path / "metadata.json")
+    client = TestClient(app)
+    assert client.post("/api/auth/login", json={"password": "test-password"}).status_code == 200
+
+    backgrounds_router.META_FILE.write_text(
+        '{"active": {"id": "bad"}, "items": [{"id": "bad", "filename": "../outside.txt", "url": "/media/backgrounds/outside.txt"}]}',
+        encoding="utf-8",
+    )
+    response = client.delete("/api/backgrounds/bad")
+
+    assert response.status_code == 400
+
+
 async def _immediate(value):
     return value

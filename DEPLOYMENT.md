@@ -50,8 +50,11 @@ VITE_SENTRY_DSN=
 ## Ограничения бесплатного варианта
 
 - Render может усыплять backend после простоя.
-- Локальные загрузки фонов на Render не являются постоянным хранилищем.
-- Для фоновых видео подключите Supabase Storage или Cloudinary.
+- Filesystem бесплатного Render web service ephemeral: `BACKGROUND_UPLOAD_DIR=uploads/backgrounds` подходит для local/demo, но загрузки переживут не каждый redeploy/restart.
+- Render Persistent Disk сохраняет файлы между deploy/restart, но это платная опция, привязанная к одному сервису/инстансу; она не заменяет backup, object storage или multi-instance replication. Для неё задайте путь вроде `BACKGROUND_UPLOAD_DIR=/var/data/backgrounds` и подключите disk в Render.
+- S3-compatible storage (AWS S3, Cloudflare R2, Backblaze и аналоги) обычно лучше для production media: нужны bucket policy, private credentials/server-side adapter, public CDN URL и отдельный backup/lifecycle plan. В репозитории такой adapter намеренно не включён, credentials не обязательны.
+- Cloudinary упрощает image/video delivery и transformations, но требует account credentials, upload API integration, quota/billing и отдельной политики удаления. `BACKGROUND_PUBLIC_BASE_URL` только меняет URL в metadata, сам по себе не загружает файл в S3/Cloudinary.
+- Не указывайте secrets в `BACKGROUND_PUBLIC_BASE_URL`, `VITE_*` или Git; используйте HTTPS и ограниченный public read policy.
 - Не добавляйте секреты в GitHub и frontend-переменные `VITE_*`.
 
 ## Админ-сессия
@@ -64,3 +67,7 @@ VITE_SENTRY_DSN=
 - Перед миграциями создавайте ручную точку восстановления или экспортируйте SQL через `pg_dump`; храните архив вне репозитория и ограничьте доступ.
 - После восстановления проверьте `/api/health`, чтение материалов и вход администратора до переключения трафика.
 - SQLite-файл из локальной разработки (`server/local.db`) не является production-бэкапом. Render filesystem и uploads на web service не считаются постоянным хранилищем.
+
+## Background storage configuration
+
+`BACKGROUND_UPLOAD_DIR` defaults to `uploads/backgrounds` and preserves the local URL `/media/backgrounds/<file>`. Set an absolute path for a mounted disk. Optionally set `BACKGROUND_PUBLIC_BASE_URL` to the public directory URL of an already configured CDN/storage; the value must be HTTPS in production and must not include credentials. The API validates file paths and removes an upload if metadata persistence fails.

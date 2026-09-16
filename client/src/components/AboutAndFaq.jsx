@@ -45,7 +45,7 @@ export default function AboutAndFaq() {
           >
             Играем вместе, а не просто смотрим
           </h2>
-         <p className="mt-3 text-sm leading-relaxed text-mute">
+          <p className="text-readable mt-3 text-sm leading-relaxed">
              0x00 SPACE — канал о Minecraft, кооперативных играх и хоррорах. На сайте можно смотреть
              публикации канала, открывать доступные материалы и отправлять идеи для совместных игр.
           </p>
@@ -64,7 +64,7 @@ export default function AboutAndFaq() {
             <div key={title} className="glass rounded-xl p-5">
               <Icon className="h-5 w-5 text-emerald" aria-hidden="true" />
               <h3 className="mt-4 text-sm font-medium text-ink">{title}</h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-mute">{text}</p>
+              <p className="text-readable mt-1.5 text-xs leading-relaxed">{text}</p>
             </div>
           ))}
         </div>
@@ -87,7 +87,7 @@ export default function AboutAndFaq() {
               <section key={number} className="rounded-xl border border-line bg-panel/40 p-5">
                 <span className="font-mono text-xs text-violet">{number}</span>
                 <h3 className="mt-3 text-sm font-medium text-ink">{title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-mute">{text}</p>
+                <p className="text-readable mt-2 text-xs leading-relaxed">{text}</p>
               </section>
             ))}
           </div>
@@ -121,7 +121,7 @@ export default function AboutAndFaq() {
                     aria-hidden="true"
                   />
                 </summary>
-                <p className="pt-3 text-sm leading-relaxed text-mute">{answer}</p>
+                <p className="text-readable pt-3 text-sm leading-relaxed">{answer}</p>
               </details>
             ))}
           </div>

@@ -82,7 +82,7 @@ test("public home stays within the supported responsive widths", async ({ page }
 
 test("secondary copy remains opaque and readable over the backdrop", async ({ page }) => {
   await page.goto("/");
-  const copy = page.locator("#community-title").locator("..").locator("p.text-mute");
+  const copy = page.locator("#community-title").locator("..").locator("p.text-readable");
   await expect(copy).toHaveCSS("opacity", "1");
   await expect(copy).toHaveCSS("color", "rgb(226, 232, 240)");
 });

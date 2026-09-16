@@ -100,7 +100,8 @@
   }
 
   /* Единый контраст вторичного текста на изображениях и видеофонах. */
-  .text-mute {
+  .text-mute,
+  .text-readable {
     color: #e2e8f0 !important;
     opacity: 1 !important;
     filter: none !important;
@@ -115,9 +116,13 @@
   }
 
   #main-content .text-mute,
+  #main-content .text-readable,
   header .text-mute,
-  footer .text-mute {
+  header .text-readable,
+  footer .text-mute,
+  footer .text-readable {
     color: #e2e8f0 !important;
+    opacity: 1 !important;
   }
 
   .text-emerald {
