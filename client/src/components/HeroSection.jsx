@@ -21,10 +21,10 @@ export default function HeroSection() {
             новые ролики каждую неделю
           </div>
 
-          <h1 className="max-w-3xl font-display text-4xl font-semibold leading-[1.04] tracking-[-0.04em] text-ink sm:text-5xl lg:text-7xl">
-            Minecraft, выживание, кооп и хорроры —
-            <br />
-            <span className="bg-gradient-to-r from-emerald via-teal-300 to-violet bg-clip-text text-transparent">на одной частоте эфира</span>
+          <h1 className="max-w-3xl font-display text-4xl font-semibold leading-[1.06] tracking-[-0.035em] text-ink sm:text-5xl lg:text-6xl">
+            Minecraft, выживание,
+            <span className="block bg-gradient-to-r from-emerald via-teal-300 to-violet bg-clip-text text-transparent">кооп и хорроры</span>
+            <span className="mt-1 block text-ink">на одной частоте эфира</span>
           </h1>
 
           <p className="mt-6 max-w-lg text-base leading-relaxed text-mute sm:text-lg">

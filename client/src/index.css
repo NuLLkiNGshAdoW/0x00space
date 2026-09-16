@@ -52,8 +52,8 @@
   }
 
   ::selection {
-    color: #05070d;
-    background: #10b981;
+    color: #f4f7fb;
+    background: rgba(16, 185, 129, 0.32);
   }
 
   /* Видимый keyboard focus — не убираем outline, а стилизуем его под дизайн-систему */
