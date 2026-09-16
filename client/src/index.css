@@ -102,7 +102,7 @@
   /* Единый контраст вторичного текста на изображениях и видеофонах. */
   .text-mute,
   .text-readable {
-    color: #e2e8f0 !important;
+    color: #f1f5f9 !important;
     opacity: 1 !important;
     filter: none !important;
   }
@@ -121,7 +121,7 @@
   header .text-readable,
   footer .text-mute,
   footer .text-readable {
-    color: #e2e8f0 !important;
+    color: #f1f5f9 !important;
     opacity: 1 !important;
   }
 
@@ -129,6 +129,31 @@
      всегда остаются полностью непрозрачными, включая состояния disabled. */
   #root :where(h1, h2, h3, h4, h5, h6, p, a, button, label, li, dt, dd, summary, span) {
     opacity: 1 !important;
+  }
+
+  /* Карточки с текстом не должны просвечивать фоном изображения. */
+  .bg-panel\/20,
+  .bg-panel\/40,
+  .bg-panel\/60,
+  .bg-panel\/70,
+  .bg-panel\/75,
+  .bg-panel\/90,
+  .bg-void\/40,
+  .bg-void\/60,
+  .bg-void\/70,
+  .bg-void\/80,
+  .bg-void\/85,
+  .bg-void\/95 {
+    background-color: #0d1420 !important;
+  }
+
+  .bg-emerald-soft\/20,
+  .bg-emerald-soft\/40 {
+    background-color: #12382f !important;
+  }
+
+  .bg-violet-soft\/20 {
+    background-color: #282044 !important;
   }
 
   .text-emerald {
@@ -174,7 +199,8 @@
   /* Стеклянная панель — базовый строительный блок карточек и Navbar */
   .glass {
     @apply border border-line bg-panel/75 backdrop-blur-md;
-    background: rgba(13, 20, 32, 0.68);
+    background: #0d1420;
+    backdrop-filter: none;
     box-shadow: 0 14px 45px rgba(0, 0, 0, 0.14);
   }
 
@@ -182,7 +208,7 @@
      с содержанием и сохраняется читаемый контраст. */
   .content-page-surface {
     border: 1px solid rgba(148, 163, 184, 0.2);
-    background: rgba(5, 7, 13, 0.78);
+    background: #05070d;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
     -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
@@ -190,7 +216,7 @@
 
   .content-page-card {
     border: 1px solid rgba(148, 163, 184, 0.2);
-    background: rgba(13, 20, 32, 0.78);
+    background: #0d1420;
   }
 
   .content-page-copy {
