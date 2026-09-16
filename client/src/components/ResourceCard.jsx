@@ -19,6 +19,8 @@ export default function ResourceCard({ resource }) {
           <img
             src={resource.cover_image_url}
             alt={`Обложка материала: ${resource.title}`}
+            width="480"
+            height="270"
             loading="lazy"
             className="h-full w-full object-cover"
           />
@@ -49,7 +51,7 @@ export default function ResourceCard({ resource }) {
           onClick={() => trackEvent("resource_download", { resource_title: resource.title })}
           target="_blank"
           rel="noreferrer"
-          className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg border border-line py-2 text-sm text-ink transition-colors hover:border-emerald/50 hover:text-emerald"
+           className="button-secondary mt-4 w-full"
         >
           <Download className="h-4 w-4" strokeWidth={1.8} />
           Скачать

@@ -21,7 +21,7 @@ YOUTUBE_CHANNEL_ID=...
 Для текущего backend используйте API URL:
 
 ```env
-VITE_API_BASE_URL=https://zerox00space-api.onrender.com/api
+VITE_API_BASE_URL=https://0x00space-api.onrender.com/api
 ```
 
 1. В Vercel выберите **Import Project**.
@@ -39,6 +39,14 @@ VITE_SENTRY_DSN=
 5. Нажмите **Deploy**.
 6. Вернитесь в Render и замените `CORS_ORIGINS` на настоящий адрес Vercel.
 
+## Проверка перед переключением трафика
+
+- Соберите frontend из `client` и проверьте локальный preview: `npm run build`, затем `npm run preview`.
+- Прогоните `npm run lint` и `npm run test:e2e`; backend проверяйте из venv командой `server/venv/Scripts/python.exe -m pytest server/tests` на Windows или `server/venv/bin/python -m pytest server/tests` на Unix.
+- В браузере проверьте viewport `320/375/768/1440`, keyboard-only navigation и states `loading/error/empty/success`.
+- Запустите Lighthouse из Chrome DevTools на preview или production URL. Это локальная проверка без внешнего сервиса; не добавляйте её в обязательный CI без стабильного production-like server.
+- После изменения API URL проверьте CORS, `/api/health`, thumbnails YouTube, отправку формы и SPA refresh на каждой публичной странице.
+
 ## Ограничения бесплатного варианта
 
 - Render может усыплять backend после простоя.
@@ -49,3 +57,10 @@ VITE_SENTRY_DSN=
 ## Админ-сессия
 
 Браузер получает короткоживущую HttpOnly cookie через `/api/auth/login`; пароль в `localStorage` больше не используется. Задайте `ADMIN_SESSION_SECRET` и включите `COOKIE_SECURE=true` на HTTPS. Старый `ADMIN_PASSWORD`/`ADMIN_TOKEN` и заголовок `X-Admin-Token` оставлены для совместимости скриптов. Неудачные логины ограничиваются в памяти процесса, поэтому для нескольких реплик нужен общий rate-limit на reverse proxy.
+
+## Бэкапы Render и базы
+
+- Для production включите managed PostgreSQL и проверьте в Render раздел **Backups**: расписание, retention и восстановление в отдельную базу.
+- Перед миграциями создавайте ручную точку восстановления или экспортируйте SQL через `pg_dump`; храните архив вне репозитория и ограничьте доступ.
+- После восстановления проверьте `/api/health`, чтение материалов и вход администратора до переключения трафика.
+- SQLite-файл из локальной разработки (`server/local.db`) не является production-бэкапом. Render filesystem и uploads на web service не считаются постоянным хранилищем.

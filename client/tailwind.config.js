@@ -8,18 +8,19 @@ export default {
         panel: "#0d1420", // база под стеклянные карточки
         panel2: "#101a29", // чуть светлее панель (hover, вложенные блоки)
         line: "rgba(148, 163, 184, 0.14)", // тонкие рамки на тёмном фоне
-        ink: "#e7ecf3", // основной текст
-        mute: "#c4cede", // единый читаемый вторичный текст
+        ink: "#f1f5f9", // основной текст
+        mute: "#cbd5e1", // вторичный текст, AA на тёмных панелях
         emerald: {
-          DEFAULT: "#10b981",
+          DEFAULT: "#34d399",
           soft: "rgba(16, 185, 129, 0.14)",
           glow: "rgba(16, 185, 129, 0.45)",
         },
         violet: {
-          DEFAULT: "#8b5cf6",
+          DEFAULT: "#b69cff",
           soft: "rgba(139, 92, 246, 0.14)",
           glow: "rgba(139, 92, 246, 0.45)",
         },
+        danger: "#fca5a5",
       },
       fontFamily: {
         display: ["'Space Grotesk'", "sans-serif"],

@@ -24,7 +24,7 @@ export default function FeaturedVideos() {
             id="featured-title"
             className="font-display text-2xl font-semibold text-ink sm:text-3xl"
           >
-            Популярное на канале
+             Свежие публикации
           </h2>
         </div>
         <Link
@@ -44,9 +44,11 @@ export default function FeaturedVideos() {
             onClick={() => trackEvent("youtube_open", { video_id: video.video_id, source: "featured" })}
             className="group relative overflow-hidden rounded-2xl border border-line bg-panel/70 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-emerald/50"
           >
-            <img
-              src={video.thumbnail_url}
-             alt={video.title}
+             <img
+               src={video.thumbnail_url}
+               alt={video.title}
+               width="480"
+               height="270"
              loading={index === 0 ? "eager" : "lazy"}
              fetchPriority={index === 0 ? "high" : "auto"}
              decoding="async"
@@ -54,7 +56,7 @@ export default function FeaturedVideos() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-void via-transparent to-transparent" />
             <span className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-              <span className="line-clamp-2 text-sm font-medium leading-snug text-white">
+               <span className="line-clamp-2 text-sm font-medium leading-snug text-ink">
                 {video.title}
               </span>
               <span className="shrink-0 rounded-full bg-emerald p-2 text-void">

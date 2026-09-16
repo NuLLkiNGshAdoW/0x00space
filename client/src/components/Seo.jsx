@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || "https://0x00space.vercel.app";
-const DEFAULT_IMAGE = `${SITE_URL}/og-image.jpg`;
+const DEFAULT_IMAGE = `${SITE_URL}/brand-logo-transparent.png`;
 
 export default function Seo({ title, description, path = "/", image = DEFAULT_IMAGE, type = "website", structuredData }) {
   useEffect(() => {
@@ -14,6 +14,8 @@ export default function Seo({ title, description, path = "/", image = DEFAULT_IM
     setMeta("og:type", type, "property");
     setMeta("og:url", canonical, "property");
     setMeta("og:image", image, "property");
+    setMeta("og:image:alt", "0x00 SPACE — игровой канал", "property");
+    setMeta("og:image:type", "image/png", "property");
     setMeta("twitter:title", title);
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:description", description);

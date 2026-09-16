@@ -44,6 +44,14 @@ test("navigation opens the video collection", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Последние ролики" })).toBeVisible();
 });
 
+test("video search is debounced and reflected in the URL", async ({ page }) => {
+  await page.goto("/videos");
+  const search = page.getByLabel("Поиск по видео");
+  await search.fill("неизвестный ролик");
+  await expect(page).toHaveURL(/video_q=/);
+  await expect(page.getByText("Ничего не найдено")).toBeVisible();
+});
+
 test("mobile menu exposes navigation and closes after selection", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
@@ -53,6 +61,23 @@ test("mobile menu exposes navigation and closes after selection", async ({ page 
   await page.getByRole("navigation", { name: "Мобильная навигация" }).getByRole("link", { name: "FAQ" }).click();
   await expect(page).toHaveURL(/\/faq$/);
   await expect(page.getByRole("button", { name: "Открыть меню" })).toBeVisible();
+});
+
+test("brand asset remains usable at the minimum supported width", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await page.goto("/");
+  const heroLogo = page.locator('img[src="/brand-logo-transparent.png"]');
+  await expect(heroLogo).toHaveAttribute("width", "1200");
+  await expect(heroLogo).toHaveAttribute("height", "675");
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 320);
+});
+
+test("public home stays within the supported responsive widths", async ({ page }) => {
+  await page.goto("/");
+  for (const width of [320, 375, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.locator("body")).toHaveJSProperty("scrollWidth", width);
+  }
 });
 
 test("application form validates and submits", async ({ page }) => {

@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
-import LogoMark from "./icons/LogoMark.jsx";
 import { SOCIAL_LINKS } from "../lib/socials.js";
 import { cn } from "../lib/utils.js";
 
@@ -18,6 +17,12 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
+
+  const closeMenu = useCallback(() => {
+    setIsOpen(false);
+    window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
@@ -27,9 +32,10 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!isOpen) return undefined;
-    const onKeyDown = (event) => event.key === "Escape" && setIsOpen(false);
+    menuRef.current?.querySelector("a")?.focus();
+    const onKeyDown = (event) => event.key === "Escape" && closeMenu();
     const onPointerDown = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) setIsOpen(false);
+      if (menuRef.current && !menuRef.current.contains(event.target)) closeMenu();
     };
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("pointerdown", onPointerDown);
@@ -37,15 +43,15 @@ export default function Navbar() {
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("pointerdown", onPointerDown);
     };
-  }, [isOpen]);
+  }, [isOpen, closeMenu]);
 
   // Закрываем мобильное меню при переходе по ссылке
-  const handleNavClick = () => setIsOpen(false);
+  const handleNavClick = closeMenu;
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 border-b transition-colors",
+        "sticky top-0 z-50 overflow-x-clip border-b transition-colors",
         isScrolled
           ? "border-line bg-void/85 backdrop-blur-md"
           : "border-transparent bg-transparent",
@@ -53,13 +59,19 @@ export default function Navbar() {
     >
       <div className="container-app flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 shrink-0">
-          <LogoMark className="h-8 w-8 drop-shadow-[0_0_10px_rgba(16,185,129,0.55)]" />
+          <img
+            src="/brand-mark.png"
+            alt=""
+            width="40"
+            height="40"
+            className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(16,185,129,0.55)]"
+          />
           <span className="font-display text-lg font-semibold tracking-tight text-ink">
             0x00 <span className="text-emerald">SPACE</span>
           </span>
         </Link>
 
-        <nav aria-label="Основная навигация" className="hidden md:flex items-center gap-8">
+        <nav aria-label="Основная навигация" className="hidden min-w-0 md:flex items-center gap-4 lg:gap-8">
           {NAV_LINKS.map((link) => (
             <NavLink
               key={link.href}
@@ -88,24 +100,26 @@ export default function Navbar() {
 
         <button
           type="button"
+          ref={menuButtonRef}
           onClick={() => setIsOpen((v) => !v)}
           aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
           aria-expanded={isOpen}
-          className="md:hidden rounded-lg p-2 text-ink hover:bg-panel2"
+          aria-controls="mobile-navigation"
+          className="icon-button md:hidden text-ink"
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
       {isOpen && (
-        <div ref={menuRef} className="md:hidden border-t border-line bg-void/95 backdrop-blur-md">
+         <div id="mobile-navigation" ref={menuRef} className="md:hidden border-t border-line bg-void/95 backdrop-blur-md">
           <nav aria-label="Мобильная навигация" className="container-app flex flex-col gap-1 py-3">
             {NAV_LINKS.map((link) => (
               <NavLink
                 key={link.href}
                 to={link.href}
                 onClick={handleNavClick}
-                className={({ isActive }) => cn("rounded-lg px-3 py-2.5 text-sm hover:bg-panel2", isActive ? "bg-panel2 text-emerald" : "text-ink/90")}
+                 className={({ isActive }) => cn("interactive-control rounded-lg px-3 py-2.5 text-left text-sm hover:bg-panel2", isActive ? "bg-panel2 text-emerald" : "text-ink")}
               >
                 {link.label}
               </NavLink>

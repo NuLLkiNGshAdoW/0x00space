@@ -44,7 +44,7 @@ export default function ProfileBackdrop() {
   const url = background?.url ? `${API_ORIGIN}${background.url}` : null;
   // Текст должен оставаться читаемым даже если в старых настройках сохранено
   // слишком сильное затемнение фона.
-  const readableShade = Math.min(Number(settings.shade) || 0.68, 0.72);
+  const readableShade = Math.max(Math.min(Number(settings.shade) || 0.68, 0.72), 0.58);
   const style = {
     "--profile-shade": readableShade,
     "--profile-blur": `${settings.blur}px`,
@@ -69,8 +69,12 @@ export default function ProfileBackdrop() {
         <img
           className="profile-backdrop profile-backdrop-custom"
           style={{ ...style, objectPosition: settings.position }}
-          src={url}
-          alt=""
+         src={url}
+         alt=""
+          width="1920"
+          height="1080"
+          loading="lazy"
+          decoding="async"
           onError={() => setCustomFailed(true)}
           aria-hidden="true"
         />

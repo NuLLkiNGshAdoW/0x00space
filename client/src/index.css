@@ -3,13 +3,17 @@
 @tailwind utilities;
 
 @layer base {
-  :focus-visible {
-    outline: 2px solid #10b981;
-    outline-offset: 3px;
+  :root {
+    --brand-void: #05070d;
+    --brand-panel: #0d1420;
+    --brand-panel-raised: #101a29;
+    --brand-line: rgba(148, 163, 184, 0.14);
+    --brand-ink: #f1f5f9;
+    --brand-mute: #cbd5e1;
+    --brand-emerald: #34d399;
+    --brand-violet: #b69cff;
   }
-}
 
-@layer base {
   html {
     scroll-behavior: smooth;
     background: #05070d;
@@ -25,6 +29,7 @@
     background-repeat: no-repeat;
     min-width: 320px;
     padding-bottom: env(safe-area-inset-bottom);
+    overflow-x: hidden;
   }
 
   /* Единый backdrop в стиле профиля Steam: остаётся на месте при скролле. */
@@ -58,7 +63,7 @@
   .profile-backdrop {
     z-index: 0;
     background: url("/profile-background.svg") center top / cover no-repeat;
-    opacity: 0.72;
+    opacity: 0.58;
   }
 
   .profile-backdrop-custom {
@@ -75,8 +80,8 @@
     z-index: 0;
     background: linear-gradient(
       180deg,
-      rgba(5, 7, 13, 0.34),
-      rgba(5, 7, 13, var(--profile-shade, 0.9)) 76%,
+      rgba(5, 7, 13, 0.58),
+      rgba(5, 7, 13, max(var(--profile-shade, 0.9), 0.78)) 76%,
       #05070d 100%
     );
   }
@@ -93,17 +98,19 @@
 
   /* Единый контраст вторичного текста на изображениях и видеофонах. */
   .text-mute {
-    color: #c4cede;
+    color: #cbd5e1;
   }
 
   input::placeholder,
   textarea::placeholder {
-    color: rgba(196, 206, 222, 0.78);
+    color: #cbd5e1;
     opacity: 1;
   }
 
   button:disabled {
-    color: #9eabbc;
+    color: #cbd5e1;
+    opacity: 1;
+    background-color: #263241;
   }
 
   /* Видимый keyboard focus — не убираем outline, а стилизуем его под дизайн-систему */
@@ -128,8 +135,27 @@
 @layer components {
   /* Стеклянная панель — базовый строительный блок карточек и Navbar */
   .glass {
-    @apply border border-line bg-panel/60 backdrop-blur-md;
+    @apply border border-line bg-panel/90 backdrop-blur-md;
     box-shadow: 0 14px 45px rgba(0, 0, 0, 0.14);
+  }
+
+  /* Непрозрачная поверхность для длинных текстовых страниц: фон не конкурирует
+     с содержанием и сохраняется читаемый контраст. */
+  .content-page-surface {
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(5, 7, 13, 0.9);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
+
+  .content-page-card {
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(13, 20, 32, 0.94);
+  }
+
+  .content-page-copy {
+    color: #dbe5f1;
   }
 
   .glass-hover {
@@ -140,6 +166,10 @@
     border-color: rgba(16, 185, 129, 0.38);
     box-shadow: 0 18px 55px rgba(16, 185, 129, 0.1);
     transform: translateY(-3px);
+  }
+
+  .glass-hover:focus-within {
+    border-color: rgba(16, 185, 129, 0.5);
   }
 
   .button-glow {
@@ -153,23 +183,27 @@
   .button-primary,
   .button-secondary,
   .button-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm transition-colors focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm transition-colors focus-visible:outline-offset-2 disabled:cursor-not-allowed;
   }
 
   .interactive-control {
-    @apply min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed;
+  }
+
+  .icon-button {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 transition-colors hover:bg-panel2 hover:text-emerald;
   }
 
   .button-primary {
-    @apply bg-emerald font-semibold text-void hover:bg-emerald/90;
+    @apply bg-emerald font-semibold text-void hover:bg-emerald/90 disabled:bg-panel2 disabled:text-mute;
   }
 
   .button-secondary {
-    @apply border border-line bg-panel/60 font-medium text-ink backdrop-blur-md hover:border-emerald/50 hover:text-emerald;
+    @apply border border-line bg-panel/90 font-medium text-ink backdrop-blur-md hover:border-emerald/50 hover:text-emerald disabled:border-line disabled:text-mute;
   }
 
   .button-ghost {
-    @apply px-3 py-2 text-mute hover:bg-panel2 hover:text-ink;
+    @apply px-3 py-2 text-mute hover:bg-panel2 hover:text-ink disabled:text-mute;
   }
 
   /* Тонкая градиентная рамка (emerald -> violet) для акцентных карточек */
@@ -192,7 +226,15 @@
   }
 
   .container-app {
-    @apply mx-auto w-full max-w-6xl px-5 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .field-control {
+    @apply min-h-11 rounded-lg border border-line bg-void/80 px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-mute focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/40;
+  }
+
+  .status-error {
+    @apply border border-danger/50 bg-danger/10 text-danger;
   }
 
   .section-divider {
@@ -203,5 +245,9 @@
       rgba(139, 92, 246, 0.2),
       transparent
     );
+  }
+
+  .section-label {
+    @apply font-mono text-[10px] uppercase tracking-[0.2em] text-emerald;
   }
 }

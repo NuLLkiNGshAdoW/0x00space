@@ -200,10 +200,12 @@ export default function AdminPage() {
               <img
                 src={previewUrl}
                 alt="Предпросмотр нового фона"
+                width="1280"
+                height="720"
                 className="mt-4 aspect-video w-full rounded-lg object-cover"
               />
             ))}
-           <button disabled={progress !== null} className="mt-5 w-full rounded-lg bg-emerald py-3 text-sm font-semibold text-void disabled:opacity-60">
+           <button disabled={progress !== null} className="button-primary mt-5 w-full">
               {authenticated ? "Загрузить фон" : "Войти"}
            </button>
            {progress !== null && <progress className="mt-3 h-2 w-full accent-emerald" value={progress} max="100" aria-label={`Загрузка ${progress}%`} />}
@@ -315,6 +317,10 @@ export default function AdminPage() {
                 <img
                   src={`${API_ORIGIN}${item.url}`}
                   alt={item.name}
+                  width="1280"
+                  height="720"
+                  loading="lazy"
+                  decoding="async"
                   className="aspect-video w-full object-cover"
                 />
               )}

@@ -88,7 +88,7 @@ const PAGES = {
       ],
       [
         "Что требуется",
-        "Возраст от 6 лет, рабочий микрофон и готовность соблюдать правила общения в команде.",
+        "Рабочий микрофон, подходящая игра и готовность соблюдать правила общения в команде. Требования к конкретной записи обсуждаются отдельно.",
       ],
       [
         "Как узнают участники",
@@ -151,10 +151,10 @@ export default function ContentPage({ path }) {
       <Navbar />
       <main id="main-content" className="container-app py-16 sm:py-24">
         {page ? (
-          <article className="mx-auto max-w-4xl">
+          <article className="content-page-surface mx-auto max-w-4xl rounded-3xl p-5 sm:p-10">
             <Link
               to="/"
-              className="inline-flex items-center gap-2 text-sm text-mute hover:text-emerald"
+              className="content-page-copy inline-flex items-center gap-2 text-sm hover:text-emerald"
             >
               <ArrowLeft className="h-4 w-4" /> На главную
             </Link>
@@ -162,34 +162,34 @@ export default function ContentPage({ path }) {
             <h1 className="mt-5 font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
               {page.title}
             </h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-mute">{page.description}</p>
+            <p className="content-page-copy mt-4 max-w-2xl text-base leading-relaxed">{page.description}</p>
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               {page.items.map(([title, text]) => (
-                <section key={title} className="glass rounded-xl p-5">
+                <section key={title} className="content-page-card rounded-xl p-5">
                   <h2 className="text-base font-medium text-ink">{title}</h2>
-                  <p className="mt-3 text-sm leading-relaxed text-mute">{text}</p>
+                  <p className="content-page-copy mt-3 text-sm leading-relaxed">{text}</p>
                 </section>
               ))}
             </div>
             {path === "/events" && (
               <Link
                 to="/#application"
-                className="mt-10 inline-flex rounded-lg bg-emerald px-5 py-3 text-sm font-medium text-void"
+                 className="button-primary mt-10"
               >
                 Подать заявку
               </Link>
             )}
           </article>
         ) : (
-          <div className="mx-auto max-w-2xl py-20 text-center">
+          <div className="content-page-surface mx-auto max-w-2xl rounded-3xl p-8 py-20 text-center sm:p-16">
             <p className="font-mono text-6xl text-emerald">404</p>
             <h1 className="mt-5 font-display text-3xl font-semibold text-ink">
               Страница не найдена
             </h1>
-            <p className="mt-3 text-mute">Проверьте адрес или вернитесь на главную.</p>
+            <p className="content-page-copy mt-3">Проверьте адрес или вернитесь на главную.</p>
             <Link
               to="/"
-              className="mt-8 inline-flex rounded-lg bg-emerald px-5 py-3 text-sm font-medium text-void"
+               className="button-primary mt-8"
             >
               На главную
             </Link>

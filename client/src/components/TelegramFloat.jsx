@@ -11,7 +11,7 @@ export default function TelegramFloat() {
         type="button"
         onClick={() => setVisible(false)}
         aria-label="Скрыть кнопку Telegram"
-        className="rounded-full bg-void/80 p-1 text-mute backdrop-blur hover:text-ink"
+         className="icon-button h-11 w-11 rounded-full bg-void/80 text-mute backdrop-blur"
       >
         <X className="h-3 w-3" />
       </button>
@@ -21,7 +21,7 @@ export default function TelegramFloat() {
         rel="noreferrer"
         onClick={() => trackEvent("telegram_open", { source: "floating_button" })}
         aria-label="Открыть Telegram-канал 0x00 SPACE"
-        className="button-glow inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#229ED9] px-4 py-3 text-sm font-semibold text-white transition-transform hover:scale-105 sm:flex-none"
+         className="button-glow inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#0878ad] px-4 py-3 text-sm font-semibold text-white transition-transform hover:scale-105 sm:flex-none"
       >
         <Send className="h-4 w-4" /> Telegram-канал
       </a>

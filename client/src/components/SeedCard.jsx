@@ -10,6 +10,8 @@ export default function SeedCard({ seed }) {
           <img
             src={seed.screenshot_url}
             alt={`Скриншот сида: ${seed.title}`}
+            width="480"
+            height="270"
             loading="lazy"
             className="h-full w-full object-cover"
           />
@@ -31,13 +33,13 @@ export default function SeedCard({ seed }) {
 
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between gap-2 rounded-lg border border-line bg-void/40 px-3 py-2">
-            <span className="font-mono text-xs text-ink/90">{seed.seed_code}</span>
+            <span className="font-mono text-xs text-ink">{seed.seed_code}</span>
             <CopyButton value={seed.seed_code} label="Сид" />
           </div>
 
           {seed.coordinates && (
             <div className="flex items-center justify-between gap-2 rounded-lg border border-line bg-void/40 px-3 py-2">
-              <span className="inline-flex items-center gap-1.5 font-mono text-xs text-ink/90">
+              <span className="inline-flex items-center gap-1.5 font-mono text-xs text-ink">
                 <MapPin className="h-3.5 w-3.5 text-violet" strokeWidth={1.8} />
                 {seed.coordinates}
               </span>

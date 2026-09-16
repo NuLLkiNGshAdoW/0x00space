@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PackageOpen, AlertTriangle, Search } from "lucide-react";
 import { getResources, getSeeds, ApiError } from "../services/api.js";
 import ResourceCard from "./ResourceCard.jsx";
 import SeedCard from "./SeedCard.jsx";
 import { cn } from "../lib/utils.js";
+import { useDebouncedValue } from "../lib/useDebouncedValue.js";
+import { useSearchParams } from "react-router-dom";
 
 const GAME_FILTERS = [
   { key: "", label: "Все" },
@@ -19,48 +22,44 @@ const VIEWS = [
 ];
 
 export default function ResourcesAndGuides() {
-  const [activeView, setActiveView] = useState("resources");
-  const [gameFilter, setGameFilter] = useState("");
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const [params, setParams] = useSearchParams();
+  const [activeView, setActiveView] = useState(() => params.get("resource_view") || "resources");
+  const [gameFilter, setGameFilter] = useState(() => params.get("resource_game") || "");
+  const [search, setSearch] = useState(() => params.get("resource_q") || "");
+  const [page, setPage] = useState(() => Number(params.get("resource_page")) || 1);
+  const [sort, setSort] = useState(() => params.get("resource_sort") || "newest");
+  const debouncedSearch = useDebouncedValue(search);
   const pageSize = 8;
 
-  const [resources, setResources] = useState([]);
-  const [resourcesStatus, setResourcesStatus] = useState("loading");
-  const [resourcesError, setResourcesError] = useState("");
-
-  const [seeds, setSeeds] = useState([]);
-  const [seedsStatus, setSeedsStatus] = useState("idle"); // idle | loading | ready | error
-  const [seedsError, setSeedsError] = useState("");
-
-  // Материалы перезагружаем при смене фильтра по игре
-  useEffect(() => {
-    let cancelled = false;
-    setResourcesStatus("loading");
-
-    getResources(undefined, gameFilter || undefined)
-      .then((data) => {
-        if (cancelled) return;
-        setResources(data);
-        setResourcesStatus("ready");
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setResourcesError(
-          err instanceof ApiError ? err.message : "Не удалось загрузить материалы.",
-        );
-        setResourcesStatus("error");
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [gameFilter]);
+  const resourcesQuery = useQuery({
+    queryKey: ["resources", gameFilter],
+    queryFn: () => getResources(undefined, gameFilter || undefined),
+  });
+  const seedsQuery = useQuery({
+    queryKey: ["seeds"],
+    queryFn: getSeeds,
+    enabled: activeView === "seeds",
+  });
+  const resources = resourcesQuery.data || [];
+  const seeds = seedsQuery.data || [];
+  const resourcesStatus = resourcesQuery.isPending ? "loading" : resourcesQuery.isError ? "error" : "ready";
+  const seedsStatus = seedsQuery.isPending ? "loading" : seedsQuery.isError ? "error" : "ready";
+  const resourcesError = resourcesQuery.error instanceof ApiError ? resourcesQuery.error.message : "Не удалось загрузить материалы.";
+  const seedsError = seedsQuery.error instanceof ApiError ? seedsQuery.error.message : "Не удалось загрузить сиды.";
 
   useEffect(() => setPage(1), [gameFilter, search, activeView]);
 
+  useEffect(() => {
+    const next = new URLSearchParams(params);
+    [["resource_view", activeView, "resources"], ["resource_game", gameFilter, ""], ["resource_q", search.trim(), ""], ["resource_sort", sort, "newest"], ["resource_page", page, 1]].forEach(([key, value, defaultValue]) => {
+      if (String(value) === String(defaultValue) || value === "") next.delete(key);
+      else next.set(key, String(value));
+    });
+    if (next.toString() !== params.toString()) setParams(next, { replace: true });
+  }, [activeView, gameFilter, search, sort, page, params, setParams]);
+
   const filterItems = (items) => {
-    const query = search.trim().toLocaleLowerCase();
+    const query = debouncedSearch.trim().toLocaleLowerCase();
     if (!query) return items;
     return items.filter((item) =>
       [item.title, item.description, item.game_version, item.minecraft_version]
@@ -71,26 +70,13 @@ export default function ResourcesAndGuides() {
     );
   };
 
-  const filteredResources = filterItems(resources);
-  const filteredSeeds = filterItems(seeds);
+  const sortItems = (items) => [...items].sort((a, b) => sort === "title"
+    ? a.title.localeCompare(b.title, "ru")
+    : new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  const filteredResources = sortItems(filterItems(resources));
+  const filteredSeeds = sortItems(filterItems(seeds));
   const visibleResources = filteredResources.slice((page - 1) * pageSize, page * pageSize);
   const visibleSeeds = filteredSeeds.slice((page - 1) * pageSize, page * pageSize);
-
-  // Сиды подгружаем лениво — только когда пользователь открыл вкладку впервые
-  useEffect(() => {
-    if (activeView !== "seeds" || seedsStatus !== "idle") return;
-
-    setSeedsStatus("loading");
-    getSeeds()
-      .then((data) => {
-        setSeeds(data);
-        setSeedsStatus("ready");
-      })
-      .catch((err) => {
-        setSeedsError(err instanceof ApiError ? err.message : "Не удалось загрузить сиды.");
-        setSeedsStatus("error");
-      });
-  }, [activeView, seedsStatus]);
 
   return (
     <section id="resources" className="border-t border-line bg-panel/20 py-16 sm:py-20">
@@ -109,16 +95,20 @@ export default function ResourcesAndGuides() {
             </p>
           </div>
 
-          <div className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start">
+           <div role="tablist" aria-label="Раздел материалов" className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start">
             {VIEWS.map((view) => (
-              <button
-                key={view.key}
-                type="button"
-                onClick={() => setActiveView(view.key)}
+               <button
+                 key={view.key}
+                 type="button"
+                 id={`${view.key}-tab`}
+                 role="tab"
+                 aria-selected={activeView === view.key}
+                 aria-controls={`${view.key}-panel`}
+                 onClick={() => setActiveView(view.key)}
                 className={cn(
-                  "rounded-md px-3.5 py-1.5 text-sm transition-colors",
+                     "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
                   activeView === view.key
-                    ? "bg-violet text-white font-medium"
+                     ? "bg-violet text-void font-medium"
                     : "text-mute hover:text-ink",
                 )}
               >
@@ -138,8 +128,16 @@ export default function ResourcesAndGuides() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Поиск по материалам и сидам…"
-            className="w-full rounded-lg border border-line bg-void/40 py-2.5 pl-9 pr-3 text-sm text-ink placeholder:text-mute/70 focus:border-emerald/50 focus:outline-none focus:ring-1 focus:ring-emerald/30"
+             className="field-control w-full pl-9 pr-3"
           />
+        </label>
+
+        <label className="mt-3 block max-w-xs">
+          <span className="sr-only">Сортировка материалов</span>
+          <select value={sort} onChange={(event) => setSort(event.target.value)} className="field-control w-full">
+            <option value="newest">Сначала новые</option>
+            <option value="title">По названию</option>
+          </select>
         </label>
 
         {activeView === "resources" && (
@@ -151,7 +149,7 @@ export default function ResourcesAndGuides() {
                   type="button"
                   onClick={() => setGameFilter(filter.key)}
                   className={cn(
-                    "rounded-full border px-3.5 py-1.5 text-xs transition-colors",
+                     "interactive-control rounded-full border px-3.5 py-1.5 text-xs transition-colors",
                     gameFilter === filter.key
                       ? "border-emerald/60 bg-emerald-soft text-emerald"
                       : "border-line text-mute hover:border-emerald/30 hover:text-ink",
@@ -162,7 +160,7 @@ export default function ResourcesAndGuides() {
               ))}
             </div>
 
-            <div className="mt-6">
+             <div id="resources-panel" role="tabpanel" aria-labelledby="resources-tab" className="mt-6">
               {resourcesStatus === "loading" && (
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, i) => (
@@ -202,7 +200,7 @@ export default function ResourcesAndGuides() {
         )}
 
         {activeView === "seeds" && (
-          <div className="mt-7">
+           <div id="seeds-panel" role="tabpanel" aria-labelledby="seeds-tab" className="mt-7">
             {seedsStatus === "loading" && (
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -253,7 +251,7 @@ function Pagination({ page, total, pageSize, setPage }) {
         type="button"
         disabled={page === 1}
         onClick={() => setPage((value) => value - 1)}
-        className="rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-40"
+          className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Назад
       </button>
@@ -264,7 +262,7 @@ function Pagination({ page, total, pageSize, setPage }) {
         type="button"
         disabled={page === pages}
         onClick={() => setPage((value) => value + 1)}
-        className="rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-40"
+          className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Далее
       </button>

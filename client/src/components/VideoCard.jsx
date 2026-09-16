@@ -10,15 +10,19 @@ export default function VideoCard({ video }) {
       as={Link}
       to={`/videos/${video.video_id}`}
       onClick={() => trackEvent("video_open", { video_id: video.video_id })}
+      interactive
       className="group"
     >
       <div className="relative aspect-video overflow-hidden bg-panel2">
-        <img
-          src={video.thumbnail_url}
-          alt={video.title}
+         <img
+           src={video.thumbnail_url}
+           alt={video.title}
+           width="480"
+           height="270"
           loading="lazy"
-          decoding="async"
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+           decoding="async"
+           onError={(event) => { event.currentTarget.hidden = true; }}
+           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
 
         <div className="absolute inset-0 flex items-center justify-center bg-void/0 transition-colors group-hover:bg-void/40">
@@ -33,7 +37,7 @@ export default function VideoCard({ video }) {
         </span>
 
         {video.is_short && (
-          <span className="absolute left-2 top-2 rounded-full bg-violet/90 px-2 py-0.5 text-[11px] font-medium text-white">
+           <span className="absolute left-2 top-2 rounded-full bg-violet/90 px-2 py-0.5 text-[11px] font-medium text-void">
             Shorts
           </span>
         )}

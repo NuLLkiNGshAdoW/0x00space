@@ -86,7 +86,7 @@ export default function VideoDetailPage({ videoId }) {
             <h1 className="font-display text-3xl font-semibold text-ink">
               {status === "error" ? "Не удалось загрузить видео" : "Видео не найдено"}
             </h1>
-            <p className="mt-3 text-mute">{errorMessage}</p>
+             <p role="alert" className="mt-3 text-mute">{errorMessage}</p>
               {status === "error" && <Button type="button" className="mt-6" onClick={() => { setStatus("loading"); getVideo(videoId).then(({ video: current, related: relatedVideos }) => { setVideo(current); setRelated(relatedVideos); setStatus("ready"); }).catch(() => setStatus("error")); }}>Повторить</Button>}
           </div>
         )}
@@ -96,6 +96,8 @@ export default function VideoDetailPage({ videoId }) {
               <img
                 src={video.thumbnail_url}
                 alt={video.title}
+                width="1280"
+                height="720"
                 fetchPriority="high"
                 decoding="async"
                 className="aspect-video w-full object-cover"
@@ -118,7 +120,7 @@ export default function VideoDetailPage({ videoId }) {
                   href={video.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald px-5 py-3 text-sm font-semibold text-void"
+                   className="button-primary shrink-0"
                 >
                   <Play className="h-4 w-4" fill="currentColor" /> Смотреть на YouTube{" "}
                   <ExternalLink className="h-4 w-4" />

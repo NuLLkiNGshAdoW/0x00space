@@ -225,7 +225,7 @@ export default function ApplicationForm() {
           )}
 
           {status === "error" && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg border border-violet/30 bg-violet-soft px-4 py-3 text-sm text-violet" role="alert">
+             <div className="status-error mt-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm" role="alert">
               <XCircle className="h-[18px] w-[18px] shrink-0" />
               {serverError}
             </div>
@@ -255,7 +255,7 @@ export default function ApplicationForm() {
 function Field({ id, label, error, full = false, children }) {
   return (
     <label className={cn("flex flex-col gap-1.5 text-sm", full && "sm:col-span-2")}>
-      <span id={`${id}-label`} className="text-ink/90">{label}</span>
+      <span id={`${id}-label`} className="text-ink">{label}</span>
       {children}
       {error && (
         <span
@@ -272,10 +272,9 @@ function Field({ id, label, error, full = false, children }) {
 
 function inputClass(hasError) {
   return cn(
-    "rounded-lg border bg-void/40 px-3.5 py-2.5 text-sm text-ink placeholder:text-mute/70 transition-colors",
-    "focus:outline-none focus:ring-1",
+    "field-control",
     hasError
-      ? "border-violet/50 focus:border-violet focus:ring-violet/40"
-      : "border-line focus:border-emerald/50 focus:ring-emerald/30",
+       ? "border-danger focus:border-danger focus:ring-danger/40"
+       : "",
   );
 }
