@@ -43,7 +43,7 @@
 
   .profile-backdrop-shade {
     z-index: 0;
-    background: linear-gradient(180deg, rgba(5, 7, 13, 0.20), rgba(5, 7, 13, var(--profile-shade, 0.88)) 76%, #05070d 100%);
+    background: linear-gradient(180deg, rgba(5, 7, 13, 0.34), rgba(5, 7, 13, var(--profile-shade, 0.90)) 76%, #05070d 100%);
   }
 
   #root {
