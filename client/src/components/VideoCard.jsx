@@ -27,7 +27,7 @@ export default function VideoCard({ video }) {
 
         <div className="absolute inset-0 flex items-center justify-center bg-void/0 transition-colors group-hover:bg-void/40">
           <Play
-            className="h-10 w-10 text-ink opacity-0 drop-shadow-lg transition-opacity group-hover:opacity-100"
+            className="h-10 w-10 text-ink drop-shadow-lg"
             fill="currentColor"
           />
         </div>

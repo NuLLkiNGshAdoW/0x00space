@@ -168,9 +168,9 @@ export default function YouTubeGallery() {
         )}
         {status === "ready" && pages > 1 && (
           <nav aria-label="Пагинация видео" className="mt-7 flex items-center justify-center gap-2">
-            <button type="button" disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-50">Назад</button>
+            <button type="button" disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink">Назад</button>
             <span className="px-2 font-mono text-xs text-mute">{page} / {pages}</span>
-            <button type="button" disabled={page === pages} onClick={() => setPage((value) => value + 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-50">Далее</button>
+            <button type="button" disabled={page === pages} onClick={() => setPage((value) => value + 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink">Далее</button>
           </nav>
         )}
       </div>

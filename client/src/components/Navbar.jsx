@@ -53,8 +53,8 @@ export default function Navbar() {
       className={cn(
         "sticky top-0 z-50 overflow-x-clip border-b transition-colors",
         isScrolled
-          ? "border-line bg-void/85 backdrop-blur-md"
-          : "border-transparent bg-transparent",
+          ? "border-line bg-void"
+          : "border-line bg-void",
       )}
     >
       <div className="container-app flex h-16 items-center justify-between">
@@ -64,7 +64,7 @@ export default function Navbar() {
             alt=""
             width="40"
             height="40"
-            className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(16,185,129,0.55)]"
+             className="h-8 w-8 object-contain"
           />
           <span className="font-display text-lg font-semibold tracking-tight text-ink">
             0x00 <span className="text-emerald">SPACE</span>
@@ -112,7 +112,7 @@ export default function Navbar() {
       </div>
 
       {isOpen && (
-         <div id="mobile-navigation" ref={menuRef} className="md:hidden border-t border-line bg-void/95 backdrop-blur-md">
+          <div id="mobile-navigation" ref={menuRef} className="md:hidden border-t border-line bg-void">
           <nav aria-label="Мобильная навигация" className="container-app flex flex-col gap-1 py-3">
             {NAV_LINKS.map((link) => (
               <NavLink

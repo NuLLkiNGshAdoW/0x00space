@@ -54,7 +54,7 @@ export default function FeaturedVideos() {
              decoding="async"
               className="aspect-video w-full object-cover transition duration-500 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-void via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-void" />
             <span className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
                <span className="line-clamp-2 text-sm font-medium leading-snug text-ink">
                 {video.title}
