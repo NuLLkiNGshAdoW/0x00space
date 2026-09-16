@@ -125,12 +125,6 @@
     opacity: 1 !important;
   }
 
-  /* Прозрачность разрешена только для декоративных слоёв. Текстовые элементы
-     всегда остаются полностью непрозрачными, включая состояния disabled. */
-  #root :where(h1, h2, h3, h4, h5, h6, p, a, button, label, li, dt, dd, summary, span) {
-    opacity: 1 !important;
-  }
-
   .text-emerald {
     color: #6ee7b7 !important;
   }

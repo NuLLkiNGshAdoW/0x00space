@@ -103,7 +103,7 @@ export default function AboutAndFaq() {
                     {title}
                   </Link>
                 </h3>
-                <p className="text-readable mt-2 text-xs leading-relaxed">{text}</p>
+                <p className="mt-2 text-xs leading-relaxed text-mute">{text}</p>
               </article>
             ))}
           </div>
