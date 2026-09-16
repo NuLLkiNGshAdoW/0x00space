@@ -74,7 +74,7 @@ export default function YouTubeGallery() {
           >
             Последние ролики
           </h2>
-          <p className="mt-2 max-w-md text-sm text-ink">
+          <p className="mt-2 max-w-md text-sm text-mute">
              Реальные видео и Shorts из YouTube API. Ищите по названию или отфильтруйте формат.
           </p>
         </div>
@@ -96,7 +96,7 @@ export default function YouTubeGallery() {
                 "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
                 activeTab === tab.key
                   ? "bg-emerald text-void font-medium"
-                    : "text-ink hover:text-ink",
+                  : "text-mute hover:text-ink",
               )}
             >
               {tab.label}
@@ -116,7 +116,7 @@ export default function YouTubeGallery() {
       <label className="relative mt-6 block max-w-md">
         <span className="sr-only">Поиск по видео</span>
         <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
           aria-hidden="true"
         />
         <input
@@ -145,15 +145,15 @@ export default function YouTubeGallery() {
         {status === "error" && (
           <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
             <AlertTriangle className="h-8 w-8 text-violet" strokeWidth={1.6} />
-              <p role="alert" className="text-sm text-ink">{errorMessage}</p>
+             <p role="alert" className="text-sm text-mute">{errorMessage}</p>
               <Button type="button" variant="secondary" onClick={() => refetch()}>Повторить</Button>
           </div>
         )}
 
         {status === "ready" && filteredVideos.length === 0 && (
           <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
-            <Radio className="h-8 w-8 text-ink" strokeWidth={1.6} />
-            <p className="text-sm text-ink">
+            <Radio className="h-8 w-8 text-mute" strokeWidth={1.6} />
+            <p className="text-sm text-mute">
               {search.trim() ? "Ничего не найдено. Попробуйте изменить запрос." : "В этой категории пока нет роликов — загляните позже."}
             </p>
           </div>
@@ -168,9 +168,9 @@ export default function YouTubeGallery() {
         )}
         {status === "ready" && pages > 1 && (
           <nav aria-label="Пагинация видео" className="mt-7 flex items-center justify-center gap-2">
-            <button type="button" disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink">Назад</button>
-            <span className="px-2 font-mono text-xs text-ink">{page} / {pages}</span>
-            <button type="button" disabled={page === pages} onClick={() => setPage((value) => value + 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink">Далее</button>
+            <button type="button" disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-50">Назад</button>
+            <span className="px-2 font-mono text-xs text-mute">{page} / {pages}</span>
+            <button type="button" disabled={page === pages} onClick={() => setPage((value) => value + 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:opacity-50">Далее</button>
           </nav>
         )}
       </div>

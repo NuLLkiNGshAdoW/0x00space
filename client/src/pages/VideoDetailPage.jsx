@@ -72,7 +72,7 @@ export default function VideoDetailPage({ videoId }) {
       <main id="main-content" className="container-app py-12 sm:py-20">
         <Link
           to="/videos"
-          className="inline-flex items-center gap-2 text-sm text-ink hover:text-emerald"
+          className="inline-flex items-center gap-2 text-sm text-mute hover:text-emerald"
         >
           <ArrowLeft className="h-4 w-4" /> Все видео
         </Link>
@@ -86,7 +86,7 @@ export default function VideoDetailPage({ videoId }) {
             <h1 className="font-display text-3xl font-semibold text-ink">
               {status === "error" ? "Не удалось загрузить видео" : "Видео не найдено"}
             </h1>
-             <p role="alert" className="mt-3 text-ink">{errorMessage}</p>
+             <p role="alert" className="mt-3 text-mute">{errorMessage}</p>
               {status === "error" && <Button type="button" className="mt-6" onClick={() => { setStatus("loading"); getVideo(videoId).then(({ video: current, related: relatedVideos }) => { setVideo(current); setRelated(relatedVideos); setStatus("ready"); }).catch(() => setStatus("error")); }}>Повторить</Button>}
           </div>
         )}
@@ -111,7 +111,7 @@ export default function VideoDetailPage({ videoId }) {
                 <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-ink sm:text-5xl">
                   {video.title}
                 </h1>
-                <p className="mt-4 text-sm text-ink">
+                <p className="mt-4 text-sm text-mute">
                   Опубликовано: {new Date(video.published_at).toLocaleDateString("ru-RU")}
                 </p>
               </div>
@@ -129,7 +129,7 @@ export default function VideoDetailPage({ videoId }) {
               </div>
             </div>
             {video.description && (
-              <p className="mt-7 max-w-3xl whitespace-pre-line text-base leading-relaxed text-ink">
+              <p className="mt-7 max-w-3xl whitespace-pre-line text-base leading-relaxed text-mute">
                 {video.description}
               </p>
             )}

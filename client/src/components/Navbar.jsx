@@ -76,7 +76,7 @@ export default function Navbar() {
             <NavLink
               key={link.href}
               to={link.href}
-              className={({ isActive }) => cn("text-sm transition-colors hover:text-ink", isActive ? "text-emerald" : "text-ink")}
+              className={({ isActive }) => cn("text-sm transition-colors hover:text-ink", isActive ? "text-emerald" : "text-mute")}
             >
               {link.label}
             </NavLink>
@@ -91,7 +91,7 @@ export default function Navbar() {
               target="_blank"
               rel="noreferrer"
               aria-label={name}
-              className="rounded-lg p-2 text-ink transition-colors hover:bg-panel2 hover:text-emerald"
+              className="rounded-lg p-2 text-mute transition-colors hover:bg-panel2 hover:text-emerald"
             >
               <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </a>
@@ -132,7 +132,7 @@ export default function Navbar() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={name}
-                  className="rounded-lg p-2 text-ink hover:bg-panel2 hover:text-emerald"
+                  className="rounded-lg p-2 text-mute hover:bg-panel2 hover:text-emerald"
                 >
                   <Icon className="h-5 w-5" strokeWidth={1.8} />
                 </a>

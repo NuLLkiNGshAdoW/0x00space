@@ -98,7 +98,7 @@ export default function ApplicationForm() {
           <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
             Заявка на участие
           </h2>
-          <p className="mt-2 text-sm text-ink">
+          <p className="mt-2 text-sm text-mute">
             Хотите сыграть с нами на ролике или ивенте — заполните форму, мы читаем каждую заявку.
           </p>
         </div>
@@ -231,7 +231,7 @@ export default function ApplicationForm() {
             </div>
           )}
 
-          <label className="mt-4 flex items-start gap-2 text-xs text-ink">
+          <label className="mt-4 flex items-start gap-2 text-xs text-mute">
             <input
               type="checkbox"
               checked={consent}

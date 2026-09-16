@@ -21,12 +21,12 @@ export default function SeedCard({ seed }) {
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-medium text-ink">{seed.title}</h3>
-          <span className="font-mono text-xs text-ink">{seed.minecraft_version}</span>
+          <span className="font-mono text-xs text-mute">{seed.minecraft_version}</span>
           <FavoriteButton id={`seed-${seed.id}`} />
         </div>
 
         {seed.description && (
-          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-ink">
+          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-mute">
             {seed.description}
           </p>
         )}

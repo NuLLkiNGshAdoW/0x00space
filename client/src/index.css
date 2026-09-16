@@ -99,12 +99,30 @@
     background: rgba(16, 185, 129, 0.32);
   }
 
+  /* Единый контраст вторичного текста на изображениях и видеофонах. */
+  .text-mute,
+  .text-readable {
+    color: #f1f5f9 !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+
   /* Текстовый слой никогда не должен становиться прозрачным вместе с фоном. */
   #root,
   #main-content,
   header,
   footer {
     opacity: 1;
+  }
+
+  #main-content .text-mute,
+  #main-content .text-readable,
+  header .text-mute,
+  header .text-readable,
+  footer .text-mute,
+  footer .text-readable {
+    color: #f1f5f9 !important;
+    opacity: 1 !important;
   }
 
   /* Прозрачность разрешена только для декоративных слоёв. Текстовые элементы
@@ -242,15 +260,15 @@
   }
 
   .button-primary {
-    @apply bg-emerald font-semibold text-void hover:bg-emerald/90 disabled:bg-panel2 text-ink;
+    @apply bg-emerald font-semibold text-void hover:bg-emerald/90 disabled:bg-panel2 disabled:text-mute;
   }
 
   .button-secondary {
-    @apply border border-line bg-panel/90 font-medium text-ink backdrop-blur-md hover:border-emerald/50 hover:text-emerald disabled:border-line;
+    @apply border border-line bg-panel/90 font-medium text-ink backdrop-blur-md hover:border-emerald/50 hover:text-emerald disabled:border-line disabled:text-mute;
   }
 
   .button-ghost {
-    @apply px-3 py-2 text-ink hover:bg-panel2 hover:text-ink;
+    @apply px-3 py-2 text-mute hover:bg-panel2 hover:text-ink disabled:text-mute;
   }
 
   /* Тонкая градиентная рамка (emerald -> violet) для акцентных карточек */
@@ -277,7 +295,7 @@
   }
 
   .field-control {
-    @apply min-h-11 rounded-lg border border-line bg-void/80 px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-ink focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/40;
+    @apply min-h-11 rounded-lg border border-line bg-void/80 px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-mute focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/40;
   }
 
   .status-error {

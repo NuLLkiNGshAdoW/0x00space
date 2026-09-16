@@ -12,7 +12,7 @@ export default function CommunityBenefits() {
           >
             Как пользоваться сайтом
           </h2>
-          <p className="mt-3 text-ink text-sm leading-relaxed">
+          <p className="mt-3 text-readable text-sm leading-relaxed">
             Здесь собраны реальные публикации канала и материалы, которые добавляются через админку. Выберите свой способ подключиться.
           </p>
         </div>
@@ -42,7 +42,7 @@ function Benefit({ icon: Icon, title, text }) {
     <div className="rounded-xl border border-line bg-panel/40 p-4">
       <Icon className="h-5 w-5 text-emerald" />
       <h3 className="mt-3 text-sm font-medium text-ink">{title}</h3>
-      <p className="mt-1.5 text-ink text-xs leading-relaxed">{text}</p>
+      <p className="mt-1.5 text-readable text-xs leading-relaxed">{text}</p>
     </div>
   );
 }

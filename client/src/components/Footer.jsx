@@ -14,11 +14,11 @@ export default function Footer() {
           </span>
         </div>
 
-        <p className="text-xs text-ink">© {year} 0x00 SPACE. Все права защищены.</p>
+        <p className="text-xs text-mute">© {year} 0x00 SPACE. Все права защищены.</p>
 
         <nav
           aria-label="Дополнительные страницы"
-          className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-ink"
+          className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-mute"
         >
           <Link to="/guides" className="hover:text-emerald">
             Гайды
@@ -42,7 +42,7 @@ export default function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label={name}
-               className="icon-button text-ink"
+               className="icon-button text-mute"
             >
               <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </a>

@@ -33,7 +33,7 @@ export default function ResourceCard({ resource }) {
             {TYPE_LABELS[resource.resource_type] ?? resource.resource_type}
           </span>
           {resource.game_version && (
-            <span className="font-mono text-xs text-ink">{resource.game_version}</span>
+            <span className="font-mono text-xs text-mute">{resource.game_version}</span>
           )}
           <FavoriteButton id={`resource-${resource.id}`} />
         </div>
@@ -41,7 +41,7 @@ export default function ResourceCard({ resource }) {
         <h3 className="mt-3 text-sm font-medium text-ink">{resource.title}</h3>
 
         {resource.description && (
-          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-ink">
+          <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-mute">
             {resource.description}
           </p>
         )}

@@ -89,7 +89,7 @@ export default function ResourcesAndGuides() {
             <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
               Материалы и сиды
             </h2>
-            <p className="mt-2 max-w-md text-sm text-ink">
+            <p className="mt-2 max-w-md text-sm text-mute">
               Текстуры, шейдеры, моды, гайды по хоррорам и интересные миры — всё, что упоминается в
               роликах.
             </p>
@@ -109,7 +109,7 @@ export default function ResourcesAndGuides() {
                      "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
                   activeView === view.key
                      ? "bg-violet text-void font-medium"
-                    : "text-ink hover:text-ink",
+                    : "text-mute hover:text-ink",
                 )}
               >
                 {view.label}
@@ -121,7 +121,7 @@ export default function ResourcesAndGuides() {
         <label className="relative mt-6 block max-w-md">
           <span className="sr-only">Поиск по материалам</span>
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
             aria-hidden="true"
           />
           <input
@@ -152,7 +152,7 @@ export default function ResourcesAndGuides() {
                      "interactive-control rounded-full border px-3.5 py-1.5 text-xs transition-colors",
                     gameFilter === filter.key
                       ? "border-emerald/60 bg-emerald-soft text-emerald"
-              : "border-line text-ink hover:border-emerald/30 hover:text-ink",
+                      : "border-line text-mute hover:border-emerald/30 hover:text-ink",
                   )}
                 >
                   {filter.label}
@@ -251,18 +251,18 @@ function Pagination({ page, total, pageSize, setPage }) {
         type="button"
         disabled={page === 1}
         onClick={() => setPage((value) => value - 1)}
-          className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink disabled:cursor-not-allowed disabled:bg-panel2"
+          className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Назад
       </button>
-          <span className="px-2 font-mono text-xs text-ink">
+      <span className="px-2 font-mono text-xs text-mute">
         {page} / {pages}
       </span>
       <button
         type="button"
         disabled={page === pages}
         onClick={() => setPage((value) => value + 1)}
-          className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink disabled:cursor-not-allowed disabled:bg-panel2"
+          className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Далее
       </button>
@@ -274,10 +274,10 @@ function EmptyState({ icon: Icon, text, tone = "neutral" }) {
   return (
     <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
       <Icon
-        className={cn("h-8 w-8", tone === "warning" ? "text-violet" : "text-ink")}
+        className={cn("h-8 w-8", tone === "warning" ? "text-violet" : "text-mute")}
         strokeWidth={1.6}
       />
-      <p className="text-sm text-ink">{text}</p>
+      <p className="text-sm text-mute">{text}</p>
     </div>
   );
 }

@@ -152,11 +152,11 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen">
       <main id="main-content" className="container-app py-12 sm:py-20">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-ink hover:text-emerald">
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-mute hover:text-emerald">
           <ArrowLeft className="h-4 w-4" /> На сайт
         </Link>
         <h1 className="mt-10 font-display text-3xl font-semibold text-ink">Управление фоном</h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink">
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-mute">
           Загрузите изображение или живые обои MP4/WebM. Максимальный размер файла — 100 МБ.
         </p>
         <form onSubmit={authenticated ? upload : login} className="glass mt-8 max-w-xl rounded-2xl p-5">
@@ -171,7 +171,7 @@ export default function AdminPage() {
             />
           </label>
           <label
-              className="mt-5 flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-line p-4 text-sm text-ink hover:border-emerald/50"
+            className="mt-5 flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-line p-4 text-sm text-mute hover:border-emerald/50"
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => { event.preventDefault(); chooseFile(event.dataTransfer.files?.[0]); }}
           >
@@ -209,7 +209,7 @@ export default function AdminPage() {
               {authenticated ? "Загрузить фон" : "Войти"}
            </button>
            {progress !== null && <progress className="mt-3 h-2 w-full accent-emerald" value={progress} max="100" aria-label={`Загрузка ${progress}%`} />}
-           <button type="button" onClick={logout} className="mt-3 w-full rounded-lg border border-line py-2 text-sm text-ink hover:text-ink">Выйти и очистить пароль</button>
+           <button type="button" onClick={logout} className="mt-3 w-full rounded-lg border border-line py-2 text-sm text-mute hover:text-ink">Выйти и очистить пароль</button>
           {message && (
             <p role="status" className="mt-4 text-sm text-emerald">
               {message}
@@ -295,7 +295,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={reset}
-              className="rounded-lg border border-line px-4 py-2.5 text-sm text-ink hover:text-ink"
+              className="rounded-lg border border-line px-4 py-2.5 text-sm text-mute hover:text-ink"
             >
               Сбросить к стандартному
             </button>
@@ -327,7 +327,7 @@ export default function AdminPage() {
               <div className="flex items-center justify-between gap-3 p-4">
                 <div className="min-w-0">
                   <p className="truncate text-sm text-ink">{item.name}</p>
-                  <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink">
+                  <p className="mt-1 inline-flex items-center gap-1 text-xs text-mute">
                     {item.type === "video" ? (
                       <Video className="h-3 w-3" />
                     ) : (
@@ -345,7 +345,7 @@ export default function AdminPage() {
                     <button
                       type="button"
                       onClick={() => activate(item.id)}
-                      className="rounded-md border border-line px-2 py-1 text-xs text-ink hover:text-emerald"
+                      className="rounded-md border border-line px-2 py-1 text-xs text-mute hover:text-emerald"
                     >
                       Выбрать
                     </button>
@@ -354,7 +354,7 @@ export default function AdminPage() {
                     type="button"
                     onClick={() => remove(item.id)}
                     aria-label="Удалить фон"
-                    className="rounded-md border border-line p-1.5 text-ink hover:text-violet"
+                    className="rounded-md border border-line p-1.5 text-mute hover:text-violet"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
