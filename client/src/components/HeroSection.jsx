@@ -16,7 +16,7 @@ export default function HeroSection() {
       {/* Тонкая координатная сетка на фоне — намёк на "координаты/мир", не декоративный шум */}
       <div
         className="pointer-events-none absolute inset-0 bg-grid-fade bg-[size:44px_44px]"
-         style={{ maskImage: "none" }}
+        style={{ maskImage: "linear-gradient(to bottom, black, transparent 80%)" }}
       />
       <div className="pointer-events-none absolute -left-32 top-20 h-80 w-80 rounded-full bg-emerald/10 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-violet/10 blur-3xl" />
@@ -91,7 +91,7 @@ export default function HeroSection() {
 
         {/* Графическая панель "сигнала" — единственный акцент с движением на странице */}
         <div className="relative mx-auto aspect-square w-full max-w-sm">
-          <div className="glass glass-accent-border relative h-full w-full overflow-hidden rounded-3xl">
+          <div className="glass glass-accent-border relative h-full w-full overflow-hidden rounded-3xl shadow-[0_0_80px_rgba(16,185,129,0.08)]">
              <img
                src="/brand-logo-transparent.png"
                alt=""
@@ -100,20 +100,20 @@ export default function HeroSection() {
                height="675"
                loading="eager"
                decoding="async"
-               className="pointer-events-none absolute inset-0 h-full w-full object-contain object-[70%_50%]"
+               className="pointer-events-none absolute inset-0 h-full w-full object-contain object-[70%_50%] opacity-[0.18] mix-blend-screen"
             />
             {/* Сканирующая линия */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-               <div className="absolute inset-x-0 h-24 animate-scanline bg-emerald" />
+              <div className="absolute inset-x-0 h-24 animate-scanline bg-gradient-to-b from-transparent via-emerald/10 to-transparent" />
             </div>
 
             {/* Концентрические "орбиты" */}
-             <svg viewBox="0 0 300 300" className="absolute inset-0 h-full w-full">
+            <svg viewBox="0 0 300 300" className="absolute inset-0 h-full w-full opacity-70">
               <circle
                 cx="150"
                 cy="150"
                 r="60"
-                 stroke="#34d399"
+                stroke="rgba(16,185,129,0.35)"
                 fill="none"
                 strokeWidth="1"
               />
@@ -121,7 +121,7 @@ export default function HeroSection() {
                 cx="150"
                 cy="150"
                 r="100"
-                 stroke="#8b5cf6"
+                stroke="rgba(139,92,246,0.25)"
                 fill="none"
                 strokeWidth="1"
               />
@@ -129,16 +129,16 @@ export default function HeroSection() {
                 cx="150"
                 cy="150"
                 r="140"
-                 stroke="#475569"
+                stroke="rgba(148,163,184,0.15)"
                 fill="none"
                 strokeWidth="1"
               />
             </svg>
 
-              <div className="absolute left-5 top-5 rounded-lg border border-emerald bg-void px-3 py-2 font-mono text-[10px] text-emerald">
+             <div className="absolute left-5 top-5 rounded-lg border border-emerald/20 bg-void/70 px-3 py-2 font-mono text-[10px] text-emerald backdrop-blur-sm">
                0x00 SPACE
              </div>
-              <div className="absolute right-5 top-1/2 rounded-lg border border-violet bg-void px-3 py-2 font-mono text-[10px] text-violet">
+             <div className="absolute right-5 top-1/2 rounded-lg border border-violet/20 bg-void/70 px-3 py-2 font-mono text-[10px] text-violet backdrop-blur-sm">
                ИГРАЕМ ВМЕСТЕ
             </div>
 

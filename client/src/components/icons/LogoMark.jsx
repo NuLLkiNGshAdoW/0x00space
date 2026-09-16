@@ -16,7 +16,7 @@ export default function LogoMark({ className = "h-8 w-8" }) {
         d="M20 2 L36 11 V29 L20 38 L4 29 V11 Z"
         stroke="url(#logoStroke)"
         strokeWidth="1.6"
-        fill="#12382f"
+        fill="rgba(16,185,129,0.06)"
       />
       <path d="M13 15 L27 25" stroke="#10b981" strokeWidth="1.6" strokeLinecap="round" />
       <path d="M13 25 L27 15" stroke="#8b5cf6" strokeWidth="1.6" strokeLinecap="round" />
