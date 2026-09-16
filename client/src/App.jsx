@@ -9,6 +9,7 @@ import ContentPage from "./pages/ContentPage.jsx";
 import ProfileBackdrop from "./components/ProfileBackdrop.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import TelegramFloat from "./components/TelegramFloat.jsx";
+import FeaturedVideos from "./components/FeaturedVideos.jsx";
 import CollectionPage from "./pages/CollectionPage.jsx";
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
       <Navbar />
       <main id="main-content">
         <HeroSection />
+        <FeaturedVideos />
         <YouTubeGallery />
         <ResourcesAndGuides />
         <AboutAndFaq />
