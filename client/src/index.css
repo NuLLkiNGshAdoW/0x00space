@@ -42,17 +42,19 @@
   }
 
   @media (max-width: 640px) {
-    .profile-backdrop-custom {
+    .profile-backdrop.profile-backdrop-custom {
       opacity: 0.32;
       filter: none;
     }
 
-    video.profile-backdrop-custom {
-      display: none;
+    .profile-backdrop {
+      /* Если активный фон — видео, оно всё равно должно быть видно на телефоне.
+         Низкая opacity и отсутствие blur сохраняют производительность. */
+      opacity: 0.48;
     }
 
-    .profile-backdrop {
-      background-image: none;
+    video.profile-backdrop.profile-backdrop-custom {
+      opacity: 0.48;
     }
 
     .glass {

@@ -55,8 +55,9 @@ export default function ProfileBackdrop() {
       {!customFailed && background?.type === "video" && !reducedMotion ? (
         <video
           className="profile-backdrop profile-backdrop-custom"
-          style={style}
+          style={{ ...style, objectPosition: settings.position }}
           src={url}
+          poster="/profile-background.svg"
           onError={() => setCustomFailed(true)}
            autoPlay
            preload="metadata"
