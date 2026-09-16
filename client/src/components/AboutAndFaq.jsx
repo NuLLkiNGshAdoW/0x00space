@@ -42,6 +42,12 @@ export default function AboutAndFaq() {
           ))}
         </div>
 
+        <div className="mt-8 grid gap-3 rounded-2xl border border-emerald/20 bg-emerald-soft/20 p-5 sm:grid-cols-3">
+          <p className="text-sm font-medium text-ink">Подписывайся, если хочешь:</p>
+          <p className="text-sm text-mute">узнавать о новых роликах первым</p>
+          <p className="text-sm text-mute">участвовать в совместных ивентах</p>
+        </div>
+
         <div id="guides" className="mt-16">
           <h2 className="font-display text-2xl font-semibold text-ink">Полезные разделы</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-3">

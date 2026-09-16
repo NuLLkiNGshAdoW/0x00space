@@ -158,16 +158,6 @@ export default function ApplicationForm() {
               </Field>
             )}
 
-            <Field label="Ссылка на пример микрофона / опыт (необязательно)" full>
-              <input
-                type="text"
-                value={form.micOrExperience}
-                onChange={updateField("micOrExperience")}
-                placeholder="Ссылка на клип, стрим или прошлые ролики"
-                className={inputClass(false)}
-              />
-            </Field>
-
             <Field label="Идея для видео / сообщение" error={errors.videoIdea} full>
                <textarea
                  maxLength={2000}

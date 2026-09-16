@@ -8,6 +8,7 @@ import AboutAndFaq from "./components/AboutAndFaq.jsx";
 import ContentPage from "./pages/ContentPage.jsx";
 import ProfileBackdrop from "./components/ProfileBackdrop.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
+import TelegramFloat from "./components/TelegramFloat.jsx";
 import CollectionPage from "./pages/CollectionPage.jsx";
 
 export default function App() {
@@ -28,6 +29,7 @@ export default function App() {
         <AboutAndFaq />
         <ApplicationForm />
       </main>
+      <TelegramFloat />
       <Footer />
     </div>
   );

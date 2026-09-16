@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { ArrowLeft, BookOpen, CalendarDays, Mail, ShieldCheck, Map, Users } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
+import TelegramFloat from "../components/TelegramFloat.jsx";
 import ProfileBackdrop from "../components/ProfileBackdrop.jsx";
 
 const PAGES = {
@@ -121,6 +122,7 @@ export default function ContentPage({ path }) {
           </div>
         )}
       </main>
+      <TelegramFloat />
       <Footer />
     </div>
   );

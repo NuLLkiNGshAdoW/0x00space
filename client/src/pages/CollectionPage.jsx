@@ -3,6 +3,7 @@ import Footer from "../components/Footer.jsx";
 import ProfileBackdrop from "../components/ProfileBackdrop.jsx";
 import YouTubeGallery from "../components/YouTubeGallery.jsx";
 import ResourcesAndGuides from "../components/ResourcesAndGuides.jsx";
+import TelegramFloat from "../components/TelegramFloat.jsx";
 
 export default function CollectionPage({ type }) {
   const isVideos = type === "videos";
@@ -16,6 +17,7 @@ export default function CollectionPage({ type }) {
         </div>
         {isVideos ? <YouTubeGallery /> : <ResourcesAndGuides />}
       </main>
+      <TelegramFloat />
       <Footer />
     </div>
   );
