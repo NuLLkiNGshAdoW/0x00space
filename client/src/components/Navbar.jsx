@@ -76,6 +76,7 @@ export default function Navbar() {
             <NavLink
               key={link.href}
               to={link.href}
+              end={link.href === "/"}
               className={({ isActive }) => cn("text-sm transition-colors hover:text-ink", isActive ? "text-emerald" : "text-mute")}
             >
               {link.label}
@@ -118,6 +119,7 @@ export default function Navbar() {
               <NavLink
                 key={link.href}
                 to={link.href}
+                end={link.href === "/"}
                 onClick={handleNavClick}
                  className={({ isActive }) => cn("interactive-control rounded-lg px-3 py-2.5 text-left text-sm hover:bg-panel2", isActive ? "bg-panel2 text-emerald" : "text-ink")}
               >

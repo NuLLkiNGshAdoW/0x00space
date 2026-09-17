@@ -99,6 +99,13 @@ test("application form validates and submits", async ({ page }) => {
   await expect(form.getByRole("status")).toContainText("Заявка отправлена");
 });
 
+test("application form explains missing privacy consent", async ({ page }) => {
+  await page.goto("/");
+  const form = page.locator("#application");
+  await form.getByRole("button", { name: "Отправить заявку" }).click();
+  await expect(form.getByText("Подтвердите согласие на обработку данных")).toBeVisible();
+});
+
 test("unknown route exposes a keyboard reachable 404", async ({ page }) => {
   await page.goto("/does-not-exist");
   await expect(page.getByText("404", { exact: true })).toBeVisible();

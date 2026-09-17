@@ -37,6 +37,9 @@ function validate(form) {
   if (form.videoIdea.trim().length < 5) {
     errors.videoIdea = "Опишите идею подробнее — хотя бы несколько слов";
   }
+  if (!form.consent) {
+    errors.consent = "Подтвердите согласие на обработку данных";
+  }
 
   return errors;
 }
@@ -51,15 +54,15 @@ export default function ApplicationForm() {
   const updateField = (field) => (e) => {
     const next = { ...form, [field]: e.target.value };
     setForm(next);
-    if (Object.keys(errors).length > 0) setErrors(validate(next));
+    if (Object.keys(errors).length > 0) setErrors(validate({ ...next, consent }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationErrors = validate(form);
+    const validationErrors = validate({ ...form, consent });
     setErrors(validationErrors);
-    if (Object.keys(validationErrors).length > 0 || !consent) return;
+    if (Object.keys(validationErrors).length > 0) return;
 
     setStatus("submitting");
     setServerError("");
@@ -235,7 +238,17 @@ export default function ApplicationForm() {
             <input
               type="checkbox"
               checked={consent}
-              onChange={(event) => setConsent(event.target.checked)}
+              aria-invalid={Boolean(errors.consent)}
+              aria-describedby={errors.consent ? "consent-error" : undefined}
+              onChange={(event) => {
+                const nextConsent = event.target.checked;
+                setConsent(nextConsent);
+                setErrors((current) => {
+                  const next = { ...current };
+                  if (nextConsent) delete next.consent;
+                  return next;
+                });
+              }}
               className="mt-0.5 h-4 w-4 shrink-0 accent-emerald"
               required
             />
@@ -246,6 +259,7 @@ export default function ApplicationForm() {
               </Link>.
             </span>
           </label>
+          {errors.consent && <p id="consent-error" role="alert" className="mt-2 text-xs text-violet">{errors.consent}</p>}
         </form>
       </div>
     </section>
