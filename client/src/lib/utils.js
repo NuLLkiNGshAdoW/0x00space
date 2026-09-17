@@ -5,6 +5,9 @@ export function cn(...classes) {
 
 /** Секунды -> "m:ss" или "h:mm:ss" для отображения длительности видео. */
 export function formatDuration(totalSeconds) {
+  const secondsValue = Number(totalSeconds);
+  if (!Number.isFinite(secondsValue) || secondsValue < 0) return "—";
+  totalSeconds = Math.floor(secondsValue);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
@@ -17,6 +20,8 @@ export function formatDuration(totalSeconds) {
 
 /** Число просмотров -> компактный вид: 1200 -> "1.2K", 3400000 -> "3.4M". */
 export function formatViews(count) {
+  if (!Number.isFinite(Number(count)) || Number(count) < 0) return "—";
+  count = Number(count);
   if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (count >= 1_000) return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
   return String(count);
@@ -25,6 +30,7 @@ export function formatViews(count) {
 /** ISO-дата -> относительное "N дней назад" на русском, без внешних библиотек. */
 export function formatRelativeDate(isoDate) {
   const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return "дата неизвестна";
   const diffMs = Date.now() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 

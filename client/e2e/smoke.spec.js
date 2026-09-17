@@ -41,7 +41,13 @@ test("navigation opens the video collection", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Видео", exact: true }).first().click();
   await expect(page).toHaveURL(/\/videos$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Видео 0x00 SPACE" })).toBeAttached();
   await expect(page.getByRole("heading", { name: "Последние ролики" })).toBeVisible();
+});
+
+test("materials collection has a single accessible page heading", async ({ page }) => {
+  await page.goto("/materials");
+  await expect(page.getByRole("heading", { level: 1, name: "Материалы и сиды Minecraft" })).toBeAttached();
 });
 
 test("video search is debounced and reflected in the URL", async ({ page }) => {

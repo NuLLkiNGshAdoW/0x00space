@@ -20,6 +20,8 @@ const VIEWS = [
   { key: "resources", label: "Материалы" },
   { key: "seeds", label: "Сиды миров" },
 ];
+const VIEW_KEYS = new Set(VIEWS.map((view) => view.key));
+const SORT_KEYS = new Set(["newest", "title"]);
 
 export default function ResourcesAndGuides() {
   const [params, setParams] = useSearchParams();
@@ -34,6 +36,7 @@ export default function ResourcesAndGuides() {
   const resourcesQuery = useQuery({
     queryKey: ["resources", gameFilter],
     queryFn: () => getResources(undefined, gameFilter || undefined),
+    enabled: activeView === "resources",
   });
   const seedsQuery = useQuery({
     queryKey: ["seeds"],
@@ -77,6 +80,26 @@ export default function ResourcesAndGuides() {
   const filteredSeeds = sortItems(filterItems(seeds));
   const visibleResources = filteredResources.slice((page - 1) * pageSize, page * pageSize);
   const visibleSeeds = filteredSeeds.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    const urlView = params.get("resource_view") || "resources";
+    const urlSort = params.get("resource_sort") || "newest";
+    const urlPage = Number(params.get("resource_page"));
+    const nextView = VIEW_KEYS.has(urlView) ? urlView : "resources";
+    const nextSort = SORT_KEYS.has(urlSort) ? urlSort : "newest";
+    const nextSearch = params.get("resource_q") || "";
+    const nextGame = params.get("resource_game") || "";
+    const nextPage = Number.isInteger(urlPage) && urlPage > 0 ? urlPage : 1;
+    setActiveView((value) => value === nextView ? value : nextView);
+    setSort((value) => value === nextSort ? value : nextSort);
+    setSearch((value) => value === nextSearch ? value : nextSearch);
+    setGameFilter((value) => value === nextGame ? value : nextGame);
+    setPage((value) => value === nextPage ? value : nextPage);
+  }, [params]);
+  const currentItemsPages = Math.ceil((activeView === "resources" ? filteredResources.length : filteredSeeds.length) / pageSize);
+  useEffect(() => {
+    if (currentItemsPages > 0 && page > currentItemsPages) setPage(currentItemsPages);
+  }, [currentItemsPages, page]);
 
   return (
     <section id="resources" className="border-t border-line bg-panel/20 py-16 sm:py-20">

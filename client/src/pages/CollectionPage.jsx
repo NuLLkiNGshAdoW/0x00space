@@ -20,6 +20,9 @@ export default function CollectionPage({ type }) {
             ← На главную
           </Link>
         </div>
+        <h1 className="sr-only">
+          {isVideos ? "Видео 0x00 SPACE" : "Материалы и сиды Minecraft"}
+        </h1>
         {isVideos ? <YouTubeGallery /> : <ResourcesAndGuides />}
       </main>
       <TelegramFloat />

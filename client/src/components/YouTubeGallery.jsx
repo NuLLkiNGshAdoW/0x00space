@@ -14,6 +14,8 @@ const TABS = [
   { key: "videos", label: "Видео" },
   { key: "shorts", label: "Shorts" },
 ];
+const TAB_KEYS = new Set(TABS.map((tab) => tab.key));
+const SORT_KEYS = new Set(["newest", "title"]);
 
 export default function YouTubeGallery() {
   const [params, setParams] = useSearchParams();
@@ -60,6 +62,25 @@ export default function YouTubeGallery() {
 
   const visibleVideos = filteredVideos.slice((page - 1) * pageSize, page * pageSize);
   const pages = Math.ceil(filteredVideos.length / pageSize);
+
+  // Состояние страницы должно следовать URL при back/forward и не показывать
+  // пустой экран, если после фильтрации текущая страница исчезла.
+  useEffect(() => {
+    const urlTab = params.get("video_type") || "all";
+    const urlSort = params.get("video_sort") || "newest";
+    const urlPage = Number(params.get("video_page"));
+    const nextTab = TAB_KEYS.has(urlTab) ? urlTab : "all";
+    const nextSort = SORT_KEYS.has(urlSort) ? urlSort : "newest";
+    const nextSearch = params.get("video_q") || "";
+    const nextPage = Number.isInteger(urlPage) && urlPage > 0 ? urlPage : 1;
+    setActiveTab((value) => value === nextTab ? value : nextTab);
+    setSort((value) => value === nextSort ? value : nextSort);
+    setSearch((value) => value === nextSearch ? value : nextSearch);
+    setPage((value) => value === nextPage ? value : nextPage);
+  }, [params]);
+  useEffect(() => {
+    if (pages > 0 && page > pages) setPage(pages);
+  }, [page, pages]);
 
   return (
     <section id="videos" aria-labelledby="videos-title" className="container-app py-16 sm:py-20">
