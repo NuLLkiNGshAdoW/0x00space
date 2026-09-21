@@ -11,7 +11,15 @@ export default function CollectionPage({ type }) {
   const isVideos = type === "videos";
   return (
     <div className="min-h-screen">
-      <Seo title={`${isVideos ? "Видео" : "Материалы"} — 0x00 SPACE`} description={isVideos ? "Последние видео и Shorts 0x00 SPACE." : "Материалы, моды, шейдеры и сиды Minecraft от 0x00 SPACE."} path={isVideos ? "/videos" : "/materials"} />
+      <Seo
+        title={`${isVideos ? "Видео" : "Материалы"} — 0x00 SPACE`}
+        description={
+          isVideos
+            ? "Последние видео и Shorts 0x00 SPACE."
+            : "Материалы, моды, шейдеры и сиды Minecraft от 0x00 SPACE."
+        }
+        path={isVideos ? "/videos" : "/materials"}
+      />
       <ProfileBackdrop />
       <Navbar />
       <main id="main-content" className="pt-8">
@@ -20,9 +28,7 @@ export default function CollectionPage({ type }) {
             ← На главную
           </Link>
         </div>
-        <h1 className="sr-only">
-          {isVideos ? "Видео 0x00 SPACE" : "Материалы и сиды Minecraft"}
-        </h1>
+        <h1 className="sr-only">{isVideos ? "Видео 0x00 SPACE" : "Материалы и сиды Minecraft"}</h1>
         {isVideos ? <YouTubeGallery /> : <ResourcesAndGuides />}
       </main>
       <TelegramFloat />

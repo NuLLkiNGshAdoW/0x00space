@@ -25,7 +25,10 @@ export default function AdminPage() {
   const load = () =>
     fetch(`${API_BASE_URL}/backgrounds`)
       .then(async (r) => {
-        if (!r.ok) throw new Error(r.status === 500 ? "Сервер временно недоступен" : "Не удалось загрузить фоны");
+        if (!r.ok)
+          throw new Error(
+            r.status === 500 ? "Сервер временно недоступен" : "Не удалось загрузить фоны",
+          );
         return r.json();
       })
       .then((data) => {
@@ -34,12 +37,20 @@ export default function AdminPage() {
         setSettings((current) => ({ ...current, ...(data.settings || {}) }));
       });
   useEffect(() => {
-    Promise.all([load(), checkAdmin().then(() => setAuthenticated(true)).catch(() => {})]).catch(() => setMessage("Backend недоступен"));
+    Promise.all([
+      load(),
+      checkAdmin()
+        .then(() => setAuthenticated(true))
+        .catch(() => {}),
+    ]).catch(() => setMessage("Backend недоступен"));
   }, []);
 
-  useEffect(() => () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
+  useEffect(
+    () => () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    },
+    [previewUrl],
+  );
 
   const request = async (url, options = {}) => {
     if (!authenticated) throw new Error("Сначала войдите в админку");
@@ -56,7 +67,8 @@ export default function AdminPage() {
   const upload = async (event) => {
     event.preventDefault();
     if (!file || !authenticated) return setMessage("Войдите и выберите файл");
-    if (!ALLOWED_TYPES.has(file.type)) return setMessage("Разрешены только JPG, PNG, WebP, MP4 и WebM");
+    if (!ALLOWED_TYPES.has(file.type))
+      return setMessage("Разрешены только JPG, PNG, WebP, MP4 и WebM");
     if (file.size > MAX_FILE_SIZE) return setMessage("Файл слишком большой. Максимум 100 МБ");
     try {
       const form = new FormData();
@@ -64,19 +76,28 @@ export default function AdminPage() {
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", `${API_BASE_URL}/backgrounds/upload`);
-         xhr.withCredentials = true;
+        xhr.withCredentials = true;
         xhr.upload.onprogress = (progressEvent) => {
-          if (progressEvent.lengthComputable) setProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
+          if (progressEvent.lengthComputable)
+            setProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
         };
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) resolve();
-          else reject(new Error(xhr.status === 401 ? "Неверный пароль администратора" : "Не удалось загрузить файл"));
+          else
+            reject(
+              new Error(
+                xhr.status === 401 ? "Неверный пароль администратора" : "Не удалось загрузить файл",
+              ),
+            );
         };
         xhr.onerror = () => reject(new Error("Сервер недоступен"));
         xhr.send(form);
       });
       setFile(null);
-      setPreviewUrl((current) => { if (current) URL.revokeObjectURL(current); return ""; });
+      setPreviewUrl((current) => {
+        if (current) URL.revokeObjectURL(current);
+        return "";
+      });
       setProgress(null);
       event.target.reset();
       setMessage("Фон загружен");
@@ -89,7 +110,8 @@ export default function AdminPage() {
 
   const chooseFile = (selected) => {
     if (!selected) return;
-    if (!ALLOWED_TYPES.has(selected.type)) return setMessage("Разрешены только JPG, PNG, WebP, MP4 и WebM");
+    if (!ALLOWED_TYPES.has(selected.type))
+      return setMessage("Разрешены только JPG, PNG, WebP, MP4 и WebM");
     if (selected.size > MAX_FILE_SIZE) return setMessage("Файл слишком большой. Максимум 100 МБ");
     setMessage("");
     setFile(selected);
@@ -100,14 +122,23 @@ export default function AdminPage() {
   };
 
   const logout = () => {
-    logoutAdmin().catch(() => {}).finally(() => setAuthenticated(false));
+    logoutAdmin()
+      .catch(() => {})
+      .finally(() => setAuthenticated(false));
     setPassword("");
     setMessage("Сессия завершена");
   };
   const login = async (event) => {
     event.preventDefault();
-    try { await loginAdmin(password); setAuthenticated(true); setPassword(""); setMessage("Вход выполнен"); await load(); }
-    catch (error) { setMessage(error.message); }
+    try {
+      await loginAdmin(password);
+      setAuthenticated(true);
+      setPassword("");
+      setMessage("Вход выполнен");
+      await load();
+    } catch (error) {
+      setMessage(error.message);
+    }
   };
   const activate = async (id) => {
     try {
@@ -152,14 +183,20 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen">
       <main id="main-content" className="container-app py-12 sm:py-20">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-mute hover:text-emerald">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-mute hover:text-emerald"
+        >
           <ArrowLeft className="h-4 w-4" /> На сайт
         </Link>
         <h1 className="mt-10 font-display text-3xl font-semibold text-ink">Управление фоном</h1>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-mute">
           Загрузите изображение или живые обои MP4/WebM. Максимальный размер файла — 100 МБ.
         </p>
-        <form onSubmit={authenticated ? upload : login} className="glass mt-8 max-w-xl rounded-2xl p-5">
+        <form
+          onSubmit={authenticated ? upload : login}
+          className="glass mt-8 max-w-xl rounded-2xl p-5"
+        >
           <label className="block text-sm text-ink">
             Пароль администратора
             <input
@@ -173,7 +210,10 @@ export default function AdminPage() {
           <label
             className="mt-5 flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-line p-4 text-sm text-mute hover:border-emerald/50"
             onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => { event.preventDefault(); chooseFile(event.dataTransfer.files?.[0]); }}
+            onDrop={(event) => {
+              event.preventDefault();
+              chooseFile(event.dataTransfer.files?.[0]);
+            }}
           >
             <ImagePlus className="h-5 w-5 text-emerald" />
             <span>{file ? file.name : "Выбрать JPG, PNG, WebP, MP4 или WebM"}</span>
@@ -182,7 +222,7 @@ export default function AdminPage() {
               accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
               onChange={(e) => {
                 const selected = e.target.files?.[0] || null;
-                 chooseFile(selected);
+                chooseFile(selected);
               }}
               className="sr-only"
             />
@@ -205,11 +245,24 @@ export default function AdminPage() {
                 className="mt-4 aspect-video w-full rounded-lg object-cover"
               />
             ))}
-           <button disabled={progress !== null} className="button-primary mt-5 w-full">
-              {authenticated ? "Загрузить фон" : "Войти"}
-           </button>
-           {progress !== null && <progress className="mt-3 h-2 w-full accent-emerald" value={progress} max="100" aria-label={`Загрузка ${progress}%`} />}
-           <button type="button" onClick={logout} className="mt-3 w-full rounded-lg border border-line py-2 text-sm text-mute hover:text-ink">Выйти и очистить пароль</button>
+          <button disabled={progress !== null} className="button-primary mt-5 w-full">
+            {authenticated ? "Загрузить фон" : "Войти"}
+          </button>
+          {progress !== null && (
+            <progress
+              className="mt-3 h-2 w-full accent-emerald"
+              value={progress}
+              max="100"
+              aria-label={`Загрузка ${progress}%`}
+            />
+          )}
+          <button
+            type="button"
+            onClick={logout}
+            className="mt-3 w-full rounded-lg border border-line py-2 text-sm text-mute hover:text-ink"
+          >
+            Выйти и очистить пароль
+          </button>
           {message && (
             <p role="status" className="mt-4 text-sm text-emerald">
               {message}
@@ -223,7 +276,7 @@ export default function AdminPage() {
             <input
               type="range"
               min="0"
-               max="0.72"
+              max="0.72"
               step="0.01"
               value={settings.shade}
               onChange={(e) => setSettings({ ...settings, shade: Number(e.target.value) })}

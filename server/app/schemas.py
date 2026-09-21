@@ -4,7 +4,7 @@ Pydantic-схемы (DTO) — контракт между фронтендом �
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 from app.models import ApplicationStatus, ResourceType, GameCategory
 
@@ -19,6 +19,24 @@ class ApplicationCreate(BaseModel):
     game: str = Field(..., min_length=2, max_length=64, description="Minecraft / Phasmophobia / Lethal Company / другая")
     mic_or_experience_link: Optional[str] = Field(None, max_length=512)
     video_idea: str = Field(..., min_length=5, max_length=2000)
+
+    @field_validator("nickname", "contact", "game", "video_idea", mode="before")
+    @classmethod
+    def strip_required_text(cls, value: str) -> str:
+        if not isinstance(value, str):
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("Поле не может быть пустым")
+        return value
+
+    @field_validator("mic_or_experience_link", mode="before")
+    @classmethod
+    def normalize_optional_link(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
 
 
 class ApplicationOut(BaseModel):

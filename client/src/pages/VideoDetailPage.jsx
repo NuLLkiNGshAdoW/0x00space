@@ -28,7 +28,11 @@ export default function VideoDetailPage({ videoId }) {
       })
       .catch((error) => {
         const missing = error.status === 404;
-        setErrorMessage(missing ? "Возможно, ролик ещё не загрузился или был удалён." : "Не удалось загрузить ролик. Проверьте соединение и попробуйте снова.");
+        setErrorMessage(
+          missing
+            ? "Возможно, ролик ещё не загрузился или был удалён."
+            : "Не удалось загрузить ролик. Проверьте соединение и попробуйте снова.",
+        );
         setStatus(missing ? "missing" : "error");
       });
   }, [videoId]);
@@ -86,8 +90,27 @@ export default function VideoDetailPage({ videoId }) {
             <h1 className="font-display text-3xl font-semibold text-ink">
               {status === "error" ? "Не удалось загрузить видео" : "Видео не найдено"}
             </h1>
-             <p role="alert" className="mt-3 text-mute">{errorMessage}</p>
-              {status === "error" && <Button type="button" className="mt-6" onClick={() => { setStatus("loading"); getVideo(videoId).then(({ video: current, related: relatedVideos }) => { setVideo(current); setRelated(relatedVideos); setStatus("ready"); }).catch(() => setStatus("error")); }}>Повторить</Button>}
+            <p role="alert" className="mt-3 text-mute">
+              {errorMessage}
+            </p>
+            {status === "error" && (
+              <Button
+                type="button"
+                className="mt-6"
+                onClick={() => {
+                  setStatus("loading");
+                  getVideo(videoId)
+                    .then(({ video: current, related: relatedVideos }) => {
+                      setVideo(current);
+                      setRelated(relatedVideos);
+                      setStatus("ready");
+                    })
+                    .catch(() => setStatus("error"));
+                }}
+              >
+                Повторить
+              </Button>
+            )}
           </div>
         )}
         {video && (
@@ -116,11 +139,11 @@ export default function VideoDetailPage({ videoId }) {
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
-            <a
+                <a
                   href={video.url}
                   target="_blank"
                   rel="noreferrer"
-                   className="button-primary shrink-0"
+                  className="button-primary shrink-0"
                 >
                   <Play className="h-4 w-4" fill="currentColor" /> Смотреть на YouTube{" "}
                   <ExternalLink className="h-4 w-4" />

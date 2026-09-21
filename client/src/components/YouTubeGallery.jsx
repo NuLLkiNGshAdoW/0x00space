@@ -25,12 +25,21 @@ export default function YouTubeGallery() {
   const [page, setPage] = useState(() => Number(params.get("video_page")) || 1);
   const debouncedSearch = useDebouncedValue(search);
   const pageSize = 8;
-  const { data: videos = [], isPending, isError, error, refetch } = useQuery({
+  const {
+    data: videos = [],
+    isPending,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: LATEST_VIDEOS_QUERY_KEY,
     queryFn: () => getLatestVideos(12),
   });
   const status = isPending ? "loading" : isError ? "error" : "ready";
-  const errorMessage = error instanceof ApiError ? error.message : "Не удалось получить видео. Проверьте соединение и попробуйте снова.";
+  const errorMessage =
+    error instanceof ApiError
+      ? error.message
+      : "Не удалось получить видео. Проверьте соединение и попробуйте снова.";
 
   const filteredVideos = useMemo(() => {
     const query = debouncedSearch.trim().toLocaleLowerCase();
@@ -45,15 +54,22 @@ export default function YouTubeGallery() {
           `${video.title} ${video.description}`.toLocaleLowerCase().includes(query),
         )
       : byTab;
-    return [...searched].sort((a, b) => sort === "title"
-      ? a.title.localeCompare(b.title, "ru")
-      : new Date(b.published_at) - new Date(a.published_at));
+    return [...searched].sort((a, b) =>
+      sort === "title"
+        ? a.title.localeCompare(b.title, "ru")
+        : new Date(b.published_at) - new Date(a.published_at),
+    );
   }, [videos, activeTab, debouncedSearch, sort]);
 
   useEffect(() => setPage(1), [activeTab, debouncedSearch, sort]);
   useEffect(() => {
     const next = new URLSearchParams(params);
-    [["video_type", activeTab, "all"], ["video_q", search.trim(), ""], ["video_sort", sort, "newest"], ["video_page", page, 1]].forEach(([key, value, defaultValue]) => {
+    [
+      ["video_type", activeTab, "all"],
+      ["video_q", search.trim(), ""],
+      ["video_sort", sort, "newest"],
+      ["video_page", page, 1],
+    ].forEach(([key, value, defaultValue]) => {
       if (String(value) === String(defaultValue) || value === "") next.delete(key);
       else next.set(key, String(value));
     });
@@ -73,10 +89,10 @@ export default function YouTubeGallery() {
     const nextSort = SORT_KEYS.has(urlSort) ? urlSort : "newest";
     const nextSearch = params.get("video_q") || "";
     const nextPage = Number.isInteger(urlPage) && urlPage > 0 ? urlPage : 1;
-    setActiveTab((value) => value === nextTab ? value : nextTab);
-    setSort((value) => value === nextSort ? value : nextSort);
-    setSearch((value) => value === nextSearch ? value : nextSearch);
-    setPage((value) => value === nextPage ? value : nextPage);
+    setActiveTab((value) => (value === nextTab ? value : nextTab));
+    setSort((value) => (value === nextSort ? value : nextSort));
+    setSearch((value) => (value === nextSearch ? value : nextSearch));
+    setPage((value) => (value === nextPage ? value : nextPage));
   }, [params]);
   useEffect(() => {
     if (pages > 0 && page > pages) setPage(pages);
@@ -87,7 +103,7 @@ export default function YouTubeGallery() {
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald">
-             Из канала
+            Из канала
           </p>
           <h2
             id="videos-title"
@@ -96,7 +112,7 @@ export default function YouTubeGallery() {
             Последние ролики
           </h2>
           <p className="mt-2 max-w-md text-sm text-mute">
-             Реальные видео и Shorts из YouTube API. Ищите по названию или отфильтруйте формат.
+            Реальные видео и Shorts из YouTube API. Ищите по названию или отфильтруйте формат.
           </p>
         </div>
 
@@ -128,7 +144,11 @@ export default function YouTubeGallery() {
 
       <label className="mt-3 block max-w-xs">
         <span className="sr-only">Сортировка видео</span>
-        <select value={sort} onChange={(event) => setSort(event.target.value)} className="field-control w-full">
+        <select
+          value={sort}
+          onChange={(event) => setSort(event.target.value)}
+          className="field-control w-full"
+        >
           <option value="newest">Сначала новые</option>
           <option value="title">По названию</option>
         </select>
@@ -144,7 +164,7 @@ export default function YouTubeGallery() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Найти ролик…"
-           className="field-control w-full pl-9 pr-3"
+          className="field-control w-full pl-9 pr-3"
         />
       </label>
 
@@ -152,9 +172,9 @@ export default function YouTubeGallery() {
         {status === "loading" && (
           <div
             id="video-results"
-             role="tabpanel"
-             aria-live="polite"
-             aria-busy="true"
+            role="tabpanel"
+            aria-live="polite"
+            aria-busy="true"
             className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           >
             {Array.from({ length: 6 }).map((_, i) => (
@@ -166,8 +186,12 @@ export default function YouTubeGallery() {
         {status === "error" && (
           <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
             <AlertTriangle className="h-8 w-8 text-violet" strokeWidth={1.6} />
-             <p role="alert" className="text-sm text-mute">{errorMessage}</p>
-              <Button type="button" variant="secondary" onClick={() => refetch()}>Повторить</Button>
+            <p role="alert" className="text-sm text-mute">
+              {errorMessage}
+            </p>
+            <Button type="button" variant="secondary" onClick={() => refetch()}>
+              Повторить
+            </Button>
           </div>
         )}
 
@@ -175,13 +199,20 @@ export default function YouTubeGallery() {
           <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
             <Radio className="h-8 w-8 text-mute" strokeWidth={1.6} />
             <p className="text-sm text-mute">
-              {search.trim() ? "Ничего не найдено. Попробуйте изменить запрос." : "В этой категории пока нет роликов — загляните позже."}
+              {search.trim()
+                ? "Ничего не найдено. Попробуйте изменить запрос."
+                : "В этой категории пока нет роликов — загляните позже."}
             </p>
           </div>
         )}
 
         {status === "ready" && filteredVideos.length > 0 && (
-           <div id="video-results" role="tabpanel" aria-live="polite" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            id="video-results"
+            role="tabpanel"
+            aria-live="polite"
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
             {visibleVideos.map((video) => (
               <VideoCard key={video.video_id} video={video} />
             ))}
@@ -189,9 +220,25 @@ export default function YouTubeGallery() {
         )}
         {status === "ready" && pages > 1 && (
           <nav aria-label="Пагинация видео" className="mt-7 flex items-center justify-center gap-2">
-            <button type="button" disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink">Назад</button>
-            <span className="px-2 font-mono text-xs text-mute">{page} / {pages}</span>
-            <button type="button" disabled={page === pages} onClick={() => setPage((value) => value + 1)} className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink">Далее</button>
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() => setPage((value) => value - 1)}
+              className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink"
+            >
+              Назад
+            </button>
+            <span className="px-2 font-mono text-xs text-mute">
+              {page} / {pages}
+            </span>
+            <button
+              type="button"
+              disabled={page === pages}
+              onClick={() => setPage((value) => value + 1)}
+              className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink"
+            >
+              Далее
+            </button>
           </nav>
         )}
       </div>

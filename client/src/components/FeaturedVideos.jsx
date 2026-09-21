@@ -13,7 +13,7 @@ export default function FeaturedVideos() {
   return (
     <section
       aria-labelledby="featured-title"
-      className="container-app -mt-4 hidden pb-16 sm:block sm:-mt-8 sm:pb-20"
+      className="container-app -mt-4 pb-16 sm:-mt-8 sm:pb-20"
     >
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
@@ -24,7 +24,7 @@ export default function FeaturedVideos() {
             id="featured-title"
             className="font-display text-2xl font-semibold text-ink sm:text-3xl"
           >
-             Свежие публикации
+            Свежие публикации
           </h2>
         </div>
         <Link
@@ -41,22 +41,24 @@ export default function FeaturedVideos() {
             href={video.url}
             target="_blank"
             rel="noreferrer"
-            onClick={() => trackEvent("youtube_open", { video_id: video.video_id, source: "featured" })}
+            onClick={() =>
+              trackEvent("youtube_open", { video_id: video.video_id, source: "featured" })
+            }
             className="group relative overflow-hidden rounded-2xl border border-line bg-panel/70 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-emerald/50"
           >
-             <img
-               src={video.thumbnail_url}
-               alt={video.title}
-               width="480"
-               height="270"
-             loading={index === 0 ? "eager" : "lazy"}
-             fetchPriority={index === 0 ? "high" : "auto"}
-             decoding="async"
+            <img
+              src={video.thumbnail_url}
+              alt={video.title}
+              width="480"
+              height="270"
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchPriority={index === 0 ? "high" : "auto"}
+              decoding="async"
               className="aspect-video w-full object-cover transition duration-500 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-void" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-void via-void/50 to-transparent" />
             <span className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-               <span className="line-clamp-2 text-sm font-medium leading-snug text-ink">
+              <span className="line-clamp-2 text-sm font-medium leading-snug text-ink">
                 {video.title}
               </span>
               <span className="shrink-0 rounded-full bg-emerald p-2 text-void">
@@ -68,7 +70,7 @@ export default function FeaturedVideos() {
       </div>
       <Link
         to="/videos"
-        className="mt-5 inline-flex items-center gap-1 text-sm text-mute hover:text-emerald sm:hidden"
+        className="mt-5 inline-flex items-center gap-1 text-sm text-mute hover:text-emerald"
       >
         Все видео <ArrowUpRight className="h-4 w-4" />
       </Link>

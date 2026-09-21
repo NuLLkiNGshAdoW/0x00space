@@ -17,15 +17,21 @@ import CollectionPage from "./pages/CollectionPage.jsx";
 import Seo from "./components/Seo.jsx";
 
 export default function App() {
-  return <BrowserRouter><Routes>
-    <Route path="/" element={<HomePage />} />
-    <Route path="/admin" element={<AdminPage />} />
-    <Route path="/videos" element={<CollectionPage type="videos" />} />
-    <Route path="/videos/:videoId" element={<VideoRoute />} />
-    <Route path="/materials" element={<CollectionPage type="materials" />} />
-    {["guides", "seeds", "about", "faq", "events", "contacts", "privacy"].map((page) => <Route key={page} path={`/${page}`} element={<ContentPage path={`/${page}`} />} />)}
-    <Route path="*" element={<ContentPage path="/not-found" />} />
-  </Routes></BrowserRouter>;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/videos" element={<CollectionPage type="videos" />} />
+        <Route path="/videos/:videoId" element={<VideoRoute />} />
+        <Route path="/materials" element={<CollectionPage type="materials" />} />
+        {["guides", "seeds", "about", "faq", "events", "contacts", "privacy"].map((page) => (
+          <Route key={page} path={`/${page}`} element={<ContentPage path={`/${page}`} />} />
+        ))}
+        <Route path="*" element={<ContentPage path="/not-found" />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 function HomePage() {
@@ -33,33 +39,51 @@ function HomePage() {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
-      ["Как попасть на игровой ивент?", "Заполните заявку ниже и укажите свой ник, контакт и игру. Мы свяжемся с подходящими участниками."],
-      ["В какие игры вы играете?", "Основные направления канала — Minecraft, кооперативные игры, хорроры и инди-проекты."],
-      ["Где найти моды и сиды из роликов?", "Материалы и сиды публикуются в разделе выше. Используйте фильтр по игре и кнопки скачивания или копирования."],
-      ["Можно предложить идею для видео?", "Да. Напишите идею в форме заявки — лучшие предложения мы добавляем в план будущих роликов."],
-    ].map(([name, text]) => ({ "@type": "Question", name, acceptedAnswer: { "@type": "Answer", text } })),
+      [
+        "Как попасть на игровой ивент?",
+        "Заполните заявку ниже и укажите свой ник, контакт и игру. Мы свяжемся с подходящими участниками.",
+      ],
+      [
+        "В какие игры вы играете?",
+        "Основные направления канала — Minecraft, кооперативные игры, хорроры и инди-проекты.",
+      ],
+      [
+        "Где найти моды и сиды из роликов?",
+        "Материалы и сиды публикуются в разделе выше. Используйте фильтр по игре и кнопки скачивания или копирования.",
+      ],
+      [
+        "Можно предложить идею для видео?",
+        "Да. Напишите идею в форме заявки — лучшие предложения мы добавляем в план будущих роликов.",
+      ],
+    ].map(([name, text]) => ({
+      "@type": "Question",
+      name,
+      acceptedAnswer: { "@type": "Answer", text },
+    })),
   };
-  return <div className="min-h-screen">
-    <Seo
-      title="0x00 SPACE — Minecraft, кооп и хорроры"
-      description="0x00 SPACE — игровой канал о Minecraft, кооперативных играх и хоррорах. Видео, гайды, сиды миров и игровые ивенты."
-      path="/"
-      structuredData={faqSchema}
-    />
-    <ProfileBackdrop />
-    <Navbar />
-    <main id="main-content">
-      <HeroSection />
-      <FeaturedVideos />
-      <CommunityBenefits />
-      <YouTubeGallery />
-      <ResourcesAndGuides />
-      <AboutAndFaq />
-      <ApplicationForm />
-    </main>
-    <TelegramFloat />
-    <Footer />
-  </div>;
+  return (
+    <div className="min-h-screen">
+      <Seo
+        title="0x00 SPACE — Minecraft, кооп и хорроры"
+        description="0x00 SPACE — игровой канал о Minecraft, кооперативных играх и хоррорах. Видео, гайды, сиды миров и игровые ивенты."
+        path="/"
+        structuredData={faqSchema}
+      />
+      <ProfileBackdrop />
+      <Navbar />
+      <main id="main-content">
+        <HeroSection />
+        <FeaturedVideos />
+        <CommunityBenefits />
+        <YouTubeGallery />
+        <ResourcesAndGuides />
+        <AboutAndFaq />
+        <ApplicationForm />
+      </main>
+      <TelegramFloat />
+      <Footer />
+    </div>
+  );
 }
 
 function VideoRoute() {

@@ -162,7 +162,9 @@ export default function ContentPage({ path }) {
             <h1 className="mt-5 font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
               {page.title}
             </h1>
-            <p className="content-page-copy mt-4 max-w-2xl text-base leading-relaxed">{page.description}</p>
+            <p className="content-page-copy mt-4 max-w-2xl text-base leading-relaxed">
+              {page.description}
+            </p>
             <div className="mt-10 grid gap-4 md:grid-cols-3">
               {page.items.map(([title, text]) => (
                 <section key={title} className="content-page-card rounded-xl p-5">
@@ -172,10 +174,7 @@ export default function ContentPage({ path }) {
               ))}
             </div>
             {path === "/events" && (
-              <Link
-                to="/#application"
-                 className="button-primary mt-10"
-              >
+              <Link to="/#application" className="button-primary mt-10">
                 Подать заявку
               </Link>
             )}
@@ -187,10 +186,7 @@ export default function ContentPage({ path }) {
               Страница не найдена
             </h1>
             <p className="content-page-copy mt-3">Проверьте адрес или вернитесь на главную.</p>
-            <Link
-              to="/"
-               className="button-primary mt-8"
-            >
+            <Link to="/" className="button-primary mt-8">
               На главную
             </Link>
           </div>

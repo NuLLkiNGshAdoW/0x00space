@@ -5,7 +5,11 @@ export function captureError(error, context = {}) {
 }
 
 function safeContext(context) {
-  return Object.fromEntries(Object.entries(context).filter(([key, value]) =>
-    /^(source|status|error_type)$/.test(key) && ["string", "number", "boolean"].includes(typeof value),
-  ));
+  return Object.fromEntries(
+    Object.entries(context).filter(
+      ([key, value]) =>
+        /^(source|status|error_type)$/.test(key) &&
+        ["string", "number", "boolean"].includes(typeof value),
+    ),
+  );
 }

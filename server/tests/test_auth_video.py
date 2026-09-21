@@ -4,7 +4,8 @@ from fastapi.testclient import TestClient
 
 from app.config import get_settings
 from app.main import app
-from app.schemas import YoutubeVideoOut
+from app.schemas import ApplicationCreate, YoutubeVideoOut
+from app.services.admin_auth import valid_session
 import app.routers.youtube as youtube_router
 import app.routers.backgrounds as backgrounds_router
 
@@ -36,6 +37,30 @@ def test_production_cookie_allows_cross_site_frontend(monkeypatch):
     assert response.status_code == 200
     assert "samesite=none" in response.headers["set-cookie"].lower()
     assert "Secure" in response.headers["set-cookie"]
+
+
+def test_malformed_admin_cookie_is_rejected_without_server_error(monkeypatch):
+    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
+    get_settings.cache_clear()
+    assert valid_session("not-a-valid-base64-session.abc") is False
+
+
+def test_application_payload_normalizes_text_and_rejects_blank_values():
+    payload = ApplicationCreate(
+        nickname="  Alex  ", age=18, contact="  @alex ", game=" Minecraft ",
+        video_idea="  Build a base together  ", mic_or_experience_link="  ",
+    )
+    assert payload.nickname == "Alex"
+    assert payload.contact == "@alex"
+    assert payload.game == "Minecraft"
+    assert payload.mic_or_experience_link is None
+
+    try:
+        ApplicationCreate(nickname="   ", age=18, contact="@alex", game="Minecraft", video_idea="valid idea")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("blank nickname must be rejected")
 
 
 def test_video_detail_validates_id_and_returns_related(monkeypatch):

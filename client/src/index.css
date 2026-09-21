@@ -7,23 +7,27 @@
     --brand-void: #05070d;
     --brand-panel: #0d1420;
     --brand-panel-raised: #101a29;
-    --brand-line: #475569;
+    --brand-line: #25334a;
     --brand-ink: #f1f5f9;
-    --brand-mute: #cbd5e1;
+    --brand-mute: #aebbd0;
     --brand-emerald: #34d399;
     --brand-violet: #b69cff;
   }
 
   html {
     scroll-behavior: smooth;
-    background: #05070d;
+    background: #050914;
   }
 
   body {
     @apply bg-void text-ink font-body antialiased;
     font-size: 16px;
     line-height: 1.6;
-    background-image: none;
+    background-image: radial-gradient(
+      circle at 50% -10%,
+      rgba(52, 211, 153, 0.09),
+      transparent 32rem
+    );
     min-width: 320px;
     padding-bottom: env(safe-area-inset-bottom);
     overflow-x: hidden;
@@ -63,7 +67,7 @@
   .profile-backdrop {
     z-index: 0;
     background: url("/profile-background.svg") center top / cover no-repeat;
-    opacity: 1;
+    opacity: 0.56;
   }
 
   .profile-backdrop-custom {
@@ -71,14 +75,15 @@
     background-size: cover;
     background-repeat: no-repeat;
     object-fit: cover;
-    opacity: 1;
-    filter: none;
+    opacity: 0.58;
+    filter: blur(var(--profile-blur, 0px));
     transform: scale(1.02);
   }
 
   .profile-backdrop-shade {
     z-index: 0;
-    display: none;
+    display: block;
+    background: rgba(5, 7, 13, var(--profile-shade, 0.68));
   }
 
   #root {
@@ -91,38 +96,20 @@
     background: #166534;
   }
 
-  /* Единый контраст вторичного текста на изображениях и видеофонах. */
-  .text-mute,
+  .text-mute {
+    color: var(--brand-mute);
+  }
   .text-readable {
-    color: #ffffff !important;
-    opacity: 1 !important;
-    filter: none !important;
+    color: #e2e8f0;
   }
-
-  /* Текстовый слой никогда не должен становиться прозрачным вместе с фоном. */
-  #root,
-  #main-content,
-  header,
-  footer {
-    opacity: 1;
+  .text-ink {
+    color: var(--brand-ink);
   }
-
-  #main-content .text-mute,
-  #main-content .text-readable,
-  header .text-mute,
-  header .text-readable,
-  footer .text-mute,
-  footer .text-readable {
-    color: #e2e8f0 !important;
-    opacity: 1 !important;
-  }
-
   .text-emerald {
-    color: #6ee7b7 !important;
+    color: #6ee7b7;
   }
-
   .text-violet {
-    color: #c4b5fd !important;
+    color: #c4b5fd;
   }
 
   input::placeholder,
@@ -160,22 +147,24 @@
   /* Стеклянная панель — базовый строительный блок карточек и Navbar */
   .glass {
     @apply border border-line bg-panel;
-    background: #0d1420;
-    box-shadow: none;
+    background: linear-gradient(145deg, rgba(16, 26, 41, 0.94), rgba(9, 15, 26, 0.94));
+    box-shadow:
+      0 18px 50px rgba(0, 0, 0, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
   }
 
   /* Непрозрачная поверхность для длинных текстовых страниц: фон не конкурирует
      с содержанием и сохраняется читаемый контраст. */
   .content-page-surface {
-    border: 1px solid #475569;
-    background: #05070d;
-    box-shadow: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    border: 1px solid #25334a;
+    background: rgba(5, 9, 20, 0.94);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
 
   .content-page-card {
-    border: 1px solid #475569;
+    border: 1px solid #25334a;
     background: #0d1420;
   }
 
@@ -188,8 +177,10 @@
   }
 
   .glass-hover:hover {
-    border-color: #34d399;
-    box-shadow: none;
+    border-color: rgba(52, 211, 153, 0.65);
+    box-shadow:
+      0 18px 50px rgba(0, 0, 0, 0.3),
+      0 0 28px rgba(52, 211, 153, 0.08);
     transform: translateY(-3px);
   }
 
@@ -198,11 +189,11 @@
   }
 
   .button-glow {
-    box-shadow: none;
+    box-shadow: 0 0 0 rgba(52, 211, 153, 0);
   }
 
   .button-glow:hover {
-    box-shadow: none;
+    box-shadow: 0 0 28px rgba(52, 211, 153, 0.3);
   }
 
   .button-primary,
@@ -220,7 +211,7 @@
   }
 
   .button-primary {
-    @apply bg-emerald font-semibold text-void hover:bg-emerald disabled:bg-panel2 text-ink;
+    @apply bg-emerald font-semibold text-void hover:bg-emerald disabled:bg-panel2;
   }
 
   .button-secondary {
@@ -263,16 +254,15 @@
   }
 
   .section-divider {
-    background: linear-gradient(
-      90deg,
-      #05070d,
-      #34d399,
-      #8b5cf6,
-      #05070d
-    );
+    background: linear-gradient(90deg, #05070d, #34d399, #8b5cf6, #05070d);
   }
 
   .section-label {
     @apply font-mono text-[10px] uppercase tracking-[0.2em] text-emerald;
+  }
+
+  .section-shell {
+    @apply rounded-3xl border border-line/80 bg-panel/40;
+    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
   }
 }

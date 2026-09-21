@@ -3,7 +3,14 @@ import { useEffect } from "react";
 const SITE_URL = import.meta.env.VITE_SITE_URL || "https://0x00space.vercel.app";
 const DEFAULT_IMAGE = `${SITE_URL}/brand-logo-transparent.png`;
 
-export default function Seo({ title, description, path = "/", image = DEFAULT_IMAGE, type = "website", structuredData }) {
+export default function Seo({
+  title,
+  description,
+  path = "/",
+  image = DEFAULT_IMAGE,
+  type = "website",
+  structuredData,
+}) {
   useEffect(() => {
     const canonical = new URL(path, `${SITE_URL}/`).href;
     document.title = title;

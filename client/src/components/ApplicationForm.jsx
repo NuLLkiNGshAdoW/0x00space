@@ -106,7 +106,11 @@ export default function ApplicationForm() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="glass mt-8 rounded-2xl p-5 sm:p-7">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="glass mt-8 rounded-2xl p-5 shadow-2xl shadow-emerald/5 sm:p-7"
+        >
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field id="nickname" label="Игровой ник / имя" error={errors.nickname}>
               <input
@@ -177,10 +181,10 @@ export default function ApplicationForm() {
               <Field id="custom-game" label="Какая именно игра" error={errors.customGame}>
                 <input
                   type="text"
-                value={form.customGame}
-                id="custom-game"
-                aria-invalid={Boolean(errors.customGame)}
-                aria-describedby={errors.customGame ? "custom-game-error" : undefined}
+                  value={form.customGame}
+                  id="custom-game"
+                  aria-invalid={Boolean(errors.customGame)}
+                  aria-describedby={errors.customGame ? "custom-game-error" : undefined}
                   onChange={updateField("customGame")}
                   onBlur={() => setErrors(validate(form))}
                   required
@@ -207,11 +211,7 @@ export default function ApplicationForm() {
             </Field>
           </div>
 
-          <Button
-            type="submit"
-            disabled={status === "submitting"}
-            className="mt-6 w-full"
-          >
+          <Button type="submit" disabled={status === "submitting"} className="mt-6 w-full">
             {status === "submitting" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -221,14 +221,21 @@ export default function ApplicationForm() {
           </Button>
 
           {status === "success" && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald-soft px-4 py-3 text-sm text-emerald" role="status" aria-live="polite">
+            <div
+              className="mt-4 flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald-soft px-4 py-3 text-sm text-emerald"
+              role="status"
+              aria-live="polite"
+            >
               <CheckCircle2 className="h-[18px] w-[18px] shrink-0" />
               Заявка отправлена. Мы свяжемся с вами по указанному контакту.
             </div>
           )}
 
           {status === "error" && (
-             <div className="status-error mt-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm" role="alert">
+            <div
+              className="status-error mt-4 flex items-center gap-2 rounded-lg px-4 py-3 text-sm"
+              role="alert"
+            >
               <XCircle className="h-[18px] w-[18px] shrink-0" />
               {serverError}
             </div>
@@ -256,10 +263,15 @@ export default function ApplicationForm() {
               Я согласен на обработку данных для связи по заявке. Подробнее — в{" "}
               <Link to="/privacy" className="text-emerald underline-offset-2 hover:underline">
                 политике конфиденциальности
-              </Link>.
+              </Link>
+              .
             </span>
           </label>
-          {errors.consent && <p id="consent-error" role="alert" className="mt-2 text-xs text-violet">{errors.consent}</p>}
+          {errors.consent && (
+            <p id="consent-error" role="alert" className="mt-2 text-xs text-violet">
+              {errors.consent}
+            </p>
+          )}
         </form>
       </div>
     </section>
@@ -269,14 +281,12 @@ export default function ApplicationForm() {
 function Field({ id, label, error, full = false, children }) {
   return (
     <label className={cn("flex flex-col gap-1.5 text-sm", full && "sm:col-span-2")}>
-      <span id={`${id}-label`} className="text-ink">{label}</span>
+      <span id={`${id}-label`} className="text-ink">
+        {label}
+      </span>
       {children}
       {error && (
-        <span
-          id={`${id}-error`}
-          role="alert"
-          className="text-xs text-violet"
-        >
+        <span id={`${id}-error`} role="alert" className="text-xs text-violet">
           {error}
         </span>
       )}
@@ -287,8 +297,6 @@ function Field({ id, label, error, full = false, children }) {
 function inputClass(hasError) {
   return cn(
     "field-control",
-    hasError
-       ? "border-danger focus:border-danger focus:ring-danger/40"
-       : "",
+    hasError ? "border-danger focus:border-danger focus:ring-danger/40" : "",
   );
 }

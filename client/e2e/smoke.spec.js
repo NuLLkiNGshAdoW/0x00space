@@ -47,7 +47,9 @@ test("navigation opens the video collection", async ({ page }) => {
 
 test("materials collection has a single accessible page heading", async ({ page }) => {
   await page.goto("/materials");
-  await expect(page.getByRole("heading", { level: 1, name: "Материалы и сиды Minecraft" })).toBeAttached();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Материалы и сиды Minecraft" }),
+  ).toBeAttached();
 });
 
 test("video search is debounced and reflected in the URL", async ({ page }) => {
@@ -64,7 +66,10 @@ test("mobile menu exposes navigation and closes after selection", async ({ page 
   const menuButton = page.getByRole("button", { name: "Открыть меню" });
   await menuButton.click();
   await expect(page.getByRole("navigation", { name: "Мобильная навигация" })).toBeVisible();
-  await page.getByRole("navigation", { name: "Мобильная навигация" }).getByRole("link", { name: "FAQ" }).click();
+  await page
+    .getByRole("navigation", { name: "Мобильная навигация" })
+    .getByRole("link", { name: "FAQ" })
+    .click();
   await expect(page).toHaveURL(/\/faq$/);
   await expect(page.getByRole("button", { name: "Открыть меню" })).toBeVisible();
 });

@@ -50,28 +50,32 @@ export default function ProfileBackdrop() {
     "--profile-blur": `${settings.blur}px`,
     "--profile-position": settings.position,
   };
+  const mediaStyle = { ...style, objectPosition: settings.position };
   return (
     <>
       {!customFailed && background?.type === "video" && !reducedMotion ? (
         <video
           className="profile-backdrop profile-backdrop-custom"
-          style={{ ...style, objectPosition: settings.position }}
+          style={mediaStyle}
           src={url}
           poster="/profile-background.svg"
           onError={() => setCustomFailed(true)}
-           autoPlay
-           preload="metadata"
-           muted
+          autoPlay
+          preload="metadata"
+          muted
           loop
           playsInline
+          onLoadedMetadata={(event) => {
+            event.currentTarget.playbackRate = Math.max(0.25, Number(settings.speed) || 1);
+          }}
           aria-hidden="true"
         />
       ) : !customFailed && background?.type === "image" ? (
         <img
           className="profile-backdrop profile-backdrop-custom"
-          style={{ ...style, objectPosition: settings.position }}
-         src={url}
-         alt=""
+          style={mediaStyle}
+          src={url}
+          alt=""
           width="1920"
           height="1080"
           loading="lazy"

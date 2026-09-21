@@ -8,7 +8,13 @@ export default function Footer() {
     <footer aria-label="Подвал сайта" className="border-t border-line">
       <div className="container-app flex flex-col items-center gap-5 py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] sm:flex-row sm:justify-between">
         <div className="flex items-center gap-2.5">
-          <img src="/brand-mark.png" alt="" width="32" height="32" className="h-6 w-6 object-contain" />
+          <img
+            src="/brand-mark.png"
+            alt=""
+            width="32"
+            height="32"
+            className="h-6 w-6 object-contain"
+          />
           <span className="font-display text-sm text-ink">
             0x00 <span className="text-emerald">SPACE</span>
           </span>
@@ -42,7 +48,7 @@ export default function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label={name}
-               className="icon-button text-mute"
+              className="icon-button text-mute"
             >
               <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </a>

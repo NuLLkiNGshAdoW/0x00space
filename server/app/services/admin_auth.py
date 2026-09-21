@@ -1,5 +1,6 @@
 """Short-lived signed admin sessions and a small in-process login limiter."""
 import base64
+import binascii
 import hashlib
 import hmac
 import json
@@ -40,7 +41,7 @@ def valid_session(value: str | None) -> bool:
     try:
         data = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
         return int(data["exp"]) >= int(time.time())
-    except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError, binascii.Error):
         return False
 
 

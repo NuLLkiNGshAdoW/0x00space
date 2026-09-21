@@ -43,13 +43,21 @@ async def fetch_video(video_id: str) -> YoutubeVideoOut | None:
             response.raise_for_status()
     except httpx.HTTPError as exc:
         raise YoutubeApiError("YouTube API временно недоступен") from exc
-    items = response.json().get("items", [])
+    try:
+        items = response.json().get("items", [])
+    except (TypeError, ValueError) as exc:
+        raise YoutubeApiError("YouTube API вернул некорректный ответ") from exc
     if not items:
         return None
-    video = items[0]
-    snippet = video["snippet"]
-    duration = _parse_iso8601_duration_to_seconds(video["contentDetails"]["duration"])
-    result = YoutubeVideoOut(video_id=video["id"], title=snippet["title"], description=snippet.get("description", ""), thumbnail_url=snippet["thumbnails"].get("high", snippet["thumbnails"]["default"])["url"], published_at=datetime.fromisoformat(snippet["publishedAt"].replace("Z", "+00:00")), is_short=duration <= 60, url=f"https://www.youtube.com/watch?v={video['id']}", duration_seconds=duration, view_count=int(video.get("statistics", {}).get("viewCount", 0)))
+    try:
+        video = items[0]
+        snippet = video["snippet"]
+        thumbnails = snippet["thumbnails"]
+        thumbnail = thumbnails.get("high") or thumbnails["default"]
+        duration = _parse_iso8601_duration_to_seconds(video["contentDetails"]["duration"])
+        result = YoutubeVideoOut(video_id=video["id"], title=snippet["title"], description=snippet.get("description", ""), thumbnail_url=thumbnail["url"], published_at=datetime.fromisoformat(snippet["publishedAt"].replace("Z", "+00:00")), is_short=duration <= 60, url=f"https://www.youtube.com/watch?v={video['id']}", duration_seconds=duration, view_count=int(video.get("statistics", {}).get("viewCount", 0)))
+    except (KeyError, TypeError, ValueError) as exc:
+        raise YoutubeApiError("YouTube API вернул неполные данные видео") from exc
     cache.set(f"youtube:video:{video_id}", result, settings.YOUTUBE_CACHE_TTL_SECONDS)
     return result
 
@@ -60,7 +68,7 @@ def _parse_iso8601_duration_to_seconds(duration: str) -> int:
     Простой парсер без внешних зависимостей (без isodate).
     """
     import re
-    match = re.match(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", duration)
+    match = re.fullmatch(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", duration)
     if not match:
         return 0
     hours, minutes, seconds = (int(x) if x else 0 for x in match.groups())

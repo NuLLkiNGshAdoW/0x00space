@@ -53,8 +53,8 @@ export default function Navbar() {
       className={cn(
         "sticky top-0 z-50 overflow-x-clip border-b transition-colors",
         isScrolled
-          ? "border-line bg-void"
-          : "border-line bg-void",
+          ? "border-line bg-void/95 shadow-lg shadow-black/20 backdrop-blur-xl"
+          : "border-line/70 bg-void/80 backdrop-blur-xl",
       )}
     >
       <div className="container-app flex h-16 items-center justify-between">
@@ -64,27 +64,35 @@ export default function Navbar() {
             alt=""
             width="40"
             height="40"
-             className="h-8 w-8 object-contain"
+            className="h-8 w-8 object-contain"
           />
           <span className="font-display text-lg font-semibold tracking-tight text-ink">
             0x00 <span className="text-emerald">SPACE</span>
           </span>
         </Link>
 
-        <nav aria-label="Основная навигация" className="hidden min-w-0 md:flex items-center gap-4 lg:gap-8">
+        <nav
+          aria-label="Основная навигация"
+          className="hidden min-w-0 md:flex items-center gap-4 lg:gap-8"
+        >
           {NAV_LINKS.map((link) => (
             <NavLink
               key={link.href}
               to={link.href}
               end={link.href === "/"}
-              className={({ isActive }) => cn("text-sm transition-colors hover:text-ink", isActive ? "text-emerald" : "text-mute")}
+              className={({ isActive }) =>
+                cn(
+                  "text-sm transition-colors hover:text-ink",
+                  isActive ? "text-emerald" : "text-mute",
+                )
+              }
             >
               {link.label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-2">
           {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
             <a
               key={name}
@@ -98,6 +106,13 @@ export default function Navbar() {
             </a>
           ))}
         </div>
+
+        <Link
+          to="/videos"
+          className="button-primary hidden min-h-10 px-4 py-2 text-xs lg:inline-flex"
+        >
+          Смотреть видео
+        </Link>
 
         <button
           type="button"
@@ -113,7 +128,11 @@ export default function Navbar() {
       </div>
 
       {isOpen && (
-          <div id="mobile-navigation" ref={menuRef} className="md:hidden border-t border-line bg-void">
+        <div
+          id="mobile-navigation"
+          ref={menuRef}
+          className="md:hidden border-t border-line bg-panel/95 shadow-2xl backdrop-blur-xl"
+        >
           <nav aria-label="Мобильная навигация" className="container-app flex flex-col gap-1 py-3">
             {NAV_LINKS.map((link) => (
               <NavLink
@@ -121,11 +140,19 @@ export default function Navbar() {
                 to={link.href}
                 end={link.href === "/"}
                 onClick={handleNavClick}
-                 className={({ isActive }) => cn("interactive-control rounded-lg px-3 py-2.5 text-left text-sm hover:bg-panel2", isActive ? "bg-panel2 text-emerald" : "text-ink")}
+                className={({ isActive }) =>
+                  cn(
+                    "interactive-control rounded-lg px-3 py-2.5 text-left text-sm hover:bg-panel2",
+                    isActive ? "bg-panel2 text-emerald" : "text-ink",
+                  )
+                }
               >
                 {link.label}
               </NavLink>
             ))}
+            <Link to="/videos" onClick={handleNavClick} className="button-primary mt-2 w-full">
+              Смотреть видео
+            </Link>
             <div className="mt-2 flex items-center gap-1 border-t border-line px-3 pt-3">
               {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
                 <a

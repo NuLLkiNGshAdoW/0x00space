@@ -28,14 +28,18 @@ export default function ResourceCard({ resource }) {
       )}
 
       <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-center justify-between gap-2">
-          <span className="rounded-full bg-emerald-soft px-2.5 py-0.5 text-xs text-emerald">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="shrink-0 rounded-full bg-emerald-soft px-2.5 py-0.5 text-xs text-emerald">
             {TYPE_LABELS[resource.resource_type] ?? resource.resource_type}
           </span>
           {resource.game_version && (
-            <span className="font-mono text-xs text-mute">{resource.game_version}</span>
+            <span className="min-w-0 truncate font-mono text-xs text-mute">
+              {resource.game_version}
+            </span>
           )}
-          <FavoriteButton id={`resource-${resource.id}`} />
+          <span className="ml-auto shrink-0">
+            <FavoriteButton id={`resource-${resource.id}`} />
+          </span>
         </div>
 
         <h3 className="mt-3 text-sm font-medium text-ink">{resource.title}</h3>
@@ -51,7 +55,7 @@ export default function ResourceCard({ resource }) {
           onClick={() => trackEvent("resource_download", { resource_title: resource.title })}
           target="_blank"
           rel="noreferrer"
-           className="button-secondary mt-4 w-full"
+          className="button-secondary mt-4 w-full"
         >
           <Download className="h-4 w-4" strokeWidth={1.8} />
           Скачать

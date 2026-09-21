@@ -45,16 +45,30 @@ export default function ResourcesAndGuides() {
   });
   const resources = resourcesQuery.data || [];
   const seeds = seedsQuery.data || [];
-  const resourcesStatus = resourcesQuery.isPending ? "loading" : resourcesQuery.isError ? "error" : "ready";
+  const resourcesStatus = resourcesQuery.isPending
+    ? "loading"
+    : resourcesQuery.isError
+      ? "error"
+      : "ready";
   const seedsStatus = seedsQuery.isPending ? "loading" : seedsQuery.isError ? "error" : "ready";
-  const resourcesError = resourcesQuery.error instanceof ApiError ? resourcesQuery.error.message : "Не удалось загрузить материалы.";
-  const seedsError = seedsQuery.error instanceof ApiError ? seedsQuery.error.message : "Не удалось загрузить сиды.";
+  const resourcesError =
+    resourcesQuery.error instanceof ApiError
+      ? resourcesQuery.error.message
+      : "Не удалось загрузить материалы.";
+  const seedsError =
+    seedsQuery.error instanceof ApiError ? seedsQuery.error.message : "Не удалось загрузить сиды.";
 
   useEffect(() => setPage(1), [gameFilter, search, activeView]);
 
   useEffect(() => {
     const next = new URLSearchParams(params);
-    [["resource_view", activeView, "resources"], ["resource_game", gameFilter, ""], ["resource_q", search.trim(), ""], ["resource_sort", sort, "newest"], ["resource_page", page, 1]].forEach(([key, value, defaultValue]) => {
+    [
+      ["resource_view", activeView, "resources"],
+      ["resource_game", gameFilter, ""],
+      ["resource_q", search.trim(), ""],
+      ["resource_sort", sort, "newest"],
+      ["resource_page", page, 1],
+    ].forEach(([key, value, defaultValue]) => {
       if (String(value) === String(defaultValue) || value === "") next.delete(key);
       else next.set(key, String(value));
     });
@@ -73,9 +87,12 @@ export default function ResourcesAndGuides() {
     );
   };
 
-  const sortItems = (items) => [...items].sort((a, b) => sort === "title"
-    ? a.title.localeCompare(b.title, "ru")
-    : new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  const sortItems = (items) =>
+    [...items].sort((a, b) =>
+      sort === "title"
+        ? a.title.localeCompare(b.title, "ru")
+        : new Date(b.created_at || 0) - new Date(a.created_at || 0),
+    );
   const filteredResources = sortItems(filterItems(resources));
   const filteredSeeds = sortItems(filterItems(seeds));
   const visibleResources = filteredResources.slice((page - 1) * pageSize, page * pageSize);
@@ -90,19 +107,21 @@ export default function ResourcesAndGuides() {
     const nextSearch = params.get("resource_q") || "";
     const nextGame = params.get("resource_game") || "";
     const nextPage = Number.isInteger(urlPage) && urlPage > 0 ? urlPage : 1;
-    setActiveView((value) => value === nextView ? value : nextView);
-    setSort((value) => value === nextSort ? value : nextSort);
-    setSearch((value) => value === nextSearch ? value : nextSearch);
-    setGameFilter((value) => value === nextGame ? value : nextGame);
-    setPage((value) => value === nextPage ? value : nextPage);
+    setActiveView((value) => (value === nextView ? value : nextView));
+    setSort((value) => (value === nextSort ? value : nextSort));
+    setSearch((value) => (value === nextSearch ? value : nextSearch));
+    setGameFilter((value) => (value === nextGame ? value : nextGame));
+    setPage((value) => (value === nextPage ? value : nextPage));
   }, [params]);
-  const currentItemsPages = Math.ceil((activeView === "resources" ? filteredResources.length : filteredSeeds.length) / pageSize);
+  const currentItemsPages = Math.ceil(
+    (activeView === "resources" ? filteredResources.length : filteredSeeds.length) / pageSize,
+  );
   useEffect(() => {
     if (currentItemsPages > 0 && page > currentItemsPages) setPage(currentItemsPages);
   }, [currentItemsPages, page]);
 
   return (
-    <section id="resources" className="border-t border-line bg-panel/20 py-16 sm:py-20">
+    <section id="resources" className="border-y border-line/70 bg-panel/20 py-16 sm:py-20">
       <div className="container-app">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -118,20 +137,24 @@ export default function ResourcesAndGuides() {
             </p>
           </div>
 
-           <div role="tablist" aria-label="Раздел материалов" className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start">
+          <div
+            role="tablist"
+            aria-label="Раздел материалов"
+            className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start"
+          >
             {VIEWS.map((view) => (
-               <button
-                 key={view.key}
-                 type="button"
-                 id={`${view.key}-tab`}
-                 role="tab"
-                 aria-selected={activeView === view.key}
-                 aria-controls={`${view.key}-panel`}
-                 onClick={() => setActiveView(view.key)}
+              <button
+                key={view.key}
+                type="button"
+                id={`${view.key}-tab`}
+                role="tab"
+                aria-selected={activeView === view.key}
+                aria-controls={`${view.key}-panel`}
+                onClick={() => setActiveView(view.key)}
                 className={cn(
-                     "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
+                  "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
                   activeView === view.key
-                     ? "bg-violet text-void font-medium"
+                    ? "bg-violet text-void font-medium"
                     : "text-mute hover:text-ink",
                 )}
               >
@@ -151,13 +174,17 @@ export default function ResourcesAndGuides() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Поиск по материалам и сидам…"
-             className="field-control w-full pl-9 pr-3"
+            className="field-control w-full pl-9 pr-3"
           />
         </label>
 
         <label className="mt-3 block max-w-xs">
           <span className="sr-only">Сортировка материалов</span>
-          <select value={sort} onChange={(event) => setSort(event.target.value)} className="field-control w-full">
+          <select
+            value={sort}
+            onChange={(event) => setSort(event.target.value)}
+            className="field-control w-full"
+          >
             <option value="newest">Сначала новые</option>
             <option value="title">По названию</option>
           </select>
@@ -172,7 +199,7 @@ export default function ResourcesAndGuides() {
                   type="button"
                   onClick={() => setGameFilter(filter.key)}
                   className={cn(
-                     "interactive-control rounded-full border px-3.5 py-1.5 text-xs transition-colors",
+                    "interactive-control rounded-full border px-3.5 py-1.5 text-xs transition-colors",
                     gameFilter === filter.key
                       ? "border-emerald/60 bg-emerald-soft text-emerald"
                       : "border-line text-mute hover:border-emerald/30 hover:text-ink",
@@ -183,7 +210,12 @@ export default function ResourcesAndGuides() {
               ))}
             </div>
 
-             <div id="resources-panel" role="tabpanel" aria-labelledby="resources-tab" className="mt-6">
+            <div
+              id="resources-panel"
+              role="tabpanel"
+              aria-labelledby="resources-tab"
+              className="mt-6"
+            >
               {resourcesStatus === "loading" && (
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, i) => (
@@ -223,7 +255,7 @@ export default function ResourcesAndGuides() {
         )}
 
         {activeView === "seeds" && (
-           <div id="seeds-panel" role="tabpanel" aria-labelledby="seeds-tab" className="mt-7">
+          <div id="seeds-panel" role="tabpanel" aria-labelledby="seeds-tab" className="mt-7">
             {seedsStatus === "loading" && (
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -274,7 +306,7 @@ function Pagination({ page, total, pageSize, setPage }) {
         type="button"
         disabled={page === 1}
         onClick={() => setPage((value) => value - 1)}
-          className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
+        className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Назад
       </button>
@@ -285,7 +317,7 @@ function Pagination({ page, total, pageSize, setPage }) {
         type="button"
         disabled={page === pages}
         onClick={() => setPage((value) => value + 1)}
-          className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
+        className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Далее
       </button>

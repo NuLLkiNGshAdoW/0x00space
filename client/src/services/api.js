@@ -7,7 +7,9 @@ import { videoSchema, videosSchema } from "../lib/schemas.js";
 import { captureError } from "../lib/monitoring.js";
 // В production Vercel не должен молча обращаться к localhost пользователя.
 // Same-origin fallback также позволяет подключить API через reverse proxy.
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? "/api" : "http://localhost:8000/api");
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? "/api" : "http://localhost:8000/api");
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
 /** Класс ошибки API — хранит HTTP-статус и сообщение от сервера. */
@@ -39,7 +41,11 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    const messages = { 401: "Нужна авторизация администратора.", 404: "Запрошенные данные не найдены.", 500: "Сервер временно недоступен. Попробуйте ещё раз позже." };
+    const messages = {
+      401: "Нужна авторизация администратора.",
+      404: "Запрошенные данные не найдены.",
+      500: "Сервер временно недоступен. Попробуйте ещё раз позже.",
+    };
     let detail = messages[response.status] || `Запрос завершился с ошибкой ${response.status}`;
     try {
       const errorBody = await response.json();
@@ -56,7 +62,10 @@ async function request(path, options = {}) {
   if (response.status === 204) return null;
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
-    const error = new ApiError("Сервис вернул некорректный ответ. Проверьте адрес API.", response.status);
+    const error = new ApiError(
+      "Сервис вернул некорректный ответ. Проверьте адрес API.",
+      response.status,
+    );
     captureError(error, { source: path, status: response.status, error_type: "invalid_response" });
     throw error;
   }
@@ -78,8 +87,12 @@ export function getVideo(videoId) {
 export function loginAdmin(password) {
   return request("/auth/login", { method: "POST", body: JSON.stringify({ password }) });
 }
-export function checkAdmin() { return request("/auth/check"); }
-export function logoutAdmin() { return request("/auth/logout", { method: "POST" }); }
+export function checkAdmin() {
+  return request("/auth/check");
+}
+export function logoutAdmin() {
+  return request("/auth/logout", { method: "POST" });
+}
 
 export const LATEST_VIDEOS_QUERY_KEY = ["videos", "latest"];
 

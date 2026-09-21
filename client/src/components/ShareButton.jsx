@@ -17,12 +17,7 @@ export default function ShareButton({ title }) {
     }
   };
   return (
-    <button
-      type="button"
-      onClick={share}
-      className="button-secondary"
-      aria-live="polite"
-    >
+    <button type="button" onClick={share} className="button-secondary" aria-live="polite">
       <>{copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}</>
       {copied ? "Ссылка скопирована" : "Поделиться"}
     </button>
