@@ -159,7 +159,7 @@ export default function ContentPage({ path }) {
               <ArrowLeft className="h-4 w-4" /> На главную
             </Link>
             <Icon className="mt-12 h-8 w-8 text-emerald" aria-hidden="true" />
-            <h1 className="mt-5 font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
+            <h1 className="mt-5 break-words font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
               {page.title}
             </h1>
             <p className="content-page-copy mt-4 max-w-2xl text-base leading-relaxed">

@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Play } from "lucide-react";
-import { LATEST_VIDEOS_QUERY_KEY } from "../services/api.js";
+import { getLatestVideos, LATEST_VIDEOS_QUERY_KEY } from "../services/api.js";
 import { trackEvent } from "../lib/analytics.js";
 import { Link } from "react-router-dom";
 
 export default function FeaturedVideos() {
   const { data: videos = [] } = useQuery({
     queryKey: LATEST_VIDEOS_QUERY_KEY,
+    queryFn: () => getLatestVideos(12),
     select: (videos) => videos.slice(0, 3),
   });
   if (!videos.length) return null;
@@ -52,8 +53,11 @@ export default function FeaturedVideos() {
               width="480"
               height="270"
               loading={index === 0 ? "eager" : "lazy"}
-              fetchPriority={index === 0 ? "high" : "auto"}
               decoding="async"
+              fetchpriority={index === 0 ? "high" : undefined}
+              onError={(event) => {
+                event.currentTarget.classList.add("opacity-0");
+              }}
               className="aspect-video w-full object-cover transition duration-500 group-hover:scale-105"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-void via-void/50 to-transparent" />

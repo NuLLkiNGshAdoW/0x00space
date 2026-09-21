@@ -6,7 +6,7 @@ export default function TelegramFloat() {
   const [visible, setVisible] = useState(true);
   if (!visible) return null;
   return (
-    <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-40 flex items-center justify-end gap-2 sm:bottom-5 sm:left-auto sm:right-5">
+    <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-auto right-4 z-40 flex items-center gap-2 sm:bottom-5 sm:right-5">
       <button
         type="button"
         onClick={() => setVisible(false)}
@@ -21,9 +21,9 @@ export default function TelegramFloat() {
         rel="noreferrer"
         onClick={() => trackEvent("telegram_open", { source: "floating_button" })}
         aria-label="Открыть Telegram-канал 0x00 SPACE"
-        className="button-glow inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#0878ad] px-4 py-3 text-sm font-semibold text-white transition-transform hover:scale-105 sm:flex-none"
+        className="button-glow inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#0878ad] px-4 py-3 text-sm font-semibold text-white transition-transform hover:scale-105"
       >
-        <Send className="h-4 w-4" /> Telegram-канал
+        <Send className="h-4 w-4" /> <span className="hidden sm:inline">Telegram-канал</span>
       </a>
     </div>
   );

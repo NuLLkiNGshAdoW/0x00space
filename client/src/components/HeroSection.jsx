@@ -111,7 +111,7 @@ export default function HeroSection() {
 
         {/* Графическая панель "сигнала" — единственный акцент с движением на странице */}
         <div className="relative mx-auto aspect-square w-full max-w-sm">
-          <div className="glass glass-accent-border relative h-full w-full overflow-hidden rounded-3xl shadow-2xl shadow-violet/10">
+          <div className="glass glass-accent-border relative isolate h-full w-full overflow-hidden rounded-3xl shadow-2xl shadow-violet/10">
             <img
               src="/brand-logo-transparent.png"
               alt=""
@@ -120,29 +120,32 @@ export default function HeroSection() {
               height="675"
               loading="eager"
               decoding="async"
-              className="pointer-events-none absolute inset-0 h-full w-full object-contain object-[70%_50%] opacity-90"
+              className="pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-[70%_50%] opacity-90"
             />
             {/* Сканирующая линия */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              <div className="absolute inset-x-0 h-24 animate-scanline bg-emerald" />
+              <div className="absolute inset-x-0 h-16 animate-scanline bg-emerald/10" />
             </div>
 
             {/* Концентрические "орбиты" */}
-            <svg viewBox="0 0 300 300" className="absolute inset-0 h-full w-full">
+            <svg
+              viewBox="0 0 300 300"
+              className="pointer-events-none absolute inset-0 z-10 h-full w-full opacity-70"
+            >
               <circle cx="150" cy="150" r="60" stroke="#34d399" fill="none" strokeWidth="1" />
               <circle cx="150" cy="150" r="100" stroke="#8b5cf6" fill="none" strokeWidth="1" />
               <circle cx="150" cy="150" r="140" stroke="#475569" fill="none" strokeWidth="1" />
             </svg>
 
-            <div className="absolute left-5 top-5 rounded-lg border border-emerald bg-void px-3 py-2 font-mono text-[10px] text-emerald">
+            <div className="absolute left-5 top-5 z-20 rounded-lg border border-emerald bg-void px-3 py-2 font-mono text-[10px] text-emerald">
               0x00 SPACE
             </div>
-            <div className="absolute right-5 top-1/2 rounded-lg border border-violet bg-void px-3 py-2 font-mono text-[10px] text-violet">
+            <div className="absolute right-5 top-1/2 z-20 rounded-lg border border-violet bg-void px-3 py-2 font-mono text-[10px] text-violet">
               ИГРАЕМ ВМЕСТЕ
             </div>
 
             {/* Подпись уточняет, что панель ведёт к реальному контенту канала. */}
-            <div className="absolute inset-x-4 bottom-4 rounded-lg border border-line bg-void/80 p-3 font-mono text-[11px] text-mute backdrop-blur-sm">
+            <div className="absolute inset-x-4 bottom-4 z-20 rounded-lg border border-line bg-void/80 p-3 font-mono text-[11px] text-mute backdrop-blur-sm">
               <div className="flex items-center justify-between">
                 <span>ФОРМАТ</span>
                 <span className="text-emerald">ВИДЕО</span>
