@@ -22,6 +22,6 @@
   <rect width="1920" height="1080" fill="url(#purple)"/>
   <circle cx="1510" cy="210" r="230" fill="none" stroke="#8b5cf6" stroke-opacity=".12" stroke-width="2"/>
   <circle cx="1510" cy="210" r="330" fill="none" stroke="#10b981" stroke-opacity=".10" stroke-width="2"/>
-  <path d="M0 780C400 650 590 920 960 760s610-170 960 20v300H0z" fill="#05070d" fill-opacity=".38"/>
+  <path d="M0 780C400 650 590 920 960 760s610-170 960 20v300H0z" fill="#05070d" fill-opacity=".18"/>
   <rect width="1920" height="1080" fill="url(#grid)"/>
 </svg>

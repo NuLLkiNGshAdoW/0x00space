@@ -85,12 +85,18 @@
   }
 
   .profile-backdrop-shade {
-    z-index: 0;
+    z-index: 1;
     display: block;
     background: rgba(5, 7, 13, var(--profile-shade, 0.68));
   }
 
   #root {
+    position: relative;
+    z-index: 10;
+  }
+
+  #main-content,
+  footer {
     position: relative;
     z-index: 10;
   }
@@ -267,6 +273,7 @@
 
   .section-shell {
     @apply rounded-3xl border border-line/80 bg-panel/40;
+    background: rgba(5, 7, 13, 0.84);
     box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
   }
 }

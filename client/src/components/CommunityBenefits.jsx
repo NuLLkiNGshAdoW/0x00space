@@ -3,7 +3,7 @@ import { Compass, HeartHandshake, Sparkles } from "lucide-react";
 export default function CommunityBenefits() {
   return (
     <section className="container-app pb-16 sm:pb-20" aria-labelledby="community-title">
-      <div className="section-shell rounded-2xl border-violet/25 bg-violet-soft/30 p-6 sm:p-8">
+      <div className="section-shell rounded-2xl border-violet/25 p-6 sm:p-8">
         <div className="max-w-2xl">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet">Сообщество</p>
           <h2
