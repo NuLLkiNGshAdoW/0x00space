@@ -46,8 +46,8 @@ export default function HeroSection() {
             совместные приключения. Смотрим, играем и собираемся в одну команду.
           </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Link to="/videos" className="button-primary button-glow">
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:flex-nowrap">
+            <Link to="/videos" className="button-primary button-glow whitespace-nowrap">
               <Play className="h-4 w-4" fill="currentColor" />
               Смотреть ролики
             </Link>
@@ -56,14 +56,14 @@ export default function HeroSection() {
               target="_blank"
               rel="noreferrer"
               onClick={() => trackEvent("youtube_open", { source: "hero" })}
-              className="button-secondary border-violet/40 bg-violet-soft/20 hover:border-violet hover:text-violet"
+              className="button-secondary whitespace-nowrap border-violet/40 bg-violet-soft/20 hover:border-violet hover:text-violet"
             >
               <Youtube className="h-4 w-4" />
               Подписаться на YouTube
             </a>
             <a
               href="#application"
-              className="button-secondary bg-panel/60 hover:border-violet/50 hover:text-violet"
+              className="button-secondary whitespace-nowrap bg-panel/60 hover:border-violet/50 hover:text-violet"
             >
               <CalendarPlus className="h-4 w-4" />
               Подать заявку на ивент

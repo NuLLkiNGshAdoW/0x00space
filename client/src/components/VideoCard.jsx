@@ -16,7 +16,7 @@ export default function VideoCard({ video }) {
       <div className="relative aspect-video overflow-hidden bg-panel2">
         <img
           src={video.thumbnail_url}
-          alt={video.title}
+          alt=""
           width="480"
           height="270"
           loading="lazy"

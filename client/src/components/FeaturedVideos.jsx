@@ -49,7 +49,7 @@ export default function FeaturedVideos() {
           >
             <img
               src={video.thumbnail_url}
-              alt={video.title}
+              alt=""
               width="480"
               height="270"
               loading={index === 0 ? "eager" : "lazy"}
@@ -74,7 +74,7 @@ export default function FeaturedVideos() {
       </div>
       <Link
         to="/videos"
-        className="mt-5 inline-flex items-center gap-1 text-sm text-mute hover:text-emerald"
+        className="mt-5 inline-flex items-center gap-1 text-sm text-mute hover:text-emerald sm:hidden"
       >
         Все видео <ArrowUpRight className="h-4 w-4" />
       </Link>

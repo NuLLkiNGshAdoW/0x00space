@@ -64,6 +64,15 @@ async def fetch_video(video_id: str) -> YoutubeVideoOut | None:
 
 def _parse_iso8601_duration_to_seconds(duration: str) -> int:
     """
+
+
+async def _youtube_get(client: httpx.AsyncClient, url: str, params: dict):
+    try:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        return response
+    except httpx.HTTPError as exc:
+        raise YoutubeApiError("YouTube API временно недоступен") from exc
     Разбирает ISO 8601 duration формата 'PT1M30S' в секунды.
     Простой парсер без внешних зависимостей (без isodate).
     """
@@ -79,7 +88,8 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
     """
     Возвращает последние `limit` видео/Shorts канала, используя кеш при наличии.
     """
-    cached = cache.get(CACHE_KEY)
+    cache_key = f"{CACHE_KEY}:{limit}"
+    cached = cache.get(cache_key)
     if cached is not None:
         return cached
 
@@ -91,7 +101,8 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         # Шаг 1: получаем ID плейлиста "uploads" канала
-        channels_resp = await client.get(
+        channels_resp = await _youtube_get(
+            client,
             f"{YOUTUBE_API_BASE}/channels",
             params={
                 "part": "contentDetails",
@@ -99,7 +110,6 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
                 "key": settings.YOUTUBE_API_KEY,
             },
         )
-        channels_resp.raise_for_status()
         channels_data = channels_resp.json()
 
         items = channels_data.get("items", [])
@@ -109,7 +119,8 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
         uploads_playlist_id = items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
 
         # Шаг 2: последние видео из uploads-плейлиста
-        playlist_resp = await client.get(
+        playlist_resp = await _youtube_get(
+            client,
             f"{YOUTUBE_API_BASE}/playlistItems",
             params={
                 "part": "snippet",
@@ -118,7 +129,6 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
                 "key": settings.YOUTUBE_API_KEY,
             },
         )
-        playlist_resp.raise_for_status()
         playlist_data = playlist_resp.json()
 
         video_ids = [
@@ -127,11 +137,12 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
         ]
 
         if not video_ids:
-            cache.set(CACHE_KEY, [], settings.YOUTUBE_CACHE_TTL_SECONDS)
+            cache.set(cache_key, [], settings.YOUTUBE_CACHE_TTL_SECONDS)
             return []
 
         # Шаг 3: получаем длительность видео, чтобы определить Shorts
-        videos_resp = await client.get(
+        videos_resp = await _youtube_get(
+            client,
             f"{YOUTUBE_API_BASE}/videos",
             params={
                 "part": "contentDetails,snippet,statistics",
@@ -139,7 +150,6 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
                 "key": settings.YOUTUBE_API_KEY,
             },
         )
-        videos_resp.raise_for_status()
         videos_data = videos_resp.json()
 
     result: List[YoutubeVideoOut] = []
@@ -168,5 +178,5 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
     # Сортируем от новых к старым на случай, если порядок из API не гарантирован
     result.sort(key=lambda v: v.published_at, reverse=True)
 
-    cache.set(CACHE_KEY, result, settings.YOUTUBE_CACHE_TTL_SECONDS)
+    cache.set(cache_key, result, settings.YOUTUBE_CACHE_TTL_SECONDS)
     return result

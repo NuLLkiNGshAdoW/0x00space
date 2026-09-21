@@ -19,6 +19,7 @@ export default function ProfileBackdrop() {
         const interval = Number(data.settings?.rotation_minutes || 0);
         const initial = data.active || null;
         setBackground(initial);
+        setCustomFailed(false);
         setSettings((current) => ({ ...current, ...(data.settings || {}) }));
         if (interval > 0 && list.length > 1) {
           let index = Math.max(
@@ -28,6 +29,7 @@ export default function ProfileBackdrop() {
           timer = window.setInterval(
             () => {
               index = (index + 1) % list.length;
+              setCustomFailed(false);
               setBackground(list[index]);
             },
             interval * 60 * 1000,
@@ -41,10 +43,15 @@ export default function ProfileBackdrop() {
     };
   }, []);
 
-  const url = background?.url ? `${API_ORIGIN}${background.url}` : null;
+  const url = background?.url
+    ? /^https?:\/\//i.test(background.url)
+      ? background.url
+      : `${API_ORIGIN}${background.url}`
+    : null;
   // Текст должен оставаться читаемым даже если в старых настройках сохранено
   // слишком сильное затемнение фона.
-  const readableShade = Math.max(Math.min(Number(settings.shade) || 0.68, 0.72), 0.58);
+  const shade = Number(settings.shade);
+  const readableShade = Number.isFinite(shade) ? Math.max(Math.min(shade, 0.85), 0) : 0.68;
   const style = {
     "--profile-shade": readableShade,
     "--profile-blur": `${settings.blur}px`,

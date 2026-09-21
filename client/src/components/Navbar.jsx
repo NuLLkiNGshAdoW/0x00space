@@ -19,9 +19,9 @@ export default function Navbar() {
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
 
-  const closeMenu = useCallback(() => {
+  const closeMenu = useCallback((restoreFocus = false) => {
     setIsOpen(false);
-    window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+    if (restoreFocus) window.requestAnimationFrame(() => menuButtonRef.current?.focus());
   }, []);
 
   useEffect(() => {
@@ -33,9 +33,15 @@ export default function Navbar() {
   useEffect(() => {
     if (!isOpen) return undefined;
     menuRef.current?.querySelector("a")?.focus();
-    const onKeyDown = (event) => event.key === "Escape" && closeMenu();
+    const onKeyDown = (event) => event.key === "Escape" && closeMenu(true);
     const onPointerDown = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) closeMenu();
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        event.target !== menuButtonRef.current
+      ) {
+        closeMenu();
+      }
     };
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("pointerdown", onPointerDown);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink, Loader2, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
@@ -11,31 +11,24 @@ import Seo from "../components/Seo.jsx";
 import Button from "../components/Button.jsx";
 
 export default function VideoDetailPage({ videoId }) {
-  const [video, setVideo] = useState(null);
-  const [related, setRelated] = useState([]);
-  const [status, setStatus] = useState("loading");
-  const [errorMessage, setErrorMessage] = useState("");
-  useEffect(() => {
-    setStatus("loading");
-    setVideo(null);
-    setRelated([]);
-    setErrorMessage("");
-    getVideo(videoId)
-      .then(({ video: current, related: relatedVideos }) => {
-        setVideo(current);
-        setRelated(relatedVideos);
-        setStatus("ready");
-      })
-      .catch((error) => {
-        const missing = error.status === 404;
-        setErrorMessage(
-          missing
-            ? "Возможно, ролик ещё не загрузился или был удалён."
-            : "Не удалось загрузить ролик. Проверьте соединение и попробуйте снова.",
-        );
-        setStatus(missing ? "missing" : "error");
-      });
-  }, [videoId]);
+  const { data, isPending, isError, error, refetch } = useQuery({
+    queryKey: ["video", videoId],
+    queryFn: () => getVideo(videoId),
+    retry: false,
+  });
+  const video = data?.video;
+  const related = data?.related || [];
+  const status = isPending
+    ? "loading"
+    : isError
+      ? error?.status === 404
+        ? "missing"
+        : "error"
+      : "ready";
+  const errorMessage =
+    error?.status === 404
+      ? "Возможно, ролик ещё не загрузился или был удалён."
+      : "Не удалось загрузить ролик. Проверьте соединение и попробуйте снова.";
 
   const videoStructuredData = video
     ? {
@@ -94,20 +87,7 @@ export default function VideoDetailPage({ videoId }) {
               {errorMessage}
             </p>
             {status === "error" && (
-              <Button
-                type="button"
-                className="mt-6"
-                onClick={() => {
-                  setStatus("loading");
-                  getVideo(videoId)
-                    .then(({ video: current, related: relatedVideos }) => {
-                      setVideo(current);
-                      setRelated(relatedVideos);
-                      setStatus("ready");
-                    })
-                    .catch(() => setStatus("error"));
-                }}
-              >
+              <Button type="button" className="mt-6" onClick={() => refetch()}>
                 Повторить
               </Button>
             )}
@@ -121,7 +101,7 @@ export default function VideoDetailPage({ videoId }) {
                 alt={video.title}
                 width="1280"
                 height="720"
-                fetchPriority="high"
+                fetchpriority="high"
                 decoding="async"
                 className="aspect-video w-full object-cover"
               />

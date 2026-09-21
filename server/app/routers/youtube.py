@@ -23,7 +23,7 @@ async def get_latest_videos(
         return await fetch_latest_videos(limit=limit)
     except (YoutubeApiError, httpx.HTTPError) as exc:
         # 502 — потому что проблема на стороне внешнего API/конфигурации, а не клиента
-        raise HTTPException(status_code=502, detail=str(exc))
+        raise HTTPException(status_code=502, detail="YouTube API временно недоступен") from exc
 
 
 @router.get("/{video_id}")
@@ -37,4 +37,4 @@ async def get_video(video_id: str):
         related = [item for item in await fetch_latest_videos(limit=12) if item.video_id != video_id][:3]
         return {"video": video, "related": related}
     except (YoutubeApiError, httpx.HTTPError) as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(status_code=502, detail="YouTube API временно недоступен") from exc

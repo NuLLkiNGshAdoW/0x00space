@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes, useParams } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { useEffect } from "react";
 import Navbar from "./components/Navbar.jsx";
 import HeroSection from "./components/HeroSection.jsx";
 import YouTubeGallery from "./components/YouTubeGallery.jsx";
@@ -19,6 +20,7 @@ import Seo from "./components/Seo.jsx";
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollManager />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/admin" element={<AdminPage />} />
@@ -32,6 +34,21 @@ export default function App() {
       </Routes>
     </BrowserRouter>
   );
+}
+
+function ScrollManager() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    if (hash) {
+      const target = document.getElementById(hash.slice(1));
+      if (target) {
+        window.requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
+        return;
+      }
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname, hash]);
+  return null;
 }
 
 function HomePage() {

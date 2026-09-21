@@ -28,15 +28,21 @@ export class ApiError extends Error {
 async function request(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+  const timeoutSignal =
+    typeof AbortSignal?.timeout === "function" ? AbortSignal.timeout(15000) : undefined;
   let response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
       headers,
       credentials: "include",
-      ...options,
+      signal: options.signal || timeoutSignal,
     });
   } catch (error) {
     captureError(error, { source: path, error_type: "network" });
+    if (error?.name === "AbortError" || error?.name === "TimeoutError") {
+      throw new ApiError("Сервер просыпается. Попробуйте ещё раз через несколько секунд.", 408);
+    }
     throw error;
   }
 
@@ -49,7 +55,17 @@ async function request(path, options = {}) {
     let detail = messages[response.status] || `Запрос завершился с ошибкой ${response.status}`;
     try {
       const errorBody = await response.json();
-      if (errorBody?.detail) detail = errorBody.detail;
+      const detailText = (value) => {
+        if (typeof value === "string") return value;
+        if (Array.isArray(value))
+          return value
+            .map((item) => item?.msg)
+            .filter(Boolean)
+            .join("; ");
+        return "";
+      };
+      const parsedDetail = detailText(errorBody?.detail);
+      if (parsedDetail && response.status < 500) detail = parsedDetail;
     } catch {
       // Тело ответа не JSON — оставляем сообщение по умолчанию
     }
@@ -74,7 +90,14 @@ async function request(path, options = {}) {
 
 /** GET /api/youtube/latest — последние видео/Shorts канала. */
 export function getLatestVideos(limit = 12) {
-  return request(`/youtube/latest?limit=${limit}`).then((data) => videosSchema.parse(data));
+  return request(`/youtube/latest?limit=${limit}`).then((data) =>
+    Array.isArray(data)
+      ? data.flatMap((item) => {
+          const parsed = videoSchema.safeParse(item);
+          return parsed.success ? [parsed.data] : [];
+        })
+      : videosSchema.parse(data),
+  );
 }
 
 export function getVideo(videoId) {

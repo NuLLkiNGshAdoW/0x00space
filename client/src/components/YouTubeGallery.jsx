@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Radio, Search } from "lucide-react";
 import { getLatestVideos, ApiError, LATEST_VIDEOS_QUERY_KEY } from "../services/api.js";
@@ -19,12 +19,28 @@ const SORT_KEYS = new Set(["newest", "title"]);
 
 export default function YouTubeGallery() {
   const [params, setParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(() => params.get("video_type") || "all");
+  const activeTab = TAB_KEYS.has(params.get("video_type")) ? params.get("video_type") : "all";
   const [search, setSearch] = useState(() => params.get("video_q") || "");
-  const [sort, setSort] = useState(() => params.get("video_sort") || "newest");
-  const [page, setPage] = useState(() => Number(params.get("video_page")) || 1);
+  const sort = SORT_KEYS.has(params.get("video_sort")) ? params.get("video_sort") : "newest";
+  const page = Math.max(1, Number.parseInt(params.get("video_page"), 10) || 1);
   const debouncedSearch = useDebouncedValue(search);
   const pageSize = 8;
+  const patchParams = useCallback(
+    (changes) => {
+      setParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          Object.entries(changes).forEach(([key, value]) => {
+            if (value === "" || value == null) next.delete(key);
+            else next.set(key, String(value));
+          });
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setParams],
+  );
   const {
     data: videos = [],
     isPending,
@@ -61,42 +77,14 @@ export default function YouTubeGallery() {
     );
   }, [videos, activeTab, debouncedSearch, sort]);
 
-  useEffect(() => setPage(1), [activeTab, debouncedSearch, sort]);
   useEffect(() => {
-    const next = new URLSearchParams(params);
-    [
-      ["video_type", activeTab, "all"],
-      ["video_q", search.trim(), ""],
-      ["video_sort", sort, "newest"],
-      ["video_page", page, 1],
-    ].forEach(([key, value, defaultValue]) => {
-      if (String(value) === String(defaultValue) || value === "") next.delete(key);
-      else next.set(key, String(value));
-    });
-    if (next.toString() !== params.toString()) setParams(next, { replace: true });
-  }, [activeTab, search, sort, page, params, setParams]);
+    const query = debouncedSearch.trim();
+    if (query !== (params.get("video_q") || "")) patchParams({ video_q: query, video_page: "" });
+  }, [debouncedSearch, params, patchParams]);
 
-  const visibleVideos = filteredVideos.slice((page - 1) * pageSize, page * pageSize);
   const pages = Math.ceil(filteredVideos.length / pageSize);
 
-  // Состояние страницы должно следовать URL при back/forward и не показывать
-  // пустой экран, если после фильтрации текущая страница исчезла.
-  useEffect(() => {
-    const urlTab = params.get("video_type") || "all";
-    const urlSort = params.get("video_sort") || "newest";
-    const urlPage = Number(params.get("video_page"));
-    const nextTab = TAB_KEYS.has(urlTab) ? urlTab : "all";
-    const nextSort = SORT_KEYS.has(urlSort) ? urlSort : "newest";
-    const nextSearch = params.get("video_q") || "";
-    const nextPage = Number.isInteger(urlPage) && urlPage > 0 ? urlPage : 1;
-    setActiveTab((value) => (value === nextTab ? value : nextTab));
-    setSort((value) => (value === nextSort ? value : nextSort));
-    setSearch((value) => (value === nextSearch ? value : nextSearch));
-    setPage((value) => (value === nextPage ? value : nextPage));
-  }, [params]);
-  useEffect(() => {
-    if (pages > 0 && page > pages) setPage(pages);
-  }, [page, pages]);
+  const visiblePage = pages > 0 ? Math.min(page, pages) : 1;
 
   return (
     <section id="videos" aria-labelledby="videos-title" className="container-app py-16 sm:py-20">
@@ -128,7 +116,9 @@ export default function YouTubeGallery() {
               role="tab"
               aria-selected={activeTab === tab.key}
               aria-controls="video-results"
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() =>
+                patchParams({ video_type: tab.key === "all" ? "" : tab.key, video_page: "" })
+              }
               className={cn(
                 "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
                 activeTab === tab.key
@@ -146,7 +136,12 @@ export default function YouTubeGallery() {
         <span className="sr-only">Сортировка видео</span>
         <select
           value={sort}
-          onChange={(event) => setSort(event.target.value)}
+          onChange={(event) =>
+            patchParams({
+              video_sort: event.target.value === "newest" ? "" : event.target.value,
+              video_page: "",
+            })
+          }
           className="field-control w-full"
         >
           <option value="newest">Сначала новые</option>
@@ -213,28 +208,30 @@ export default function YouTubeGallery() {
             aria-live="polite"
             className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           >
-            {visibleVideos.map((video) => (
-              <VideoCard key={video.video_id} video={video} />
-            ))}
+            {filteredVideos
+              .slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
+              .map((video) => (
+                <VideoCard key={video.video_id} video={video} />
+              ))}
           </div>
         )}
         {status === "ready" && pages > 1 && (
           <nav aria-label="Пагинация видео" className="mt-7 flex items-center justify-center gap-2">
             <button
               type="button"
-              disabled={page === 1}
-              onClick={() => setPage((value) => value - 1)}
+              disabled={visiblePage === 1}
+              onClick={() => patchParams({ video_page: visiblePage - 1 })}
               className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink"
             >
               Назад
             </button>
             <span className="px-2 font-mono text-xs text-mute">
-              {page} / {pages}
+              {visiblePage} / {pages}
             </span>
             <button
               type="button"
-              disabled={page === pages}
-              onClick={() => setPage((value) => value + 1)}
+              disabled={visiblePage === pages}
+              onClick={() => patchParams({ video_page: visiblePage + 1 })}
               className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink"
             >
               Далее

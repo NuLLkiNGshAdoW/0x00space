@@ -16,6 +16,7 @@ const INITIAL_FORM = {
   age: "",
   micOrExperience: "",
   videoIdea: "",
+  consent: false,
 };
 
 function validate(form) {
@@ -24,14 +25,23 @@ function validate(form) {
   if (form.nickname.trim().length < 2) {
     errors.nickname = "Укажите ник или имя — минимум 2 символа";
   }
+  if (form.nickname.trim().length > 64) {
+    errors.nickname = "Ник не должен быть длиннее 64 символов";
+  }
   if (form.contact.trim().length < 2) {
     errors.contact = "Укажите Discord или Telegram для связи";
+  }
+  if (form.contact.trim().length > 64) {
+    errors.contact = "Контакт не должен быть длиннее 64 символов";
   }
   if (form.game === "Другая игра" && form.customGame.trim().length < 2) {
     errors.customGame = "Напишите, в какую игру хотите поиграть";
   }
+  if (form.game === "Другая игра" && form.customGame.trim().length > 64) {
+    errors.customGame = "Название игры не должно быть длиннее 64 символов";
+  }
   const age = Number(form.age);
-  if (!form.age || Number.isNaN(age) || age < 6 || age > 100) {
+  if (!form.age || Number.isNaN(age) || !Number.isInteger(age) || age < 6 || age > 100) {
     errors.age = "Возраст от 6 до 100 лет";
   }
   if (form.videoIdea.trim().length < 5) {
@@ -49,18 +59,23 @@ export default function ApplicationForm() {
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
   const [serverError, setServerError] = useState("");
-  const [consent, setConsent] = useState(false);
+  const [touched, setTouched] = useState({});
 
   const updateField = (field) => (e) => {
     const next = { ...form, [field]: e.target.value };
     setForm(next);
-    if (Object.keys(errors).length > 0) setErrors(validate({ ...next, consent }));
+    if (touched[field]) setErrors((current) => ({ ...current, [field]: validate(next)[field] }));
+  };
+
+  const handleBlur = (field) => {
+    setTouched((current) => ({ ...current, [field]: true }));
+    setErrors((current) => ({ ...current, [field]: validate(form)[field] }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationErrors = validate({ ...form, consent });
+    const validationErrors = validate(form);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
@@ -79,7 +94,7 @@ export default function ApplicationForm() {
       setStatus("success");
       trackEvent("application_submit", { game: form.game, status: "success" });
       setForm(INITIAL_FORM);
-      setConsent(false);
+      setTouched({});
     } catch (err) {
       trackEvent("application_error", { status: err instanceof ApiError ? err.status : "network" });
       setServerError(
@@ -121,7 +136,8 @@ export default function ApplicationForm() {
                 aria-invalid={Boolean(errors.nickname)}
                 aria-describedby={errors.nickname ? "nickname-error" : undefined}
                 onChange={updateField("nickname")}
-                onBlur={() => setErrors(validate(form))}
+                onBlur={() => handleBlur("nickname")}
+                maxLength={64}
                 required
                 placeholder="Steve_1337"
                 className={inputClass(errors.nickname)}
@@ -137,7 +153,8 @@ export default function ApplicationForm() {
                 aria-invalid={Boolean(errors.contact)}
                 aria-describedby={errors.contact ? "contact-error" : undefined}
                 onChange={updateField("contact")}
-                onBlur={() => setErrors(validate(form))}
+                onBlur={() => handleBlur("contact")}
+                maxLength={64}
                 required
                 placeholder="@username"
                 className={inputClass(errors.contact)}
@@ -170,7 +187,7 @@ export default function ApplicationForm() {
                 aria-invalid={Boolean(errors.age)}
                 aria-describedby={errors.age ? "age-error" : undefined}
                 onChange={updateField("age")}
-                onBlur={() => setErrors(validate(form))}
+                onBlur={() => handleBlur("age")}
                 required
                 placeholder="18"
                 className={inputClass(errors.age)}
@@ -186,7 +203,8 @@ export default function ApplicationForm() {
                   aria-invalid={Boolean(errors.customGame)}
                   aria-describedby={errors.customGame ? "custom-game-error" : undefined}
                   onChange={updateField("customGame")}
-                  onBlur={() => setErrors(validate(form))}
+                  onBlur={() => handleBlur("customGame")}
+                  maxLength={64}
                   required
                   placeholder="Название игры"
                   className={inputClass(errors.customGame)}
@@ -203,22 +221,23 @@ export default function ApplicationForm() {
                 value={form.videoIdea}
                 id="video-idea"
                 onChange={updateField("videoIdea")}
-                onBlur={() => setErrors(validate(form))}
+                onBlur={() => handleBlur("videoIdea")}
                 required
                 placeholder="Расскажите, что хотите сыграть и почему это будет интересно"
                 className={cn(inputClass(errors.videoIdea), "resize-none")}
               />
             </Field>
+            <Field id="mic-or-experience" label="Ссылка на опыт или микрофон (необязательно)" full>
+              <input
+                type="url"
+                value={form.micOrExperience}
+                id="mic-or-experience"
+                onChange={updateField("micOrExperience")}
+                placeholder="https://..."
+                className="field-control"
+              />
+            </Field>
           </div>
-
-          <Button type="submit" disabled={status === "submitting"} className="mt-6 w-full">
-            {status === "submitting" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-            {status === "submitting" ? "Отправляем…" : "Отправить заявку"}
-          </Button>
 
           {status === "success" && (
             <div
@@ -244,17 +263,19 @@ export default function ApplicationForm() {
           <label className="mt-4 flex items-start gap-2 text-xs text-mute">
             <input
               type="checkbox"
-              checked={consent}
+              checked={form.consent}
               aria-invalid={Boolean(errors.consent)}
               aria-describedby={errors.consent ? "consent-error" : undefined}
               onChange={(event) => {
                 const nextConsent = event.target.checked;
-                setConsent(nextConsent);
-                setErrors((current) => {
-                  const next = { ...current };
-                  if (nextConsent) delete next.consent;
-                  return next;
-                });
+                setForm((current) => ({ ...current, consent: nextConsent }));
+                setTouched((current) => ({ ...current, consent: true }));
+                setErrors((current) => ({
+                  ...current,
+                  consent: nextConsent
+                    ? undefined
+                    : validate({ ...form, consent: nextConsent }).consent,
+                }));
               }}
               className="mt-0.5 h-4 w-4 shrink-0 accent-emerald"
               required
@@ -272,6 +293,15 @@ export default function ApplicationForm() {
               {errors.consent}
             </p>
           )}
+
+          <Button type="submit" disabled={status === "submitting"} className="mt-6 w-full">
+            {status === "submitting" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            {status === "submitting" ? "Отправляем…" : "Отправить заявку"}
+          </Button>
         </form>
       </div>
     </section>

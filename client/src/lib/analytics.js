@@ -4,7 +4,7 @@ export function trackEvent(name, params = {}) {
   const safeParams = Object.fromEntries(
     Object.entries(params).filter(
       ([key, value]) =>
-        /^(video_id|game|source|status|error_type)$/.test(key) &&
+        /^(video_id|game|source|status|error_type|resource_title|label)$/.test(key) &&
         ["string", "number", "boolean"].includes(typeof value),
     ),
   );

@@ -14,7 +14,9 @@ if (measurementId && !document.querySelector(`[data-ga="${measurementId}"]`)) {
   script.dataset.ga = measurementId;
   document.head.appendChild(script);
   window.dataLayer = window.dataLayer || [];
-  window.gtag = (...args) => window.dataLayer.push(args);
+  window.gtag = function gtag() {
+    window.dataLayer.push(arguments);
+  };
   window.gtag("js", new Date());
   window.gtag("config", measurementId, { anonymize_ip: true });
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PackageOpen, AlertTriangle, Search } from "lucide-react";
 import { getResources, getSeeds, ApiError } from "../services/api.js";
@@ -25,13 +25,31 @@ const SORT_KEYS = new Set(["newest", "title"]);
 
 export default function ResourcesAndGuides() {
   const [params, setParams] = useSearchParams();
-  const [activeView, setActiveView] = useState(() => params.get("resource_view") || "resources");
-  const [gameFilter, setGameFilter] = useState(() => params.get("resource_game") || "");
+  const activeView = VIEW_KEYS.has(params.get("resource_view"))
+    ? params.get("resource_view")
+    : "resources";
+  const gameFilter = params.get("resource_game") || "";
   const [search, setSearch] = useState(() => params.get("resource_q") || "");
-  const [page, setPage] = useState(() => Number(params.get("resource_page")) || 1);
-  const [sort, setSort] = useState(() => params.get("resource_sort") || "newest");
+  const page = Math.max(1, Number.parseInt(params.get("resource_page"), 10) || 1);
+  const sort = SORT_KEYS.has(params.get("resource_sort")) ? params.get("resource_sort") : "newest";
   const debouncedSearch = useDebouncedValue(search);
   const pageSize = 8;
+  const patchParams = useCallback(
+    (changes) => {
+      setParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          Object.entries(changes).forEach(([key, value]) => {
+            if (value === "" || value == null) next.delete(key);
+            else next.set(key, String(value));
+          });
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setParams],
+  );
 
   const resourcesQuery = useQuery({
     queryKey: ["resources", gameFilter],
@@ -58,22 +76,12 @@ export default function ResourcesAndGuides() {
   const seedsError =
     seedsQuery.error instanceof ApiError ? seedsQuery.error.message : "Не удалось загрузить сиды.";
 
-  useEffect(() => setPage(1), [gameFilter, search, activeView]);
-
   useEffect(() => {
-    const next = new URLSearchParams(params);
-    [
-      ["resource_view", activeView, "resources"],
-      ["resource_game", gameFilter, ""],
-      ["resource_q", search.trim(), ""],
-      ["resource_sort", sort, "newest"],
-      ["resource_page", page, 1],
-    ].forEach(([key, value, defaultValue]) => {
-      if (String(value) === String(defaultValue) || value === "") next.delete(key);
-      else next.set(key, String(value));
-    });
-    if (next.toString() !== params.toString()) setParams(next, { replace: true });
-  }, [activeView, gameFilter, search, sort, page, params, setParams]);
+    const query = debouncedSearch.trim();
+    if (query !== (params.get("resource_q") || "")) {
+      patchParams({ resource_q: query, resource_page: "" });
+    }
+  }, [debouncedSearch, params, patchParams]);
 
   const filterItems = (items) => {
     const query = debouncedSearch.trim().toLocaleLowerCase();
@@ -95,30 +103,10 @@ export default function ResourcesAndGuides() {
     );
   const filteredResources = sortItems(filterItems(resources));
   const filteredSeeds = sortItems(filterItems(seeds));
-  const visibleResources = filteredResources.slice((page - 1) * pageSize, page * pageSize);
-  const visibleSeeds = filteredSeeds.slice((page - 1) * pageSize, page * pageSize);
-
-  useEffect(() => {
-    const urlView = params.get("resource_view") || "resources";
-    const urlSort = params.get("resource_sort") || "newest";
-    const urlPage = Number(params.get("resource_page"));
-    const nextView = VIEW_KEYS.has(urlView) ? urlView : "resources";
-    const nextSort = SORT_KEYS.has(urlSort) ? urlSort : "newest";
-    const nextSearch = params.get("resource_q") || "";
-    const nextGame = params.get("resource_game") || "";
-    const nextPage = Number.isInteger(urlPage) && urlPage > 0 ? urlPage : 1;
-    setActiveView((value) => (value === nextView ? value : nextView));
-    setSort((value) => (value === nextSort ? value : nextSort));
-    setSearch((value) => (value === nextSearch ? value : nextSearch));
-    setGameFilter((value) => (value === nextGame ? value : nextGame));
-    setPage((value) => (value === nextPage ? value : nextPage));
-  }, [params]);
   const currentItemsPages = Math.ceil(
     (activeView === "resources" ? filteredResources.length : filteredSeeds.length) / pageSize,
   );
-  useEffect(() => {
-    if (currentItemsPages > 0 && page > currentItemsPages) setPage(currentItemsPages);
-  }, [currentItemsPages, page]);
+  const visiblePage = currentItemsPages > 0 ? Math.min(page, currentItemsPages) : 1;
 
   return (
     <section id="resources" className="border-y border-line/70 bg-panel/20 py-16 sm:py-20">
@@ -150,7 +138,12 @@ export default function ResourcesAndGuides() {
                 role="tab"
                 aria-selected={activeView === view.key}
                 aria-controls={`${view.key}-panel`}
-                onClick={() => setActiveView(view.key)}
+                onClick={() =>
+                  patchParams({
+                    resource_view: view.key === "resources" ? "" : view.key,
+                    resource_page: "",
+                  })
+                }
                 className={cn(
                   "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
                   activeView === view.key
@@ -182,7 +175,12 @@ export default function ResourcesAndGuides() {
           <span className="sr-only">Сортировка материалов</span>
           <select
             value={sort}
-            onChange={(event) => setSort(event.target.value)}
+            onChange={(event) =>
+              patchParams({
+                resource_sort: event.target.value === "newest" ? "" : event.target.value,
+                resource_page: "",
+              })
+            }
             className="field-control w-full"
           >
             <option value="newest">Сначала новые</option>
@@ -197,7 +195,7 @@ export default function ResourcesAndGuides() {
                 <button
                   key={filter.key || "all"}
                   type="button"
-                  onClick={() => setGameFilter(filter.key)}
+                  onClick={() => patchParams({ resource_game: filter.key, resource_page: "" })}
                   className={cn(
                     "interactive-control rounded-full border px-3.5 py-1.5 text-xs transition-colors",
                     gameFilter === filter.key
@@ -238,15 +236,17 @@ export default function ResourcesAndGuides() {
               {resourcesStatus === "ready" && filteredResources.length > 0 && (
                 <>
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {visibleResources.map((resource) => (
-                      <ResourceCard key={resource.id} resource={resource} />
-                    ))}
+                    {filteredResources
+                      .slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
+                      .map((resource) => (
+                        <ResourceCard key={resource.id} resource={resource} />
+                      ))}
                   </div>
                   <Pagination
                     page={page}
                     total={filteredResources.length}
                     pageSize={pageSize}
-                    setPage={setPage}
+                    setPage={(nextPage) => patchParams({ resource_page: nextPage })}
                   />
                 </>
               )}
@@ -278,15 +278,17 @@ export default function ResourcesAndGuides() {
             {seedsStatus === "ready" && filteredSeeds.length > 0 && (
               <>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {visibleSeeds.map((seed) => (
-                    <SeedCard key={seed.id} seed={seed} />
-                  ))}
+                  {filteredSeeds
+                    .slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
+                    .map((seed) => (
+                      <SeedCard key={seed.id} seed={seed} />
+                    ))}
                 </div>
                 <Pagination
                   page={page}
                   total={filteredSeeds.length}
                   pageSize={pageSize}
-                  setPage={setPage}
+                  setPage={(nextPage) => patchParams({ resource_page: nextPage })}
                 />
               </>
             )}
@@ -305,7 +307,7 @@ function Pagination({ page, total, pageSize, setPage }) {
       <button
         type="button"
         disabled={page === 1}
-        onClick={() => setPage((value) => value - 1)}
+        onClick={() => setPage(page - 1)}
         className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Назад
@@ -316,7 +318,7 @@ function Pagination({ page, total, pageSize, setPage }) {
       <button
         type="button"
         disabled={page === pages}
-        onClick={() => setPage((value) => value + 1)}
+        onClick={() => setPage(page + 1)}
         className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Далее
