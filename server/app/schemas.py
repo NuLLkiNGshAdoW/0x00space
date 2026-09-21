@@ -6,7 +6,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
-from app.models import ApplicationStatus, ResourceType, GameCategory
+from app.models import ApplicationStatus, ResourceType, GameCategory, EventStatus
 
 
 # ---------- Applications (Заявки) ----------
@@ -82,6 +82,30 @@ class SeedOut(BaseModel):
     minecraft_version: str
     description: Optional[str]
     screenshot_url: Optional[str]
+    created_at: datetime
+
+
+# ---------- Events (Ивенты) ----------
+
+class EventBase(BaseModel):
+    title: str = Field(..., min_length=2, max_length=160)
+    description: str = Field(..., min_length=2, max_length=4000)
+    game: str = Field(..., min_length=2, max_length=64)
+    starts_at: datetime
+    image_url: Optional[str] = Field(None, max_length=512)
+    max_participants: Optional[int] = Field(None, ge=1, le=10000)
+    status: EventStatus = EventStatus.PLANNED
+    registration_url: Optional[str] = Field(None, max_length=512)
+
+
+class EventCreate(EventBase):
+    pass
+
+
+class EventOut(EventBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
     created_at: datetime
 
 

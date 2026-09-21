@@ -16,6 +16,7 @@ import CommunityBenefits from "./components/CommunityBenefits.jsx";
 import VideoDetailPage from "./pages/VideoDetailPage.jsx";
 import CollectionPage from "./pages/CollectionPage.jsx";
 import Seo from "./components/Seo.jsx";
+import EventsPage from "./pages/EventsPage.jsx";
 
 export default function App() {
   return (
@@ -27,7 +28,8 @@ export default function App() {
         <Route path="/videos" element={<CollectionPage type="videos" />} />
         <Route path="/videos/:videoId" element={<VideoRoute />} />
         <Route path="/materials" element={<CollectionPage type="materials" />} />
-        {["guides", "seeds", "about", "faq", "events", "contacts", "privacy"].map((page) => (
+        <Route path="/events" element={<EventsPage />} />
+        {["guides", "seeds", "about", "faq", "contacts", "privacy"].map((page) => (
           <Route key={page} path={`/${page}`} element={<ContentPage path={`/${page}`} />} />
         ))}
         <Route path="*" element={<ContentPage path="/not-found" />} />

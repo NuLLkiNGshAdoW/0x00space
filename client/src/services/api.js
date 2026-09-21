@@ -144,3 +144,11 @@ export function submitApplication(payload) {
 export function getBackgrounds() {
   return request("/backgrounds");
 }
+
+export function getEvents(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.game) params.set("game", filters.game);
+  if (filters.status) params.set("status", filters.status);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return request(`/events${query}`);
+}

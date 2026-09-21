@@ -64,15 +64,6 @@ async def fetch_video(video_id: str) -> YoutubeVideoOut | None:
 
 def _parse_iso8601_duration_to_seconds(duration: str) -> int:
     """
-
-
-async def _youtube_get(client: httpx.AsyncClient, url: str, params: dict):
-    try:
-        response = await client.get(url, params=params)
-        response.raise_for_status()
-        return response
-    except httpx.HTTPError as exc:
-        raise YoutubeApiError("YouTube API временно недоступен") from exc
     Разбирает ISO 8601 duration формата 'PT1M30S' в секунды.
     Простой парсер без внешних зависимостей (без isodate).
     """
@@ -82,6 +73,15 @@ async def _youtube_get(client: httpx.AsyncClient, url: str, params: dict):
         return 0
     hours, minutes, seconds = (int(x) if x else 0 for x in match.groups())
     return hours * 3600 + minutes * 60 + seconds
+
+
+async def _youtube_get(client: httpx.AsyncClient, url: str, params: dict):
+    try:
+        response = await client.get(url, params=params)
+        response.raise_for_status()
+        return response
+    except httpx.HTTPError as exc:
+        raise YoutubeApiError("YouTube API временно недоступен") from exc
 
 
 async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:

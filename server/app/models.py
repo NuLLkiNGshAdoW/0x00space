@@ -23,6 +23,12 @@ class ApplicationStatus(str, enum.Enum):
     REJECTED = "rejected"
 
 
+class EventStatus(str, enum.Enum):
+    PLANNED = "planned"
+    REGISTRATION_OPEN = "registration_open"
+    COMPLETED = "completed"
+
+
 class Application(Base):
     """
     Заявка подписчика на участие в проекте/съёмках/сервере.
@@ -97,4 +103,20 @@ class Seed(Base):
     minecraft_version = Column(String(32), nullable=False)
     description = Column(Text, nullable=True)
     screenshot_url = Column(String(512), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class Event(Base):
+    """Запланированное игровое событие, управляемое администратором."""
+    __tablename__ = "events"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    title = Column(String(160), nullable=False)
+    description = Column(Text, nullable=False)
+    game = Column(String(64), nullable=False)
+    starts_at = Column(DateTime, nullable=False)
+    image_url = Column(String(512), nullable=True)
+    max_participants = Column(Integer, nullable=True)
+    status = Column(Enum(EventStatus), default=EventStatus.PLANNED, nullable=False)
+    registration_url = Column(String(512), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

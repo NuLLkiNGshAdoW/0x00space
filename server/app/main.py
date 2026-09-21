@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.database import Base, engine
-from app.routers import youtube, applications, resources, backgrounds, auth
+from app.routers import youtube, applications, resources, backgrounds, auth, events
 from app.services.monitoring import capture_exception
 
 settings = get_settings()
@@ -46,6 +46,7 @@ app.include_router(applications.router, prefix=settings.API_PREFIX)
 app.include_router(resources.router, prefix=settings.API_PREFIX)
 app.include_router(backgrounds.router, prefix=settings.API_PREFIX)
 app.include_router(auth.router, prefix=settings.API_PREFIX)
+app.include_router(events.router, prefix=settings.API_PREFIX)
 backgrounds.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/media/backgrounds", StaticFiles(directory=str(backgrounds.UPLOAD_DIR)), name="background-media")
 
