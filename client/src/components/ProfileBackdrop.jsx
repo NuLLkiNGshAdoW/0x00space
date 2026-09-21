@@ -5,7 +5,7 @@ export default function ProfileBackdrop() {
   const [background, setBackground] = useState(null);
   const [customFailed, setCustomFailed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [settings, setSettings] = useState({ shade: 0.68, blur: 0, position: "center", speed: 1 });
+  const [settings, setSettings] = useState({ shade: 0.38, blur: 0, position: "center", speed: 1 });
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -51,7 +51,7 @@ export default function ProfileBackdrop() {
   // Текст должен оставаться читаемым даже если в старых настройках сохранено
   // слишком сильное затемнение фона.
   const shade = Number(settings.shade);
-  const readableShade = Number.isFinite(shade) ? Math.max(Math.min(shade, 0.85), 0) : 0.68;
+  const readableShade = Number.isFinite(shade) ? Math.max(Math.min(shade, 0.48), 0.25) : 0.38;
   const style = {
     "--profile-shade": readableShade,
     "--profile-blur": `${settings.blur}px`,

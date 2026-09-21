@@ -9,7 +9,7 @@ export default {
         panel2: "#101a29", // чуть светлее панель (hover, вложенные блоки)
         line: "#25334a", // спокойные рамки на тёмном фоне
         ink: "#f1f5f9", // основной текст
-        mute: "#aebbd0", // вторичный текст, AA на тёмных панелях
+        mute: "#cbd5e1", // вторичный текст, AA на тёмных панелях
         emerald: {
           DEFAULT: "#34d399",
           soft: "#12382f",
@@ -29,7 +29,7 @@ export default {
       },
       backgroundImage: {
         "grid-fade":
-          "linear-gradient(#475569 1px, #05070d 1px), linear-gradient(90deg, #475569 1px, #05070d 1px)",
+          "linear-gradient(rgba(71, 85, 105, 0.16) 1px, transparent 1px), linear-gradient(90deg, rgba(71, 85, 105, 0.16) 1px, transparent 1px)",
       },
       keyframes: {
         scanline: {

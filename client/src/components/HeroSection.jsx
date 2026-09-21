@@ -15,15 +15,15 @@ export default function HeroSection() {
     <section id="top" className="relative overflow-hidden">
       {/* Тонкая координатная сетка на фоне — намёк на "координаты/мир", не декоративный шум */}
       <div
-        className="pointer-events-none absolute inset-0 bg-grid-fade bg-[size:44px_44px]"
-        style={{ maskImage: "none" }}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 bg-grid-fade bg-[size:44px_44px] opacity-40 max-sm:opacity-20"
       />
-      <div className="pointer-events-none absolute -left-32 top-20 h-80 w-80 rounded-full bg-emerald/10 blur-3xl" />
-      <div className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-violet/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-32 top-20 z-0 h-80 w-80 rounded-full bg-emerald/10 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-0 z-0 h-96 w-96 rounded-full bg-violet/10 blur-3xl" />
 
       <div className="container-app relative grid grid-cols-1 gap-12 py-16 sm:py-24 lg:grid-cols-[1.08fr_.92fr] lg:items-center lg:gap-16 lg:py-28">
         {/* Текстовый блок */}
-        <div>
+        <div className="relative z-10">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald/20 bg-emerald-soft/40 px-3 py-1.5 text-xs text-emerald">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-pulse-dot rounded-full bg-emerald" />
@@ -111,7 +111,7 @@ export default function HeroSection() {
 
         {/* Графическая панель "сигнала" — единственный акцент с движением на странице */}
         <div className="relative mx-auto aspect-square w-full max-w-sm">
-          <div className="glass glass-accent-border relative isolate h-full w-full overflow-hidden rounded-3xl shadow-2xl shadow-violet/10">
+          <div className="glass glass-accent-border relative z-10 isolate h-full w-full overflow-hidden rounded-3xl shadow-2xl shadow-violet/10">
             <img
               src="/brand-logo-transparent.png"
               alt=""
@@ -123,8 +123,8 @@ export default function HeroSection() {
               className="pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-[70%_50%] opacity-90"
             />
             {/* Сканирующая линия */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              <div className="absolute inset-x-0 h-16 animate-scanline bg-emerald/10" />
+            <div className="pointer-events-none absolute inset-0 z-[15] overflow-hidden">
+              <div className="absolute inset-x-0 h-10 animate-scanline bg-gradient-to-b from-transparent via-emerald/10 to-transparent" />
             </div>
 
             {/* Концентрические "орбиты" */}
