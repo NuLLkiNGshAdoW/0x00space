@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Check, ImagePlus, Trash2, Video } from "lucide-react";
 import { API_BASE_URL, API_ORIGIN, checkAdmin, loginAdmin, logoutAdmin } from "../services/api.js";
+import Seo from "../components/Seo.jsx";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
@@ -182,6 +183,12 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen">
+      <Seo
+        title="Админ-панель — 0x00 SPACE"
+        description="Управление фоновыми материалами 0x00 SPACE."
+        path="/admin"
+        noindex
+      />
       <main id="main-content" className="container-app py-12 sm:py-20">
         <Link
           to="/"

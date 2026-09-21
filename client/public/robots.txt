@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /not-found
 
 Sitemap: https://0x00space.vercel.app/sitemap.xml

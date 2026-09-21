@@ -146,6 +146,7 @@ export default function ContentPage({ path }) {
         title={page ? `${page.title} — 0x00 SPACE` : "404 — 0x00 SPACE"}
         description={page?.description || "Страница не найдена."}
         path={path}
+        noindex={!page}
       />
       <ProfileBackdrop />
       <Navbar />

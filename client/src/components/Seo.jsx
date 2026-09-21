@@ -10,6 +10,7 @@ export default function Seo({
   image = DEFAULT_IMAGE,
   type = "website",
   structuredData,
+  noindex = false,
 }) {
   useEffect(() => {
     const canonical = new URL(path, `${SITE_URL}/`).href;
@@ -22,7 +23,14 @@ export default function Seo({
     setMeta("og:url", canonical, "property");
     setMeta("og:image", image, "property");
     setMeta("og:image:alt", "0x00 SPACE — игровой канал", "property");
-    setMeta("og:image:type", "image/png", "property");
+    setMeta(
+      "og:image:type",
+      image?.toLowerCase().includes(".jpg") || image?.toLowerCase().includes(".jpeg")
+        ? "image/jpeg"
+        : "image/png",
+      "property",
+    );
+    setMeta("robots", noindex ? "noindex, nofollow" : "index, follow");
     setMeta("twitter:title", title);
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:description", description);
@@ -43,7 +51,7 @@ export default function Seo({
     }
 
     return () => jsonLd?.remove();
-  }, [description, image, path, structuredData, title, type]);
+  }, [description, image, noindex, path, structuredData, title, type]);
 
   return null;
 }
