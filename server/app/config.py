@@ -4,7 +4,19 @@
 никогда не хардкодятся в коде.
 """
 from functools import lru_cache
+from urllib.parse import urlparse
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+
+
+def is_production(settings: "Settings") -> bool:
+    """Render production uses non-debug PostgreSQL; local SQLite stays simple."""
+    return not settings.DEBUG and settings.DATABASE_URL.startswith(("postgresql", "postgres"))
+
+
+def validate_production_security(settings: "Settings") -> None:
+    if is_production(settings) and not settings.ADMIN_SESSION_SECRET:
+        raise RuntimeError("ADMIN_SESSION_SECRET is required in production")
 
 
 class Settings(BaseSettings):
@@ -37,8 +49,8 @@ class Settings(BaseSettings):
 
     # Админка: задайте пароль в server/.env. ADMIN_TOKEN сохранён для обратной совместимости.
     ADMIN_PASSWORD: str = ""
-    ADMIN_TOKEN: str = ""
-    ADMIN_SESSION_SECRET: str = ""
+    ADMIN_TOKEN: str = ""  # Deprecated legacy header authentication.
+    ADMIN_SESSION_SECRET: str = ""  # Separate secret; never derive from password/token.
     ADMIN_SESSION_TTL_SECONDS: int = 1800
     ADMIN_LOGIN_MAX_FAILURES: int = 5
     ADMIN_LOGIN_WINDOW_SECONDS: int = 900
@@ -50,6 +62,25 @@ class Settings(BaseSettings):
     BACKGROUND_UPLOAD_DIR: str = "uploads/backgrounds"
     # Необязательный URL каталога, если файлы раздаются CDN/object storage.
     BACKGROUND_PUBLIC_BASE_URL: str = ""
+
+    @field_validator("BACKGROUND_PUBLIC_BASE_URL")
+    @classmethod
+    def validate_background_public_url(cls, value: str) -> str:
+        if not value:
+            return value
+        parsed = urlparse(value.rstrip("/"))
+        if (
+            parsed.scheme != "https"
+            or not parsed.netloc
+            or parsed.username
+            or parsed.password
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError("BACKGROUND_PUBLIC_BASE_URL must be an HTTPS URL without credentials")
+        if len(value) > 2048:
+            raise ValueError("BACKGROUND_PUBLIC_BASE_URL is too long")
+        return value.rstrip("/")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

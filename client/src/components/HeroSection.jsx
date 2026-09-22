@@ -3,13 +3,20 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getLatestVideos, LATEST_VIDEOS_QUERY_KEY } from "../services/api.js";
 import { trackEvent } from "../lib/analytics.js";
+import ApiState from "./ApiState.jsx";
 
 export default function HeroSection() {
-  const { data: latestVideo, isError } = useQuery({
+  const {
+    data: latestVideo,
+    isPending,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: LATEST_VIDEOS_QUERY_KEY,
     queryFn: () => getLatestVideos(12),
     select: (videos) => videos[0],
-    retry: false,
+    retry: 1,
   });
   return (
     <section id="top" className="relative overflow-hidden">
@@ -99,12 +106,14 @@ export default function HeroSection() {
                   aria-hidden="true"
                 />
               </Link>
+            ) : isError ? (
+              <ApiState status="error" error={error} onRetry={refetch} compact />
             ) : (
-              <p className="text-sm text-mute">
-                {isError
-                  ? "Свежие ролики временно недоступны."
-                  : "Загружаем последний ролик с канала…"}
-              </p>
+              <ApiState
+                status={isPending ? "loading" : "empty"}
+                message="Свежие ролики пока недоступны."
+                compact
+              />
             )}
           </div>
         </div>

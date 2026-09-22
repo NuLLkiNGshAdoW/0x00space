@@ -37,6 +37,19 @@ test("home renders API-backed hero and latest video CTA", async ({ page }) => {
   );
 });
 
+test("home shows a waking-up state when the API times out", async ({ page }) => {
+  await page.route("**/api/**", async (route) => {
+    if (new URL(route.request().url()).pathname.endsWith("/youtube/latest")) {
+      await route.fulfill({ status: 408, json: { detail: "timeout" } });
+      return;
+    }
+    await route.fallback();
+  });
+  await page.goto("/");
+  await expect(page.getByText(/Сервер просыпается/)).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole("button", { name: "Повторить" })).toBeVisible();
+});
+
 test("navigation opens the video collection", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Видео", exact: true }).first().click();
@@ -137,4 +150,11 @@ test("unknown route exposes a keyboard reachable 404", async ({ page }) => {
   await expect(page.getByText("404", { exact: true })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toBeVisible();
+});
+
+test("lazy chunk failure shows a route fallback instead of a blank page", async ({ page }) => {
+  await page.goto("/");
+  await page.route("**/src/pages/AdminPage.jsx", (route) => route.abort());
+  await page.goto("/admin");
+  await expect(page.getByRole("heading", { name: "Раздел временно недоступен" })).toBeVisible();
 });

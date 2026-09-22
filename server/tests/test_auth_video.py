@@ -90,7 +90,7 @@ def test_uploaded_background_becomes_global_active(monkeypatch, tmp_path):
     assert client.post("/api/auth/login", json={"password": "test-password"}).status_code == 200
     response = client.post(
         "/api/backgrounds/upload",
-        files={"file": ("background.png", b"png-data", "image/png")},
+        files={"file": ("background.png", b"\x89PNG\r\n\x1a\nvalid-data", "image/png")},
     )
 
     assert response.status_code == 201

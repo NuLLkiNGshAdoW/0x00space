@@ -3,7 +3,7 @@ import secrets
 from fastapi import APIRouter, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 
-from app.config import get_settings
+from app.config import get_settings, is_production
 from app.services.admin_auth import COOKIE_NAME, authenticate, create_session, login_allowed, record_failure
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -17,6 +17,8 @@ class LoginPayload(BaseModel):
 def login(payload: LoginPayload, request: Request, response: Response):
     settings = get_settings()
     ip = request.client.host if request.client else "unknown"
+    if is_production(settings) and not settings.ADMIN_SESSION_SECRET:
+        raise HTTPException(status_code=503, detail="Админ-аутентификация не настроена: отсутствует session secret")
     configured = settings.ADMIN_PASSWORD or settings.ADMIN_TOKEN
     if not configured or not login_allowed(ip):
         raise HTTPException(status_code=429, detail="Слишком много неудачных попыток. Попробуйте позже.")

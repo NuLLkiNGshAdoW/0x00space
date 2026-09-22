@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ExternalLink, Loader2, Play } from "lucide-react";
+import { ArrowLeft, ExternalLink, Play } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
@@ -8,7 +8,7 @@ import VideoCard from "../components/VideoCard.jsx";
 import { getVideo } from "../services/api.js";
 import ShareButton from "../components/ShareButton.jsx";
 import Seo from "../components/Seo.jsx";
-import Button from "../components/Button.jsx";
+import ApiState from "../components/ApiState.jsx";
 
 export default function VideoDetailPage({ videoId }) {
   const { data, isPending, isError, error, refetch } = useQuery({
@@ -73,24 +73,20 @@ export default function VideoDetailPage({ videoId }) {
         >
           <ArrowLeft className="h-4 w-4" /> Все видео
         </Link>
-        {status === "loading" && (
-          <div className="flex justify-center py-32">
-            <Loader2 className="h-8 w-8 animate-spin text-emerald" aria-label="Загрузка видео" />
-          </div>
-        )}
+        {status === "loading" && <ApiState status="loading" />}
         {(status === "missing" || status === "error") && (
           <div className="py-32 text-center">
             <h1 className="font-display text-3xl font-semibold text-ink">
               {status === "error" ? "Не удалось загрузить видео" : "Видео не найдено"}
             </h1>
-            <p role="alert" className="mt-3 text-mute">
-              {errorMessage}
-            </p>
-            {status === "error" && (
-              <Button type="button" className="mt-6" onClick={() => refetch()}>
-                Повторить
-              </Button>
-            )}
+            <div className="mt-6">
+              <ApiState
+                status="error"
+                error={error}
+                message={error?.status === 404 ? errorMessage : undefined}
+                onRetry={status === "error" ? refetch : undefined}
+              />
+            </div>
           </div>
         )}
         {video && (

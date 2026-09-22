@@ -10,8 +10,10 @@ import {
   checkAdmin,
   loginAdmin,
   logoutAdmin,
+  request as apiRequest,
 } from "../services/api.js";
 import Seo from "../components/Seo.jsx";
+import ApiState from "../components/ApiState.jsx";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
@@ -52,28 +54,12 @@ export default function AdminPage() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    if (backgroundsQuery.isError) setMessage("Не удалось загрузить фоны. Попробуйте ещё раз.");
-  }, [backgroundsQuery.isError]);
-
   useEffect(
     () => () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     },
     [previewUrl],
   );
-
-  const request = async (url, options = {}) => {
-    if (!authenticated) throw new Error("Сначала войдите в админку");
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      ...options,
-      credentials: "include",
-      headers: { ...(options.headers || {}) },
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.detail || "Операция не выполнена");
-    return data;
-  };
 
   const upload = async (event) => {
     event.preventDefault();
@@ -155,7 +141,7 @@ export default function AdminPage() {
   };
   const activate = async (id) => {
     try {
-      await request(`/backgrounds/${id}/activate`, { method: "POST" });
+      await apiRequest(`/backgrounds/${id}/activate`, { method: "POST" });
       setMessage("Активный фон изменён");
       await queryClient.invalidateQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
     } catch (error) {
@@ -165,7 +151,7 @@ export default function AdminPage() {
   const remove = async (id) => {
     if (!window.confirm("Удалить этот фон?")) return;
     try {
-      await request(`/backgrounds/${id}`, { method: "DELETE" });
+      await apiRequest(`/backgrounds/${id}`, { method: "DELETE" });
       await queryClient.invalidateQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
     } catch (error) {
       setMessage(error.message);
@@ -173,7 +159,7 @@ export default function AdminPage() {
   };
   const saveSettings = async () => {
     try {
-      await request("/backgrounds/settings", {
+      await apiRequest("/backgrounds/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
@@ -186,7 +172,7 @@ export default function AdminPage() {
   };
   const reset = async () => {
     try {
-      await request("/backgrounds/reset", { method: "POST" });
+      await apiRequest("/backgrounds/reset", { method: "POST" });
       setMessage("Включён стандартный фон");
       await queryClient.invalidateQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
     } catch (error) {
@@ -374,6 +360,16 @@ export default function AdminPage() {
             </button>
           </div>
         </section>
+        {authenticated && backgroundsQuery.isPending && <ApiState status="loading" />}
+        {authenticated && backgroundsQuery.isError && (
+          <div className="mt-6 max-w-xl">
+            <ApiState
+              status="error"
+              error={backgroundsQuery.error}
+              onRetry={backgroundsQuery.refetch}
+            />
+          </div>
+        )}
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => (
             <article key={item.id} className="glass overflow-hidden rounded-xl">

@@ -7,6 +7,7 @@ python-telegram-bot.
 """
 import httpx
 import logging
+from html import escape
 
 from app.config import get_settings
 from app.models import Application
@@ -16,21 +17,26 @@ logger = logging.getLogger(__name__)
 TELEGRAM_API_BASE = "https://api.telegram.org"
 
 
+def _telegram_value(value: object) -> str:
+    """Escape only user-controlled values, keeping app-owned HTML tags intact."""
+    return escape(str(value), quote=False)
+
+
 def _build_message_text(application: Application) -> str:
     """Формируем читаемый текст уведомления с HTML-разметкой Telegram."""
     mic_line = (
-        f"🎙 Микрофон/опыт: {application.mic_or_experience_link}\n"
+        f"🎙 Микрофон/опыт: {_telegram_value(application.mic_or_experience_link)}\n"
         if application.mic_or_experience_link
         else ""
     )
     return (
         "🆕 <b>Новая заявка на участие — 0x00 SPACE</b>\n\n"
-        f"👤 Ник: <b>{application.nickname}</b>\n"
-        f"🎂 Возраст: {application.age}\n"
-        f"🎮 Игра: {application.game}\n"
-        f"💬 Контакт: {application.contact}\n"
+        f"👤 Ник: <b>{_telegram_value(application.nickname)}</b>\n"
+        f"🎂 Возраст: {_telegram_value(application.age)}\n"
+        f"🎮 Игра: {_telegram_value(application.game)}\n"
+        f"💬 Контакт: {_telegram_value(application.contact)}\n"
         f"{mic_line}"
-        f"💡 Идея для видео:\n{application.video_idea}"
+        f"💡 Идея для видео:\n{_telegram_value(application.video_idea)}"
     )
 
 

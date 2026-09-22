@@ -29,6 +29,20 @@ test("video detail shows a not found state", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Видео не найдено" })).toBeVisible();
 });
 
+test("video detail retry repeats a failed API request", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/youtube/retry-video", (route) => {
+    calls += 1;
+    if (calls === 1) return route.fulfill({ status: 500, json: { detail: "temporary error" } });
+    return route.fulfill({ json: { video, related: [] } });
+  });
+  await page.goto("/videos/retry-video");
+  await expect(page.getByRole("button", { name: "Повторить" })).toBeVisible();
+  await page.getByRole("button", { name: "Повторить" }).click();
+  await expect(page.getByRole("heading", { name: video.title })).toBeVisible();
+  expect(calls).toBe(2);
+});
+
 test("admin login does not persist the password in localStorage", async ({ page }) => {
   await page.route("**/api/auth/check", (route) =>
     route.fulfill({ status: 401, json: { detail: "Нужна авторизация администратора." } }),
@@ -42,7 +56,7 @@ test("admin login does not persist the password in localStorage", async ({ page 
   await page.goto("/admin");
   await page.getByLabel("Пароль администратора").fill("test-password");
   await page.getByRole("button", { name: "Войти" }).click();
-  await expect(page.getByRole("status")).toContainText("Вход выполнен");
+  await expect(page.getByText("Вход выполнен")).toBeVisible();
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
 });
 

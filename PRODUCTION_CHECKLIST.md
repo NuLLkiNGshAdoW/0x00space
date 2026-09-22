@@ -3,7 +3,7 @@
 ## Before release
 
 - [ ] `DATABASE_URL` указывает на managed PostgreSQL, а `CORS_ORIGINS` содержит только production frontend.
-- [ ] `ADMIN_SESSION_SECRET`, `ADMIN_TOKEN` и внешние API secrets заданы в secret manager, не в Git и не в `VITE_*`.
+- [ ] `ADMIN_SESSION_SECRET` — отдельный случайный secret — задан в secret manager; `ADMIN_TOKEN` deprecated и не используется как замена session secret. Secrets не находятся в Git и `VITE_*`.
 - [ ] `COOKIE_SECURE=true` включён на HTTPS; проверены login, logout и отказ без сессии.
 - [ ] Настроены Render healthcheck `/api/health`, Sentry и уведомления о сбоях.
 - [ ] Проверены Render backups/retention и выполнено тестовое восстановление в отдельную базу.

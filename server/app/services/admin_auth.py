@@ -9,7 +9,7 @@ import time
 
 from fastapi import HTTPException, Request
 
-from app.config import get_settings
+from app.config import get_settings, is_production
 
 COOKIE_NAME = "admin_session"
 _failures: dict[str, list[float]] = {}
@@ -18,7 +18,11 @@ _lock = threading.Lock()
 
 def configured_secret() -> str:
     settings = get_settings()
-    return settings.ADMIN_SESSION_SECRET or settings.ADMIN_PASSWORD or settings.ADMIN_TOKEN
+    if settings.ADMIN_SESSION_SECRET:
+        return settings.ADMIN_SESSION_SECRET
+    if not is_production(settings):
+        return settings.ADMIN_PASSWORD or settings.ADMIN_TOKEN
+    return ""
 
 
 def _sign(value: str, secret: str) -> str:
@@ -61,6 +65,8 @@ def record_failure(ip: str) -> None:
 def authenticate(request: Request, legacy_token: str | None = None) -> None:
     settings = get_settings()
     configured = settings.ADMIN_PASSWORD or settings.ADMIN_TOKEN
+    if is_production(settings) and not settings.ADMIN_SESSION_SECRET:
+        raise HTTPException(status_code=503, detail="Админ-аутентификация не настроена: отсутствует session secret")
     if not configured:
         raise HTTPException(status_code=503, detail="Админ-аутентификация не настроена")
     if valid_session(request.cookies.get(COOKIE_NAME)):

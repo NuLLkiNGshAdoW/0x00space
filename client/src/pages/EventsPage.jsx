@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CalendarDays, Clock3, Users } from "lucide-react";
+import { CalendarDays, Clock3, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ProfileBackdrop from "../components/ProfileBackdrop.jsx";
 import TelegramFloat from "../components/TelegramFloat.jsx";
 import Seo from "../components/Seo.jsx";
-import { ApiError, getEvents } from "../services/api.js";
+import { getEvents } from "../services/api.js";
 import { cn } from "../lib/utils.js";
+import ApiState from "../components/ApiState.jsx";
 
 const STATUS_LABELS = {
   planned: "Планируется",
@@ -26,6 +27,7 @@ export default function EventsPage() {
     isPending,
     isError,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["events", game, status, page, pageSize],
     queryFn: () => getEvents({ game, status, page, limit: pageSize }),
@@ -96,17 +98,9 @@ export default function EventsPage() {
           </label>
         </div>
         <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {isPending &&
-            [1, 2, 3].map((item) => (
-              <div key={item} className="glass h-64 animate-pulse rounded-2xl" />
-            ))}
+          {isPending && <ApiState status="loading" className="col-span-full" />}
           {isError && (
-            <div className="glass col-span-full flex flex-col items-center gap-3 rounded-2xl px-6 py-16 text-center">
-              <AlertTriangle className="text-violet" />
-              <p className="text-mute">
-                {error instanceof ApiError ? error.message : "Не удалось загрузить события."}
-              </p>
-            </div>
+            <ApiState status="error" error={error} onRetry={refetch} className="col-span-full" />
           )}
           {!isPending && !isError && events.length === 0 && (
             <div className="glass col-span-full rounded-2xl px-6 py-16 text-center">

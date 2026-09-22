@@ -59,7 +59,7 @@ VITE_SENTRY_DSN=
 
 ## Админ-сессия
 
-Браузер получает короткоживущую HttpOnly cookie через `/api/auth/login`; пароль в `localStorage` больше не используется. Задайте `ADMIN_SESSION_SECRET` и включите `COOKIE_SECURE=true` на HTTPS. Старый `ADMIN_PASSWORD`/`ADMIN_TOKEN` и заголовок `X-Admin-Token` оставлены для совместимости скриптов. Неудачные логины ограничиваются в памяти процесса, поэтому для нескольких реплик нужен общий rate-limit на reverse proxy.
+Браузер получает короткоживущую HttpOnly cookie через `/api/auth/login`; пароль в `localStorage` больше не используется. `ADMIN_SESSION_SECRET` должен быть отдельным случайным secret и задаётся в Render Environment отдельно от `ADMIN_PASSWORD` и `ADMIN_TOKEN`. На HTTPS включайте `COOKIE_SECURE=true`. Старый `ADMIN_TOKEN` и заголовок `X-Admin-Token` остаются только для backward compatibility скриптов и считаются deprecated; frontend их не использует. В production отсутствие `ADMIN_SESSION_SECRET` блокирует admin authentication. Неудачные логины ограничиваются в памяти процесса, поэтому для нескольких реплик нужен общий rate-limit на reverse proxy.
 
 ## Бэкапы Render и базы
 

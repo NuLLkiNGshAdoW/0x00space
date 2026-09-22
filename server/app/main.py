@@ -12,12 +12,13 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.config import get_settings
+from app.config import get_settings, validate_production_security
 from app.database import Base, engine, is_sqlite
 from app.routers import youtube, applications, resources, backgrounds, auth, events
 from app.services.monitoring import capture_exception
 
 settings = get_settings()
+validate_production_security(settings)
 logger = logging.getLogger("uvicorn.error")
 
 # Локальный SQLite остаётся удобным для разработки и тестов. Production

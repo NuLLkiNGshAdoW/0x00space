@@ -2,7 +2,7 @@
 Pydantic-схемы (DTO) — контракт между фронтендом и бэкендом.
 """
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
@@ -121,6 +121,33 @@ class EventOut(EventBase):
 
     id: str
     created_at: datetime
+
+
+# ---------- Background settings ----------
+
+class BackgroundSettings(BaseModel):
+    shade: float = Field(..., ge=0, le=0.72)
+    blur: float = Field(..., ge=0, le=20)
+    position: Literal["center", "top", "bottom"]
+    speed: float = Field(..., ge=0.25, le=2)
+    rotation_minutes: int = Field(..., ge=0, le=1440)
+
+
+class BackgroundSettingsUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    shade: Optional[float] = Field(None, ge=0, le=0.72)
+    blur: Optional[float] = Field(None, ge=0, le=20)
+    position: Optional[Literal["center", "top", "bottom"]] = None
+    speed: Optional[float] = Field(None, ge=0.25, le=2)
+    rotation_minutes: Optional[int] = Field(None, ge=0, le=1440)
+
+    @field_validator("shade", "blur", "position", "speed", "rotation_minutes", mode="before")
+    @classmethod
+    def reject_null_values(cls, value):
+        if value is None:
+            raise ValueError("Значение не может быть null")
+        return value
 
 
 class EventPage(BaseModel):

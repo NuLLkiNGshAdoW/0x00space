@@ -21,11 +21,26 @@ export class ApiError extends Error {
   }
 }
 
+export function getApiErrorState(error) {
+  if (error instanceof ApiError) {
+    if (error.status === 0) return "network";
+    if (error.status === 408) return "waking";
+    if (error.status === 401) return "unauthorized";
+    if (error.status === 403) return "forbidden";
+    if (error.status === 404) return "not-found";
+    if (error.status === 429) return "rate-limit";
+    if (error.status >= 500) return "server";
+    return "server";
+  }
+  if (error?.name === "AbortError" || error?.name === "TimeoutError") return "waking";
+  return "network";
+}
+
 /**
  * Универсальная обёртка над fetch: собирает URL, парсит JSON,
  * бросает ApiError с понятным сообщением при неуспешном ответе.
  */
-async function request(path, options = {}) {
+export async function request(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   if (options.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
   const timeoutSignal =
@@ -43,14 +58,18 @@ async function request(path, options = {}) {
     if (error?.name === "AbortError" || error?.name === "TimeoutError") {
       throw new ApiError("Сервер просыпается. Попробуйте ещё раз через несколько секунд.", 408);
     }
-    throw error;
+    throw new ApiError("Не удалось подключиться к серверу.", 0);
   }
 
   if (!response.ok) {
     const messages = {
       401: "Нужна авторизация администратора.",
+      403: "Недостаточно прав для этого действия.",
       404: "Запрошенные данные не найдены.",
+      408: "Сервер просыпается. Попробуйте ещё раз через несколько секунд.",
+      429: "Слишком много запросов. Попробуйте немного позже.",
       500: "Сервер временно недоступен. Попробуйте ещё раз позже.",
+      502: "Внешний сервис временно недоступен.",
     };
     let detail = messages[response.status] || `Запрос завершился с ошибкой ${response.status}`;
     try {
