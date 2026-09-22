@@ -17,6 +17,7 @@ if not UPLOAD_DIR.is_absolute():
 META_FILE = UPLOAD_DIR / "metadata.json"
 ALLOWED = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "video/mp4": ".mp4", "video/webm": ".webm"}
 MAX_SIZE = 100 * 1024 * 1024
+UPLOAD_CHUNK_SIZE = 1024 * 1024
 DEFAULT_SETTINGS = {"shade": 0.68, "blur": 0, "position": "center", "speed": 1, "rotation_minutes": 0}
 
 
@@ -100,15 +101,23 @@ async def upload_background(request: Request, file: UploadFile = File(...), x_ad
     if not extension:
         raise HTTPException(status_code=415, detail="Разрешены JPG, PNG, WebP, MP4 и WebM")
 
-    content = await file.read(MAX_SIZE + 1)
-    if len(content) > MAX_SIZE:
-        raise HTTPException(status_code=413, detail="Файл слишком большой. Максимум 100 МБ")
-
     file_id = uuid.uuid4().hex
     filename = f"{file_id}{extension}"
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     file_path = _safe_file_path(filename)
-    file_path.write_bytes(content)
+    # Не держим весь upload в RAM: на Render Free это могло бы привести к
+    # OOM при загрузке разрешённого файла размером до 100 МБ.
+    total_size = 0
+    try:
+        with file_path.open("wb") as destination:
+            while chunk := await file.read(UPLOAD_CHUNK_SIZE):
+                total_size += len(chunk)
+                if total_size > MAX_SIZE:
+                    raise HTTPException(status_code=413, detail="Файл слишком большой. Максимум 100 МБ")
+                destination.write(chunk)
+    except Exception:
+        file_path.unlink(missing_ok=True)
+        raise
     item = {"id": file_id, "filename": filename, "name": file.filename or filename, "url": _public_url(filename), "type": "video" if extension in {".mp4", ".webm"} else "image"}
     data = _read_meta()
     data["items"] = [*data.get("items", []), item]

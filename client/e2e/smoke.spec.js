@@ -45,6 +45,21 @@ test("navigation opens the video collection", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Последние ролики" })).toBeVisible();
 });
 
+test("background configuration is reused during public navigation", async ({ page }) => {
+  let backgroundsRequests = 0;
+  await page.route("**/api/backgrounds", (route) => {
+    backgroundsRequests += 1;
+    return route.fulfill({ json: { items: [], active: null, settings: {} } });
+  });
+
+  await page.goto("/");
+  await page.getByRole("link", { name: "FAQ", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/faq$/);
+  await page.getByRole("link", { name: "Видео", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/videos$/);
+  expect(backgroundsRequests).toBe(1);
+});
+
 test("materials collection has a single accessible page heading", async ({ page }) => {
   await page.goto("/materials");
   await expect(

@@ -13,10 +13,12 @@ def _admin(request: Request, x_admin_token: str | None = Header(default=None)):
     authenticate(request, x_admin_token)
 
 
-@router.get("/events", response_model=list[schemas.EventOut])
+@router.get("/events", response_model=list[schemas.EventOut] | schemas.EventPage)
 def list_events(
     game: str | None = Query(default=None),
     status: models.EventStatus | None = Query(default=None),
+    page: int | None = Query(default=None, ge=1),
+    limit: int | None = Query(default=None, ge=1, le=50),
     db: Session = Depends(get_db),
 ):
     query = db.query(models.Event)
@@ -24,7 +26,18 @@ def list_events(
         query = query.filter(models.Event.game == game)
     if status:
         query = query.filter(models.Event.status == status)
-    return query.order_by(models.Event.starts_at.asc()).all()
+    query = query.order_by(models.Event.starts_at.asc(), models.Event.id.asc())
+    if page is None and limit is None:
+        return query.all()
+    current_page = page or 1
+    current_limit = limit or 12
+    rows = query.offset((current_page - 1) * current_limit).limit(current_limit + 1).all()
+    return {
+        "items": rows[:current_limit],
+        "page": current_page,
+        "limit": current_limit,
+        "has_next": len(rows) > current_limit,
+    }
 
 
 @router.get("/events/{event_id}", response_model=schemas.EventOut)

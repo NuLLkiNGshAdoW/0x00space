@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CalendarDays, Clock3, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
@@ -19,12 +19,19 @@ const STATUS_LABELS = {
 export default function EventsPage() {
   const [game, setGame] = useState("");
   const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
   const {
-    data: events = [],
+    data: eventsPage = { items: [], has_next: false },
     isPending,
     isError,
     error,
-  } = useQuery({ queryKey: ["events", game, status], queryFn: () => getEvents({ game, status }) });
+  } = useQuery({
+    queryKey: ["events", game, status, page, pageSize],
+    queryFn: () => getEvents({ game, status, page, limit: pageSize }),
+    placeholderData: keepPreviousData,
+  });
+  const events = useMemo(() => eventsPage.items || [], [eventsPage.items]);
   const games = useMemo(() => [...new Set(events.map((event) => event.game))].sort(), [events]);
 
   return (
@@ -55,7 +62,10 @@ export default function EventsPage() {
             <span className="sr-only">Фильтр по игре</span>
             <select
               value={game}
-              onChange={(event) => setGame(event.target.value)}
+              onChange={(event) => {
+                setGame(event.target.value);
+                setPage(1);
+              }}
               className="field-control w-full"
             >
               <option value="">Все игры</option>
@@ -70,7 +80,10 @@ export default function EventsPage() {
             <span className="sr-only">Фильтр по статусу</span>
             <select
               value={status}
-              onChange={(event) => setStatus(event.target.value)}
+              onChange={(event) => {
+                setStatus(event.target.value);
+                setPage(1);
+              }}
               className="field-control w-full"
             >
               <option value="">Все статусы</option>
@@ -109,6 +122,33 @@ export default function EventsPage() {
           {!isPending &&
             !isError &&
             events.map((event) => <EventCard key={event.id} event={event} />)}
+          {!isPending &&
+            !isError &&
+            (events.length > 0 || page > 1) &&
+            (page > 1 || eventsPage.has_next) && (
+              <nav
+                aria-label="Пагинация событий"
+                className="col-span-full mt-2 flex items-center justify-center gap-2"
+              >
+                <button
+                  type="button"
+                  disabled={page === 1}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2"
+                >
+                  Назад
+                </button>
+                <span className="px-2 font-mono text-xs text-mute">Страница {page}</span>
+                <button
+                  type="button"
+                  disabled={!eventsPage.has_next}
+                  onClick={() => setPage((current) => current + 1)}
+                  className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2"
+                >
+                  Далее
+                </button>
+              </nav>
+            )}
         </div>
       </main>
       <TelegramFloat />

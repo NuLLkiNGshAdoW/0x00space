@@ -13,17 +13,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
-from app.database import Base, engine
+from app.database import Base, engine, is_sqlite
 from app.routers import youtube, applications, resources, backgrounds, auth, events
 from app.services.monitoring import capture_exception
 
 settings = get_settings()
 logger = logging.getLogger("uvicorn.error")
 
-# Создаём таблицы при старте, если их ещё нет.
-# Для продакшена в дальнейшем стоит перейти на Alembic-миграции,
-# но для MVP create_all() полностью достаточно.
-Base.metadata.create_all(bind=engine)
+# Локальный SQLite остаётся удобным для разработки и тестов. Production
+# PostgreSQL никогда не изменяется автоматически при старте приложения:
+# схему меняет только явная команда `alembic upgrade head`.
+if settings.DEBUG and is_sqlite:
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.APP_NAME,

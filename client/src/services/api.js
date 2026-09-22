@@ -118,19 +118,38 @@ export function logoutAdmin() {
 }
 
 export const LATEST_VIDEOS_QUERY_KEY = ["videos", "latest"];
+export const BACKGROUNDS_QUERY_KEY = ["backgrounds"];
+export const BACKGROUNDS_QUERY_OPTIONS = {
+  queryKey: BACKGROUNDS_QUERY_KEY,
+  queryFn: getBackgrounds,
+  staleTime: 5 * 60 * 1000,
+  gcTime: 30 * 60 * 1000,
+  retry: 1,
+  refetchOnWindowFocus: false,
+};
 
-/** GET /api/resources — материалы (текстур-паки, шейдеры, моды), опционально по типу файла и/или игре. */
-export function getResources(resourceType, gameCategory) {
+/** GET /api/resources — материалы с optional server-side pagination. */
+export function getResources(resourceType, gameCategory, options = {}) {
   const params = new URLSearchParams();
   if (resourceType) params.set("resource_type", resourceType);
   if (gameCategory) params.set("game_category", gameCategory);
+  if (options.search) params.set("search", options.search);
+  if (options.sort) params.set("sort", options.sort);
+  if (options.page != null) params.set("page", options.page);
+  if (options.limit != null) params.set("limit", options.limit);
   const query = params.toString() ? `?${params.toString()}` : "";
   return request(`/resources${query}`);
 }
 
-/** GET /api/seeds — интересные сиды миров. */
-export function getSeeds() {
-  return request("/seeds");
+/** GET /api/seeds — интересные сиды миров с optional pagination. */
+export function getSeeds(options = {}) {
+  const params = new URLSearchParams();
+  if (options.search) params.set("search", options.search);
+  if (options.sort) params.set("sort", options.sort);
+  if (options.page != null) params.set("page", options.page);
+  if (options.limit != null) params.set("limit", options.limit);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return request(`/seeds${query}`);
 }
 
 /** POST /api/applications — отправка заявки подписчика. */
@@ -149,6 +168,8 @@ export function getEvents(filters = {}) {
   const params = new URLSearchParams();
   if (filters.game) params.set("game", filters.game);
   if (filters.status) params.set("status", filters.status);
+  if (filters.page != null) params.set("page", filters.page);
+  if (filters.limit != null) params.set("limit", filters.limit);
   const query = params.toString() ? `?${params.toString()}` : "";
   return request(`/events${query}`);
 }

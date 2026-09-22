@@ -71,3 +71,67 @@ VITE_SENTRY_DSN=
 ## Background storage configuration
 
 `BACKGROUND_UPLOAD_DIR` defaults to `uploads/backgrounds` and preserves the local URL `/media/backgrounds/<file>`. Set an absolute path for a mounted disk. Optionally set `BACKGROUND_PUBLIC_BASE_URL` to the public directory URL of an already configured CDN/storage; the value must be HTTPS in production and must not include credentials. The API validates file paths and removes an upload if metadata persistence fails.
+
+## Database migrations
+
+Схема базы данных изменяется через Alembic. Production startup больше не
+вызывает `Base.metadata.create_all()` для PostgreSQL. Локальный SQLite может
+создаваться автоматически только при `DEBUG=true`; production-изменения всегда
+выполняются отдельной командой.
+
+Команды запускаются из каталога `server` и используют `DATABASE_URL` из текущей
+конфигурации приложения:
+
+```bash
+# Проверить установленную ревизию и доступную head
+alembic current
+alembic heads
+
+# Создать новую forward-only migration после изменения моделей
+alembic revision --autogenerate -m "describe schema change"
+
+# Просмотреть SQL без выполнения
+alembic upgrade head --sql
+
+# Применить миграции
+alembic upgrade head
+```
+
+### Baseline для существующей production PostgreSQL
+
+Первая ревизия (`20260922_0001`) описывает только реально существующие модели:
+`applications`, `resources`, `seeds`, `events`. Она предназначена для новой
+пустой базы. Нельзя выполнять `alembic upgrade head` на существующей базе,
+если baseline ещё не отмечен: Alembic попытается создать уже существующие
+таблицы.
+
+Перед baseline обязательно:
+
+1. Проверить фактическую схему production PostgreSQL и сравнить её с моделями
+   и baseline. Не полагаться только на `models.py`.
+2. Сделать и проверить backup/restore point.
+3. Убедиться, что в базе нет незакоммиченных изменений схемы.
+4. Выполнить stamp без DDL:
+
+```bash
+alembic stamp 20260922_0001
+alembic current
+```
+
+`stamp` только создаёт/обновляет служебную запись `alembic_version` и не
+пересоздаёт таблицы и не изменяет пользовательские данные. Если фактическая
+схема отличается от baseline, сначала нужна отдельная безопасная migration;
+нельзя маскировать расхождение командой `stamp`.
+
+После baseline новые изменения выполняются только так:
+
+```bash
+alembic revision --autogenerate -m "add ..."
+# внимательно проверить generated diff и SQL
+alembic upgrade head
+```
+
+`downgrade` разрешён только для обратимых development-миграций на отдельной
+тестовой базе. Baseline намеренно необратим: его downgrade выбрасывает ошибку,
+чтобы случайно не удалить production-таблицы. Backup production перед любой
+schema migration обязателен.

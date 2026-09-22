@@ -1,0 +1,6 @@
+Alembic migrations for 0x00 SPACE.
+
+The first revision is a schema baseline. It is intended for fresh databases;
+an existing production database must be inspected and stamped manually as
+described in DEPLOYMENT.md. Never run `alembic upgrade head` against an
+existing un-stamped production database.

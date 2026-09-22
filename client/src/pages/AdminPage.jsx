@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Check, ImagePlus, Trash2, Video } from "lucide-react";
-import { API_BASE_URL, API_ORIGIN, checkAdmin, loginAdmin, logoutAdmin } from "../services/api.js";
+import {
+  API_BASE_URL,
+  API_ORIGIN,
+  BACKGROUNDS_QUERY_KEY,
+  BACKGROUNDS_QUERY_OPTIONS,
+  checkAdmin,
+  loginAdmin,
+  logoutAdmin,
+} from "../services/api.js";
 import Seo from "../components/Seo.jsx";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
 
 export default function AdminPage() {
+  const queryClient = useQueryClient();
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [items, setItems] = useState([]);
@@ -23,28 +33,28 @@ export default function AdminPage() {
     speed: 1,
     rotation_minutes: 0,
   });
-  const load = () =>
-    fetch(`${API_BASE_URL}/backgrounds`)
-      .then(async (r) => {
-        if (!r.ok)
-          throw new Error(
-            r.status === 500 ? "Сервер временно недоступен" : "Не удалось загрузить фоны",
-          );
-        return r.json();
-      })
-      .then((data) => {
-        setItems(data.items || []);
-        setActive(data.active);
-        setSettings((current) => ({ ...current, ...(data.settings || {}) }));
-      });
+  const backgroundsQuery = useQuery({
+    ...BACKGROUNDS_QUERY_OPTIONS,
+    enabled: authenticated,
+  });
+
   useEffect(() => {
-    Promise.all([
-      load(),
-      checkAdmin()
-        .then(() => setAuthenticated(true))
-        .catch(() => {}),
-    ]).catch(() => setMessage("Backend недоступен"));
+    const data = backgroundsQuery.data;
+    if (!data) return;
+    setItems(data.items || []);
+    setActive(data.active);
+    setSettings((current) => ({ ...current, ...(data.settings || {}) }));
+  }, [backgroundsQuery.data]);
+
+  useEffect(() => {
+    checkAdmin()
+      .then(() => setAuthenticated(true))
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (backgroundsQuery.isError) setMessage("Не удалось загрузить фоны. Попробуйте ещё раз.");
+  }, [backgroundsQuery.isError]);
 
   useEffect(
     () => () => {
@@ -102,7 +112,7 @@ export default function AdminPage() {
       setProgress(null);
       event.target.reset();
       setMessage("Фон загружен");
-      await load();
+      await queryClient.invalidateQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
     } catch (error) {
       setProgress(null);
       setMessage(error.message);
@@ -125,7 +135,10 @@ export default function AdminPage() {
   const logout = () => {
     logoutAdmin()
       .catch(() => {})
-      .finally(() => setAuthenticated(false));
+      .finally(() => {
+        setAuthenticated(false);
+        queryClient.removeQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
+      });
     setPassword("");
     setMessage("Сессия завершена");
   };
@@ -136,7 +149,6 @@ export default function AdminPage() {
       setAuthenticated(true);
       setPassword("");
       setMessage("Вход выполнен");
-      await load();
     } catch (error) {
       setMessage(error.message);
     }
@@ -145,7 +157,7 @@ export default function AdminPage() {
     try {
       await request(`/backgrounds/${id}/activate`, { method: "POST" });
       setMessage("Активный фон изменён");
-      await load();
+      await queryClient.invalidateQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
     } catch (error) {
       setMessage(error.message);
     }
@@ -154,7 +166,7 @@ export default function AdminPage() {
     if (!window.confirm("Удалить этот фон?")) return;
     try {
       await request(`/backgrounds/${id}`, { method: "DELETE" });
-      await load();
+      await queryClient.invalidateQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
     } catch (error) {
       setMessage(error.message);
     }
@@ -167,6 +179,7 @@ export default function AdminPage() {
         body: JSON.stringify(settings),
       });
       setMessage("Настройки сохранены");
+      await queryClient.invalidateQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
     } catch (error) {
       setMessage(error.message);
     }
@@ -175,7 +188,7 @@ export default function AdminPage() {
     try {
       await request("/backgrounds/reset", { method: "POST" });
       setMessage("Включён стандартный фон");
-      await load();
+      await queryClient.invalidateQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
     } catch (error) {
       setMessage(error.message);
     }

@@ -70,6 +70,13 @@ class ResourceOut(BaseModel):
     created_at: datetime
 
 
+class ResourcePage(BaseModel):
+    items: list[ResourceOut]
+    page: int
+    limit: int
+    has_next: bool
+
+
 # ---------- Seeds (Сиды) ----------
 
 class SeedOut(BaseModel):
@@ -83,6 +90,13 @@ class SeedOut(BaseModel):
     description: Optional[str]
     screenshot_url: Optional[str]
     created_at: datetime
+
+
+class SeedPage(BaseModel):
+    items: list[SeedOut]
+    page: int
+    limit: int
+    has_next: bool
 
 
 # ---------- Events (Ивенты) ----------
@@ -107,6 +121,13 @@ class EventOut(EventBase):
 
     id: str
     created_at: datetime
+
+
+class EventPage(BaseModel):
+    items: list[EventOut]
+    page: int
+    limit: int
+    has_next: bool
 
 
 # ---------- YouTube ----------

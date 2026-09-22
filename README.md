@@ -45,11 +45,17 @@ Backend — FastAPI, Frontend — React (Vite) + Tailwind CSS.
 |-------|--------------------------|------------------------------------------------------------------------|
 | GET   | `/api/youtube/latest`    | Последние видео/Shorts (кеш 15 мин), включая `duration_seconds`, `view_count` |
 | POST  | `/api/applications`      | Заявка подписчика (ник, контакт, игра, возраст, идея) + уведомление в Telegram |
-| GET   | `/api/resources`         | Материалы, фильтры `resource_type` и `game_category`                  |
-| GET   | `/api/seeds`             | Интересные сиды миров                                                  |
+| GET   | `/api/resources`         | Материалы, фильтры `resource_type`/`game_category`, pagination `page`/`limit` |
+| GET   | `/api/seeds`             | Интересные сиды миров, pagination `page`/`limit`                       |
+| GET   | `/api/events`             | Ивенты, фильтры `game`/`status`, pagination `page`/`limit`             |
 | GET   | `/api/health`            | Healthcheck                                                            |
 
 Swagger UI: `http://localhost:8000/docs`.
+
+Публичные списки поддерживают server-side pagination. При передаче `page` и
+`limit` ответ имеет вид `{items, page, limit, has_next}`; максимальный `limit` —
+50. Старые запросы без этих параметров сохраняют legacy-массив для обратной
+совместимости.
 
 ### Frontend
 

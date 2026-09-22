@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { PackageOpen, AlertTriangle, Search } from "lucide-react";
 import { getResources, getSeeds, ApiError } from "../services/api.js";
 import ResourceCard from "./ResourceCard.jsx";
@@ -52,17 +52,33 @@ export default function ResourcesAndGuides() {
   );
 
   const resourcesQuery = useQuery({
-    queryKey: ["resources", gameFilter],
-    queryFn: () => getResources(undefined, gameFilter || undefined),
+    queryKey: ["resources", gameFilter, debouncedSearch, sort, page, pageSize],
+    queryFn: () =>
+      getResources(undefined, gameFilter || undefined, {
+        search: debouncedSearch.trim() || undefined,
+        sort,
+        page,
+        limit: pageSize,
+      }),
     enabled: activeView === "resources",
+    placeholderData: keepPreviousData,
   });
   const seedsQuery = useQuery({
-    queryKey: ["seeds"],
-    queryFn: getSeeds,
+    queryKey: ["seeds", debouncedSearch, sort, page, pageSize],
+    queryFn: () =>
+      getSeeds({
+        search: debouncedSearch.trim() || undefined,
+        sort,
+        page,
+        limit: pageSize,
+      }),
     enabled: activeView === "seeds",
+    placeholderData: keepPreviousData,
   });
-  const resources = resourcesQuery.data || [];
-  const seeds = seedsQuery.data || [];
+  const resourcesPage = resourcesQuery.data || { items: [], has_next: false };
+  const seedsPage = seedsQuery.data || { items: [], has_next: false };
+  const resources = resourcesPage.items || [];
+  const seeds = seedsPage.items || [];
   const resourcesStatus = resourcesQuery.isPending
     ? "loading"
     : resourcesQuery.isError
@@ -82,31 +98,6 @@ export default function ResourcesAndGuides() {
       patchParams({ resource_q: query, resource_page: "" });
     }
   }, [debouncedSearch, params, patchParams]);
-
-  const filterItems = (items) => {
-    const query = debouncedSearch.trim().toLocaleLowerCase();
-    if (!query) return items;
-    return items.filter((item) =>
-      [item.title, item.description, item.game_version, item.minecraft_version]
-        .filter(Boolean)
-        .join(" ")
-        .toLocaleLowerCase()
-        .includes(query),
-    );
-  };
-
-  const sortItems = (items) =>
-    [...items].sort((a, b) =>
-      sort === "title"
-        ? a.title.localeCompare(b.title, "ru")
-        : new Date(b.created_at || 0) - new Date(a.created_at || 0),
-    );
-  const filteredResources = sortItems(filterItems(resources));
-  const filteredSeeds = sortItems(filterItems(seeds));
-  const currentItemsPages = Math.ceil(
-    (activeView === "resources" ? filteredResources.length : filteredSeeds.length) / pageSize,
-  );
-  const visiblePage = currentItemsPages > 0 ? Math.min(page, currentItemsPages) : 1;
 
   return (
     <section id="resources" className="border-y border-line/70 bg-panel/20 py-16 sm:py-20">
@@ -226,26 +217,32 @@ export default function ResourcesAndGuides() {
                 <EmptyState icon={AlertTriangle} text={resourcesError} tone="warning" />
               )}
 
-              {resourcesStatus === "ready" && filteredResources.length === 0 && (
-                <EmptyState
-                  icon={PackageOpen}
-                  text="В этой категории пока нет материалов — загляните позже."
-                />
+              {resourcesStatus === "ready" && resources.length === 0 && (
+                <>
+                  <EmptyState
+                    icon={PackageOpen}
+                    text="В этой категории пока нет материалов — загляните позже."
+                  />
+                  {page > 1 && (
+                    <Pagination
+                      page={page}
+                      hasNext={false}
+                      setPage={(nextPage) => patchParams({ resource_page: nextPage })}
+                    />
+                  )}
+                </>
               )}
 
-              {resourcesStatus === "ready" && filteredResources.length > 0 && (
+              {resourcesStatus === "ready" && resources.length > 0 && (
                 <>
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {filteredResources
-                      .slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
-                      .map((resource) => (
-                        <ResourceCard key={resource.id} resource={resource} />
-                      ))}
+                    {resources.map((resource) => (
+                      <ResourceCard key={resource.id} resource={resource} />
+                    ))}
                   </div>
                   <Pagination
                     page={page}
-                    total={filteredResources.length}
-                    pageSize={pageSize}
+                    hasNext={resourcesPage.has_next}
                     setPage={(nextPage) => patchParams({ resource_page: nextPage })}
                   />
                 </>
@@ -268,26 +265,32 @@ export default function ResourcesAndGuides() {
               <EmptyState icon={AlertTriangle} text={seedsError} tone="warning" />
             )}
 
-            {seedsStatus === "ready" && filteredSeeds.length === 0 && (
-              <EmptyState
-                icon={PackageOpen}
-                text="Сидов пока нет — они появятся после следующего ролика."
-              />
+            {seedsStatus === "ready" && seeds.length === 0 && (
+              <>
+                <EmptyState
+                  icon={PackageOpen}
+                  text="Сидов пока нет — они появятся после следующего ролика."
+                />
+                {page > 1 && (
+                  <Pagination
+                    page={page}
+                    hasNext={false}
+                    setPage={(nextPage) => patchParams({ resource_page: nextPage })}
+                  />
+                )}
+              </>
             )}
 
-            {seedsStatus === "ready" && filteredSeeds.length > 0 && (
+            {seedsStatus === "ready" && seeds.length > 0 && (
               <>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {filteredSeeds
-                    .slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
-                    .map((seed) => (
-                      <SeedCard key={seed.id} seed={seed} />
-                    ))}
+                  {seeds.map((seed) => (
+                    <SeedCard key={seed.id} seed={seed} />
+                  ))}
                 </div>
                 <Pagination
                   page={page}
-                  total={filteredSeeds.length}
-                  pageSize={pageSize}
+                  hasNext={seedsPage.has_next}
                   setPage={(nextPage) => patchParams({ resource_page: nextPage })}
                 />
               </>
@@ -299,9 +302,8 @@ export default function ResourcesAndGuides() {
   );
 }
 
-function Pagination({ page, total, pageSize, setPage }) {
-  const pages = Math.ceil(total / pageSize);
-  if (pages < 2) return null;
+function Pagination({ page, hasNext, setPage }) {
+  if (page === 1 && !hasNext) return null;
   return (
     <nav aria-label="Пагинация" className="mt-7 flex items-center justify-center gap-2">
       <button
@@ -312,12 +314,10 @@ function Pagination({ page, total, pageSize, setPage }) {
       >
         Назад
       </button>
-      <span className="px-2 font-mono text-xs text-mute">
-        {page} / {pages}
-      </span>
+      <span className="px-2 font-mono text-xs text-mute">Страница {page}</span>
       <button
         type="button"
-        disabled={page === pages}
+        disabled={!hasNext}
         onClick={() => setPage(page + 1)}
         className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >

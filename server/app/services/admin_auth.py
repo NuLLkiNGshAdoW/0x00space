@@ -64,6 +64,12 @@ def authenticate(request: Request, legacy_token: str | None = None) -> None:
     if not configured:
         raise HTTPException(status_code=503, detail="Админ-аутентификация не настроена")
     if valid_session(request.cookies.get(COOKIE_NAME)):
+        # Production-cookie is SameSite=None because Vercel and Render use
+        # different sites.  Check Origin for cookie-authenticated mutations so
+        # another site cannot submit an admin action on the user's behalf.
+        origin = request.headers.get("origin")
+        if origin and origin not in settings.CORS_ORIGINS:
+            raise HTTPException(status_code=403, detail="Недопустимый источник запроса")
         return
     if legacy_token and hmac.compare_digest(legacy_token, configured):
         return
