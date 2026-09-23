@@ -90,6 +90,35 @@ def test_background_upload_rejects_mismatched_file_signature(monkeypatch, tmp_pa
     assert response.status_code == 415
 
 
+def test_missing_background_file_is_a_graceful_catalog_fallback(monkeypatch, tmp_path):
+    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
+    monkeypatch.setenv("ADMIN_SESSION_SECRET", "test-session-secret")
+    get_settings.cache_clear()
+    monkeypatch.setattr(backgrounds_router, "UPLOAD_DIR", tmp_path)
+    monkeypatch.setattr(backgrounds_router, "META_FILE", tmp_path / "metadata.json")
+    client = TestClient(app)
+    assert client.post("/api/auth/login", json={"password": "test-password"}).status_code == 200
+
+    response = client.post(
+        "/api/backgrounds/upload",
+        files={"file": ("valid.png", b"\x89PNG\r\n\x1a\nvalid", "image/png")},
+    )
+    assert response.status_code == 201
+    item = response.json()
+    (tmp_path / item["filename"]).unlink()
+
+    public = client.get("/api/backgrounds")
+    assert public.status_code == 200
+    assert public.json()["active"] is None
+    assert public.json()["items"] == []
+
+    activate = client.post(f"/api/backgrounds/{item['id']}/activate")
+    assert activate.status_code == 409
+    delete = client.delete(f"/api/backgrounds/{item['id']}")
+    assert delete.status_code == 200
+    assert client.get("/api/backgrounds").json()["items"] == []
+
+
 def test_production_requires_dedicated_session_secret(monkeypatch):
     settings = Settings(DEBUG=False, DATABASE_URL="postgresql://db/app", ADMIN_SESSION_SECRET="")
     with pytest.raises(RuntimeError, match="ADMIN_SESSION_SECRET"):

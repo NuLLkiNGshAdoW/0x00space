@@ -37,6 +37,58 @@ test("home renders API-backed hero and latest video CTA", async ({ page }) => {
   );
 });
 
+test("home uses the optimized decorative background video", async ({ page }) => {
+  await page.goto("/");
+  const video = page.locator("video.profile-backdrop-local");
+  const poster = page.locator('img[src="/assets/minecraft-forest-poster.webp"]');
+  await expect(video.or(poster)).toBeVisible();
+  if (await video.count()) {
+    await expect(video).toHaveAttribute("autoplay", "");
+    await expect(video).toHaveAttribute("muted", "");
+    await expect(video).toHaveAttribute("loop", "");
+    await expect(video).toHaveAttribute("playsinline", "");
+    await expect(video).toHaveAttribute("poster", "/assets/minecraft-forest-poster.webp");
+    await expect(video.locator('source[media="(max-width: 640px)"]').first()).toHaveAttribute(
+      "src",
+      "/assets/minecraft-forest-mobile.webm",
+    );
+  }
+});
+
+test("reduced motion uses the static background poster", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator("video.profile-backdrop-local")).toHaveCount(0);
+  await expect(page.locator('img[src="/assets/minecraft-forest-poster.webp"]')).toBeVisible();
+});
+
+test("background animation preference disables playback and persists", async ({ page }) => {
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: /Анимация фона: Включена/ })
+    .first()
+    .click();
+  await expect(page.locator("video.profile-backdrop-local")).toHaveCount(0);
+  await expect(page.locator('img[src="/assets/minecraft-forest-poster.webp"]')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem("0x00space.background-animation"))).toBe(
+    "off",
+  );
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: /Анимация фона: Выключена/ }).first(),
+  ).toBeVisible();
+  await expect(page.locator("video.profile-backdrop-local")).toHaveCount(0);
+});
+
+test("background video failure falls back to the poster", async ({ page }) => {
+  await page.route("**/assets/minecraft-forest-desktop.webm", (route) => route.abort());
+  await page.route("**/assets/minecraft-forest-desktop.mp4", (route) => route.abort());
+  await page.goto("/");
+  await expect(page.locator('img[src="/assets/minecraft-forest-poster.webp"]')).toBeVisible({
+    timeout: 10000,
+  });
+});
+
 test("home shows a waking-up state when the API times out", async ({ page }) => {
   await page.route("**/api/**", async (route) => {
     if (new URL(route.request().url()).pathname.endsWith("/youtube/latest")) {

@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
 import { SOCIAL_LINKS } from "../lib/socials.js";
 import { cn } from "../lib/utils.js";
+import BackgroundAnimationToggle from "./BackgroundAnimationToggle.jsx";
 
 const NAV_LINKS = [
   { label: "Главная", href: "/" },
@@ -99,6 +100,7 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
+          <BackgroundAnimationToggle />
           {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
             <a
               key={name}
@@ -159,6 +161,7 @@ export default function Navbar() {
             <Link to="/videos" onClick={handleNavClick} className="button-primary mt-2 w-full">
               Смотреть видео
             </Link>
+            <BackgroundAnimationToggle compact />
             <div className="mt-2 flex items-center gap-1 border-t border-line px-3 pt-3">
               {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
                 <a

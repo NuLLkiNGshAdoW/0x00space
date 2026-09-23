@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { API_ORIGIN, BACKGROUNDS_QUERY_OPTIONS } from "../services/api.js";
+import { useBackgroundAnimation } from "../lib/backgroundAnimation.js";
+
+const LOCAL_POSTER = "/assets/minecraft-forest-poster.webp";
+const LOCAL_DESKTOP_WEBM = "/assets/minecraft-forest-desktop.webm";
+const LOCAL_DESKTOP_MP4 = "/assets/minecraft-forest-desktop.mp4";
+const LOCAL_MOBILE_WEBM = "/assets/minecraft-forest-mobile.webm";
+const LOCAL_MOBILE_MP4 = "/assets/minecraft-forest-mobile.mp4";
 
 export default function ProfileBackdrop() {
   const [background, setBackground] = useState(null);
@@ -12,6 +19,8 @@ export default function ProfileBackdrop() {
     position: "center",
     speed: 1,
   });
+  const [animationEnabled] = useBackgroundAnimation();
+  const [localVideoFailed, setLocalVideoFailed] = useState(false);
   const { data } = useQuery(BACKGROUNDS_QUERY_OPTIONS);
 
   useEffect(() => {
@@ -48,10 +57,14 @@ export default function ProfileBackdrop() {
     };
   }, [data]);
 
-  const url = background?.url
-    ? /^https?:\/\//i.test(background.url)
-      ? background.url
-      : `${API_ORIGIN}${background.url}`
+  const activeBackground = data?.active ?? background;
+  const hasDatabaseBackground = Boolean(activeBackground?.url);
+  const localVideoActive =
+    !hasDatabaseBackground && animationEnabled && !reducedMotion && !localVideoFailed;
+  const url = activeBackground?.url
+    ? /^https?:\/\//i.test(activeBackground.url)
+      ? activeBackground.url
+      : `${API_ORIGIN}${activeBackground.url}`
     : null;
   // Текст должен оставаться читаемым даже если в старых настройках сохранено
   // слишком сильное затемнение фона.
@@ -63,14 +76,17 @@ export default function ProfileBackdrop() {
     "--profile-position": settings.position,
   };
   const mediaStyle = { ...style, objectPosition: settings.position };
+  const showDatabaseVideo =
+    activeBackground?.type === "video" && animationEnabled && !reducedMotion && !customFailed;
+  const showDatabaseImage = activeBackground?.type === "image" && !customFailed;
   return (
     <>
-      {!customFailed && background?.type === "video" && !reducedMotion ? (
+      {showDatabaseVideo ? (
         <video
           className="profile-backdrop profile-backdrop-custom"
           style={mediaStyle}
           src={url}
-          poster="/profile-background.svg"
+          poster={LOCAL_POSTER}
           onError={() => setCustomFailed(true)}
           autoPlay
           preload="metadata"
@@ -82,7 +98,7 @@ export default function ProfileBackdrop() {
           }}
           aria-hidden="true"
         />
-      ) : !customFailed && background?.type === "image" ? (
+      ) : showDatabaseImage ? (
         <img
           className="profile-backdrop profile-backdrop-custom"
           style={mediaStyle}
@@ -95,12 +111,37 @@ export default function ProfileBackdrop() {
           onError={() => setCustomFailed(true)}
           aria-hidden="true"
         />
+      ) : localVideoActive ? (
+        <video
+          className="profile-backdrop profile-backdrop-custom profile-backdrop-local"
+          poster={LOCAL_POSTER}
+          onError={() => setLocalVideoFailed(true)}
+          autoPlay
+          preload="metadata"
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+        >
+          <source media="(max-width: 640px)" src={LOCAL_MOBILE_WEBM} type="video/webm" />
+          <source media="(max-width: 640px)" src={LOCAL_MOBILE_MP4} type="video/mp4" />
+          <source src={LOCAL_DESKTOP_WEBM} type="video/webm" />
+          <source src={LOCAL_DESKTOP_MP4} type="video/mp4" />
+        </video>
       ) : (
-        <div className="profile-backdrop" style={style} aria-hidden="true" />
+        <img
+          className="profile-backdrop profile-backdrop-custom profile-backdrop-poster"
+          src={activeBackground?.type === "image" && !customFailed ? url : LOCAL_POSTER}
+          alt=""
+          width="1280"
+          height="720"
+          decoding="async"
+          aria-hidden="true"
+        />
       )}
       <div
-        className="profile-backdrop-shade"
-        style={{ "--profile-shade": readableShade }}
+        className={`profile-backdrop-shade${localVideoActive ? " profile-backdrop-shade-local" : ""}`}
+        style={{ "--profile-shade": localVideoActive ? 0.44 : readableShade }}
         aria-hidden="true"
       />
     </>

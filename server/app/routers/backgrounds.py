@@ -62,6 +62,32 @@ def _public_url(filename: str) -> str:
     return f"/media/backgrounds/{filename}"
 
 
+def _item_filename(item: dict) -> str | None:
+    filename = item.get("filename")
+    if filename:
+        return filename
+    url = item.get("url", "")
+    return Path(urlparse(url).path).name or None
+
+
+def _item_has_file(item: dict) -> bool:
+    """Check local availability without allowing metadata to escape the upload root."""
+    if get_settings().BACKGROUND_PUBLIC_BASE_URL:
+        # An explicitly configured public base may point at an external store.
+        return True
+    filename = _item_filename(item)
+    if not filename:
+        return False
+    try:
+        return _safe_file_path(filename).is_file()
+    except HTTPException:
+        return False
+
+
+def _available_items(data: dict) -> list[dict]:
+    return [item for item in data.get("items", []) if _item_has_file(item)]
+
+
 def _check_admin(request: Request, token: str | None):
     authenticate(request, token)
 
@@ -69,7 +95,10 @@ def _check_admin(request: Request, token: str | None):
 @router.get("")
 def get_backgrounds():
     data = _read_meta()
-    return {"active": data.get("active"), "items": data.get("items", []), "settings": {**DEFAULT_SETTINGS, **data.get("settings", {})}}
+    items = _available_items(data)
+    active_id = (data.get("active") or {}).get("id")
+    active = next((item for item in items if item.get("id") == active_id), None)
+    return {"active": active, "items": items, "settings": {**DEFAULT_SETTINGS, **data.get("settings", {})}}
 
 
 @router.put("/settings", response_model=schemas.BackgroundSettings)
@@ -156,6 +185,8 @@ def activate_background(background_id: str, request: Request, x_admin_token: str
     item = next((entry for entry in data.get("items", []) if entry["id"] == background_id), None)
     if not item:
         raise HTTPException(status_code=404, detail="Фон не найден")
+    if not _item_has_file(item):
+        raise HTTPException(status_code=409, detail="Файл фона недоступен; загрузите его снова")
     data["active"] = item
     _write_meta(data)
     return item
@@ -168,9 +199,14 @@ def delete_background(background_id: str, request: Request, x_admin_token: str |
     item = next((entry for entry in data.get("items", []) if entry["id"] == background_id), None)
     if not item:
         raise HTTPException(status_code=404, detail="Фон не найден")
-    filename = item.get("filename") or Path(urlparse(item.get("url", "")).path).name
-    _safe_file_path(filename).unlink(missing_ok=True)
+    filename = _item_filename(item)
+    if filename:
+        # A valid but already-missing file is fine; an invalid metadata path is
+        # still rejected so corruption cannot weaken traversal protection.
+        _safe_file_path(filename).unlink(missing_ok=True)
     data["items"] = [entry for entry in data["items"] if entry["id"] != background_id]
-    data["active"] = data["items"][0] if data.get("active", {}).get("id") == background_id and data["items"] else (None if data.get("active", {}).get("id") == background_id else data.get("active"))
+    if data.get("active", {}).get("id") == background_id:
+        remaining = _available_items(data)
+        data["active"] = remaining[0] if remaining else None
     _write_meta(data)
     return {"ok": True}

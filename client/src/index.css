@@ -84,10 +84,24 @@
     transform: scale(1.02);
   }
 
+  .profile-backdrop-poster {
+    object-fit: cover;
+  }
+
   .profile-backdrop-shade {
     z-index: 1;
     display: block;
-    background: rgba(5, 7, 13, var(--profile-shade, 0.68));
+    background:
+      linear-gradient(180deg, rgba(5, 7, 13, 0.3), rgba(5, 7, 13, 0.66)),
+      radial-gradient(circle at 78% 16%, rgba(52, 211, 153, 0.07), transparent 38%),
+      rgba(5, 7, 13, var(--profile-shade, 0.68));
+  }
+
+  .profile-backdrop-shade-local {
+    background:
+      linear-gradient(180deg, rgba(5, 7, 13, 0.25), rgba(5, 7, 13, 0.62)),
+      radial-gradient(circle at 78% 16%, rgba(52, 211, 153, 0.08), transparent 38%),
+      rgba(5, 7, 13, var(--profile-shade, 0.44));
   }
 
   #root {
