@@ -9,7 +9,7 @@ export default function BackgroundAnimationToggle({ compact = false }) {
       className={
         compact
           ? "interactive-control w-full rounded-lg px-3 py-2.5 text-left text-sm text-ink hover:bg-panel2"
-          : "interactive-control rounded-lg px-3 py-2 text-xs text-mute hover:bg-panel2 hover:text-ink"
+          : "interactive-control whitespace-nowrap rounded-lg px-3 py-2 text-xs text-mute hover:bg-panel2 hover:text-ink"
       }
       aria-pressed={enabled}
       onClick={() => setEnabled(!enabled)}

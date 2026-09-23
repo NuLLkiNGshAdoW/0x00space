@@ -102,7 +102,6 @@ export default function Navbar() {
         </div>
 
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
-          <BackgroundAnimationToggle />
           {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
             <a
               key={name}

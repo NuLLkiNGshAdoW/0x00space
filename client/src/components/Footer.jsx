@@ -1,12 +1,13 @@
 import { SOCIAL_LINKS } from "../lib/socials.js";
 import { Link } from "react-router-dom";
+import BackgroundAnimationToggle from "./BackgroundAnimationToggle.jsx";
 
 export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
     <footer aria-label="Подвал сайта" className="border-t border-line">
-      <div className="container-app flex flex-col items-center gap-5 py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] sm:flex-row sm:justify-between">
+      <div className="container-app flex flex-col items-center gap-5 py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] sm:flex-row sm:flex-wrap sm:justify-center lg:flex-nowrap lg:justify-between">
         <div className="flex items-center gap-2.5">
           <img
             src="/brand-mark.png"
@@ -21,6 +22,11 @@ export default function Footer() {
         </div>
 
         <p className="text-xs text-mute">© {year} 0x00 SPACE. Все права защищены.</p>
+
+        <div className="flex items-center gap-2" aria-label="Настройки фона">
+          <span className="text-xs text-mute">Настройки</span>
+          <BackgroundAnimationToggle />
+        </div>
 
         <nav
           aria-label="Дополнительные страницы"
