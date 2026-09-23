@@ -48,11 +48,53 @@ test("home uses the optimized decorative background video", async ({ page }) => 
     await expect(video).toHaveAttribute("loop", "");
     await expect(video).toHaveAttribute("playsinline", "");
     await expect(video).toHaveAttribute("poster", "/assets/minecraft-forest-poster.webp");
-    await expect(video.locator('source[media="(max-width: 640px)"]').first()).toHaveAttribute(
-      "src",
-      "/assets/minecraft-forest-mobile.webm",
-    );
+    await expect(video).toHaveAttribute("src", /minecraft-forest-(desktop|mobile)\.mp4/);
   }
+});
+
+test("desktop background animation toggle actually plays video", async ({ page }) => {
+  await page.route("**/api/backgrounds", (route) =>
+    route.fulfill({ json: { items: [], active: null, settings: {} } }),
+  );
+  await page.goto("/");
+
+  const toggle = page.getByRole("button", { name: /Анимация фона: Включена/ }).first();
+  const video = page.locator("video.profile-backdrop-local");
+  await expect(video).toHaveCount(1);
+  await expect(video).toHaveJSProperty("muted", true);
+  await expect(video).toHaveJSProperty("playsInline", true);
+  await expect.poll(() => video.evaluate((element) => element.readyState)).toBeGreaterThan(0);
+
+  await toggle.click();
+  await expect(
+    page.getByRole("button", { name: /Анимация фона: Выключена/ }).first(),
+  ).toBeVisible();
+  await expect(page.locator("video.profile-backdrop-local")).toHaveCount(0);
+  await expect(page.locator('img[src="/assets/minecraft-forest-poster.webp"]')).toBeVisible();
+
+  await page
+    .getByRole("button", { name: /Анимация фона: Выключена/ })
+    .first()
+    .click();
+  const enabledVideo = page.locator("video.profile-backdrop-local");
+  await expect(enabledVideo).toHaveCount(1);
+  await expect
+    .poll(() => enabledVideo.evaluate((element) => element.readyState))
+    .toBeGreaterThan(0);
+  await expect.poll(() => enabledVideo.evaluate((element) => element.paused)).toBe(false);
+
+  await page.reload();
+  const reloadedVideo = page.locator("video.profile-backdrop-local");
+  await expect(page.getByRole("button", { name: /Анимация фона: Включена/ }).first()).toBeVisible();
+  await expect(reloadedVideo).toHaveCount(1);
+  await expect.poll(() => reloadedVideo.evaluate((element) => element.paused)).toBe(false);
+
+  await page
+    .getByRole("button", { name: /Анимация фона: Включена/ })
+    .first()
+    .click();
+  await expect(page.locator("video.profile-backdrop-local")).toHaveCount(0);
+  await expect(page.locator('img[src="/assets/minecraft-forest-poster.webp"]')).toBeVisible();
 });
 
 test("reduced motion uses the static background poster", async ({ page }) => {
@@ -181,7 +223,7 @@ test("navbar keeps branding and navigation separated across breakpoints", async 
   for (const width of [1024, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(desktopNavigation).toBeVisible();
-    await expect(header.getByRole("button", { name: /Анимация фона:/ })).toHaveCount(0);
+    await expect(header.getByRole("button", { name: /Анимация фона:/ })).toBeVisible();
     await expect(animationToggle).toBeVisible();
     await expect(brand).toHaveAttribute("href", "/");
     await expect(
