@@ -171,6 +171,37 @@ test("public home stays within the supported responsive widths", async ({ page }
   }
 });
 
+test("navbar keeps branding and navigation separated across breakpoints", async ({ page }) => {
+  await page.goto("/");
+  const header = page.locator("header");
+  const brand = header.locator(".navbar-brand");
+  const desktopNavigation = header.getByRole("navigation", { name: "Основная навигация" });
+
+  for (const width of [1024, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(desktopNavigation).toBeVisible();
+    await expect(brand).toHaveAttribute("href", "/");
+    await expect(
+      desktopNavigation.getByRole("link", { name: "Главная", exact: true }),
+    ).toHaveAttribute("href", "/");
+    const brandBox = await brand.boundingBox();
+    const homeBox = await desktopNavigation
+      .getByRole("link", { name: "Главная", exact: true })
+      .boundingBox();
+    expect(brandBox).not.toBeNull();
+    expect(homeBox).not.toBeNull();
+    expect(homeBox.x).toBeGreaterThan(brandBox.x + brandBox.width);
+    await expect(page.locator("body")).toHaveJSProperty("scrollWidth", width);
+  }
+
+  for (const width of [320, 375, 768]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(desktopNavigation).toBeHidden();
+    await expect(header.getByRole("button", { name: "Открыть меню" })).toBeVisible();
+    await expect(page.locator("body")).toHaveJSProperty("scrollWidth", width);
+  }
+});
+
 test("secondary copy remains opaque and readable over the backdrop", async ({ page }) => {
   await page.goto("/");
   const copy = page.locator("#community-title").locator("..").locator("p.text-readable");

@@ -64,42 +64,44 @@ export default function Navbar() {
           : "border-line/70 bg-void/80 backdrop-blur-xl",
       )}
     >
-      <div className="container-app flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 shrink-0">
-          <img
-            src="/brand-mark.png"
-            alt=""
-            width="40"
-            height="40"
-            className="h-8 w-8 object-contain"
-          />
-          <span className="font-display text-lg font-semibold tracking-tight text-ink">
-            0x00 <span className="text-emerald">SPACE</span>
-          </span>
-        </Link>
+      <div className="container-app flex h-16 items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-6 lg:gap-8">
+          <Link to="/" className="navbar-brand flex shrink-0 items-center gap-2.5">
+            <img
+              src="/brand-mark.png"
+              alt=""
+              width="40"
+              height="40"
+              className="h-8 w-8 object-contain"
+            />
+            <span className="font-display text-lg font-semibold tracking-tight text-ink">
+              0x00 <span className="text-emerald">SPACE</span>
+            </span>
+          </Link>
 
-        <nav
-          aria-label="Основная навигация"
-          className="hidden min-w-0 md:flex items-center gap-4 lg:gap-8"
-        >
-          {NAV_LINKS.map((link) => (
-            <NavLink
-              key={link.href}
-              to={link.href}
-              end={link.href === "/"}
-              className={({ isActive }) =>
-                cn(
-                  "text-sm transition-colors hover:text-ink",
-                  isActive ? "text-emerald" : "text-mute",
-                )
-              }
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
+          <nav
+            aria-label="Основная навигация"
+            className="hidden min-w-0 shrink items-center gap-4 lg:flex lg:gap-8"
+          >
+            {NAV_LINKS.map((link) => (
+              <NavLink
+                key={link.href}
+                to={link.href}
+                end={link.href === "/"}
+                className={({ isActive }) =>
+                  cn(
+                    "whitespace-nowrap text-sm transition-colors hover:text-ink",
+                    isActive ? "text-emerald" : "text-mute",
+                  )
+                }
+              >
+                {link.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
           <BackgroundAnimationToggle />
           {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
             <a
@@ -117,7 +119,7 @@ export default function Navbar() {
 
         <Link
           to="/videos"
-          className="button-primary hidden min-h-10 px-4 py-2 text-xs lg:inline-flex"
+          className="button-primary hidden min-h-10 px-4 py-2 text-xs xl:inline-flex"
         >
           Смотреть видео
         </Link>
@@ -129,7 +131,7 @@ export default function Navbar() {
           aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
           aria-expanded={isOpen}
           aria-controls="mobile-navigation"
-          className="icon-button md:hidden text-ink"
+          className="icon-button text-ink lg:hidden"
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -139,7 +141,7 @@ export default function Navbar() {
         <div
           id="mobile-navigation"
           ref={menuRef}
-          className="md:hidden border-t border-line bg-panel/95 shadow-2xl backdrop-blur-xl"
+          className="border-t border-line bg-panel/95 shadow-2xl backdrop-blur-xl lg:hidden"
         >
           <nav aria-label="Мобильная навигация" className="container-app flex flex-col gap-1 py-3">
             {NAV_LINKS.map((link) => (
