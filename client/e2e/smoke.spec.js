@@ -218,12 +218,14 @@ test("navbar keeps branding and navigation separated across breakpoints", async 
   const header = page.locator("header");
   const brand = header.locator(".navbar-brand");
   const desktopNavigation = header.getByRole("navigation", { name: "Основная навигация" });
-  const animationToggle = page.getByRole("button", { name: /Анимация фона:/ }).first();
+  const animationToggle = page
+    .locator('footer[aria-label="Подвал сайта"]')
+    .getByRole("button", { name: /Анимация фона:/ });
 
   for (const width of [1024, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(desktopNavigation).toBeVisible();
-    await expect(header.getByRole("button", { name: /Анимация фона:/ })).toBeVisible();
+    await expect(header.getByRole("button", { name: /Анимация фона:/ })).toHaveCount(0);
     await expect(animationToggle).toBeVisible();
     await expect(brand).toHaveAttribute("href", "/");
     await expect(
