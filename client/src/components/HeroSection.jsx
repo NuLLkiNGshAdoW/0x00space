@@ -7,9 +7,9 @@ import { formatDuration } from "../lib/utils.js";
 import ApiState from "./ApiState.jsx";
 
 const PILLARS = [
-  ["Новые видео", "каждую неделю"],
-  ["Гайды и сиды", "из роликов"],
-  ["Ивенты", "по заявке"],
+  { icon: Youtube, title: "Новые видео", text: "каждую неделю", tone: "text-emerald" },
+  { icon: PackageOpen, title: "Гайды и сиды", text: "из роликов", tone: "text-violet" },
+  { icon: CalendarPlus, title: "Ивенты", text: "по заявке", tone: "text-amber" },
 ];
 
 export default function HeroSection() {
@@ -90,11 +90,17 @@ export default function HeroSection() {
             <span>Без спама. Только игры и атмосфера.</span>
           </div>
 
-          <dl className="mt-9 grid grid-cols-3 gap-2 rounded-2xl border border-line/80 bg-panel/35 p-2">
-            {PILLARS.map(([title, text]) => (
-              <div key={title} className="rounded-xl px-3 py-2.5 sm:px-4">
-                <dt className="text-[13px] font-medium text-ink sm:text-sm">{title}</dt>
-                <dd className="mt-0.5 text-[11px] text-mute sm:text-xs">{text}</dd>
+          <dl className="mt-9 grid grid-cols-3 gap-2">
+            {PILLARS.map(({ icon: Icon, title, text, tone }) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-line/70 bg-panel/45 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] transition-colors hover:border-emerald/35 sm:px-4"
+              >
+                <dt className="flex min-h-10 flex-col justify-between gap-2 text-[11px] font-semibold leading-tight text-ink sm:flex-row sm:items-center sm:text-sm">
+                  <Icon className={`h-4 w-4 shrink-0 ${tone}`} strokeWidth={1.8} />
+                  <span className="sm:ml-auto">{title}</span>
+                </dt>
+                <dd className="mt-1.5 text-[10px] text-mute sm:text-xs">{text}</dd>
               </div>
             ))}
           </dl>

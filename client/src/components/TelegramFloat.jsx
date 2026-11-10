@@ -1,10 +1,25 @@
 import { Send, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trackEvent } from "../lib/analytics.js";
 
 export default function TelegramFloat() {
   const [visible, setVisible] = useState(true);
-  if (!visible) return null;
+  const [mobileScrolled, setMobileScrolled] = useState(false);
+
+  useEffect(() => {
+    const updateVisibility = () => {
+      setMobileScrolled(window.innerWidth >= 640 || window.scrollY > 360);
+    };
+    updateVisibility();
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+    window.addEventListener("resize", updateVisibility);
+    return () => {
+      window.removeEventListener("scroll", updateVisibility);
+      window.removeEventListener("resize", updateVisibility);
+    };
+  }, []);
+
+  if (!visible || !mobileScrolled) return null;
   return (
     <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-auto right-4 z-40 flex items-center gap-2 sm:bottom-5 sm:right-5">
       <button
