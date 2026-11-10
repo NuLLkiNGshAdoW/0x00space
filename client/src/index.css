@@ -38,6 +38,21 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Тонкая атмосферная сетка помогает связать игровые разделы, не отвлекая от контента. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.16;
+    background-image:
+      linear-gradient(rgba(193, 231, 204, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(193, 231, 204, 0.045) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(180deg, black, transparent 78%);
+  }
+
   h1,
   h2,
   h3,
@@ -202,6 +217,285 @@
 }
 
 @layer components {
+  .site-header {
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
+  }
+
+  .event-join-card {
+    border-color: rgba(192, 164, 255, 0.24);
+    background:
+      radial-gradient(ellipse at 100% 0, rgba(192, 164, 255, 0.12), transparent 65%),
+      linear-gradient(145deg, rgba(17, 34, 22, 0.96), rgba(7, 15, 10, 0.96));
+  }
+
+  .event-card {
+    border-color: rgba(49, 77, 56, 0.82);
+    background: linear-gradient(150deg, rgba(17, 34, 22, 0.98), rgba(7, 15, 10, 0.98));
+  }
+
+  .event-card img {
+    transition:
+      transform 700ms cubic-bezier(0.2, 0.75, 0.25, 1),
+      filter 600ms ease;
+  }
+
+  .event-card:hover img {
+    filter: saturate(1.12);
+    transform: scale(1.045);
+  }
+
+  .event-card > div:last-child > div {
+    border-top: 1px solid rgba(63, 91, 70, 0.5);
+    padding-top: 0.9rem;
+  }
+
+  .application-section {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .application-section::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 8%;
+    left: -18rem;
+    width: 38rem;
+    height: 38rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(85, 220, 145, 0.07), transparent 68%);
+    pointer-events: none;
+  }
+
+  .application-form {
+    border-color: rgba(67, 101, 75, 0.78);
+    background:
+      radial-gradient(ellipse at 100% 0, rgba(85, 220, 145, 0.085), transparent 46%),
+      linear-gradient(145deg, rgba(16, 34, 21, 0.98), rgba(6, 14, 9, 0.98));
+  }
+
+  .application-form .field-control {
+    background-color: rgba(4, 10, 7, 0.58);
+  }
+
+  .application-form .field-control:focus {
+    background-color: rgba(4, 10, 7, 0.9);
+  }
+
+  .application-step > span:first-child {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 6px 18px rgba(0, 0, 0, 0.14);
+  }
+
+  .application-form button[type="submit"] {
+    min-height: 3.25rem;
+    font-size: 0.9375rem;
+  }
+
+  .catalog-tabs,
+  .catalog-toolbar {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.035),
+      0 12px 34px rgba(0, 0, 0, 0.12);
+  }
+
+  .catalog-toolbar {
+    position: relative;
+    border-color: rgba(63, 91, 70, 0.72);
+    background:
+      radial-gradient(ellipse at 0 0, rgba(85, 220, 145, 0.055), transparent 50%),
+      linear-gradient(135deg, rgba(15, 31, 20, 0.76), rgba(7, 16, 11, 0.78));
+  }
+
+  .catalog-toolbar .field-control {
+    border-color: rgba(52, 78, 59, 0.88);
+    background-color: rgba(4, 10, 7, 0.72);
+  }
+
+  .catalog-toolbar .field-control:focus {
+    border-color: #55dc91;
+    background-color: rgba(4, 10, 7, 0.94);
+  }
+
+  .category-filters {
+    scrollbar-width: none;
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      black 1rem,
+      black calc(100% - 1rem),
+      transparent
+    );
+  }
+
+  .video-card {
+    min-width: 0;
+    border-color: rgba(49, 77, 56, 0.82);
+    background: linear-gradient(150deg, rgba(17, 34, 22, 0.98), rgba(7, 15, 10, 0.98));
+  }
+
+  .video-card:hover {
+    border-color: rgba(85, 220, 145, 0.58);
+    box-shadow:
+      0 24px 54px rgba(0, 0, 0, 0.35),
+      0 0 32px rgba(85, 220, 145, 0.08);
+  }
+
+  .video-card img {
+    filter: saturate(0.92);
+    transition:
+      filter 500ms ease,
+      transform 650ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+
+  .video-card:hover img {
+    filter: saturate(1.12) contrast(1.025);
+  }
+
+  .catalog-empty {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(49, 77, 56, 0.78);
+    background:
+      radial-gradient(ellipse at 50% 0, rgba(85, 220, 145, 0.08), transparent 55%),
+      linear-gradient(145deg, rgba(16, 32, 21, 0.94), rgba(7, 15, 10, 0.96));
+  }
+
+  .catalog-pagination button:not(:disabled) {
+    background: linear-gradient(145deg, rgba(18, 37, 24, 0.86), rgba(7, 16, 11, 0.9));
+  }
+
+  .primary-nav {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.035),
+      0 8px 28px rgba(0, 0, 0, 0.12);
+  }
+
+  .navbar-brand img {
+    filter: drop-shadow(0 3px 12px rgba(85, 220, 145, 0.15));
+  }
+
+  .page-intro {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .page-intro::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: -2.5rem;
+    left: -2rem;
+    width: min(34rem, 90vw);
+    height: 16rem;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(85, 220, 145, 0.075), transparent 68%);
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
+  main > .container-app:first-of-type nav[aria-label="Хлебные крошки"] {
+    width: fit-content;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid rgba(41, 68, 53, 0.55);
+    border-radius: 999px;
+    background: rgba(7, 16, 11, 0.42);
+  }
+
+  footer[aria-label="Подвал сайта"] {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 12% 0%, rgba(85, 220, 145, 0.07), transparent 34rem),
+      rgba(4, 10, 7, 0.78);
+  }
+
+  footer[aria-label="Подвал сайта"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(85, 220, 145, 0.38),
+      rgba(192, 164, 255, 0.24),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .hero-section {
+    isolation: isolate;
+    background:
+      radial-gradient(ellipse at 74% 42%, rgba(85, 220, 145, 0.08), transparent 33rem),
+      linear-gradient(180deg, rgba(9, 22, 14, 0.28), transparent 82%);
+  }
+
+  .hero-section::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 8%;
+    right: -12rem;
+    width: min(58vw, 52rem);
+    aspect-ratio: 1;
+    border: 1px solid rgba(120, 233, 162, 0.08);
+    border-radius: 50%;
+    box-shadow:
+      0 0 0 3rem rgba(120, 233, 162, 0.018),
+      0 0 0 7rem rgba(192, 164, 255, 0.015);
+    pointer-events: none;
+  }
+
+  .hero-title {
+    text-shadow: 0 8px 40px rgba(0, 0, 0, 0.24);
+  }
+
+  .hero-accent-green {
+    color: #79e6a2;
+    background: linear-gradient(110deg, #a5f2bc 0%, #55dc91 64%, #38c783 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-accent-violet {
+    color: #d2bbff;
+    background: linear-gradient(110deg, #e2d5ff, #b998ff 82%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .video-feature-card,
+  .resource-card {
+    transform: translateZ(0);
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.24),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .video-feature-card:focus-visible,
+  .resource-card:focus-within {
+    outline-offset: 5px;
+  }
+
+  .resource-card img {
+    transition:
+      transform 650ms cubic-bezier(0.2, 0.75, 0.25, 1),
+      filter 650ms ease;
+  }
+
+  .resource-card:hover img {
+    filter: saturate(1.08);
+    transform: scale(1.045);
+  }
+
   /* Стеклянная панель — базовый строительный блок карточек и Navbar */
   .glass {
     @apply border border-line bg-panel;
@@ -213,12 +507,20 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.045);
   }
 
+  /* Единое мягкое поведение для кликабельных медиа-карточек. */
+  a.group:has(img) {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a.group:has(img):focus-visible {
+    outline-offset: 5px;
+  }
+
   /* Непрозрачная поверхность для длинных текстовых страниц: фон не конкурирует
      с содержанием и сохраняется читаемый контраст. */
   .content-page-surface {
     border: 1px solid #294435;
-    background:
-      linear-gradient(155deg, rgba(20, 39, 27, 0.97), rgba(6, 13, 9, 0.98));
+    background: linear-gradient(155deg, rgba(20, 39, 27, 0.97), rgba(6, 13, 9, 0.98));
     box-shadow: 0 30px 90px rgba(0, 0, 0, 0.4);
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
@@ -243,6 +545,13 @@
       0 26px 60px rgba(0, 0, 0, 0.35),
       0 0 36px rgba(85, 220, 145, 0.13);
     transform: translateY(-4px);
+  }
+
+  .glass-hover,
+  .glass,
+  .section-shell {
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
   }
 
   .glass-hover:focus-within {
@@ -275,6 +584,12 @@
     @apply bg-emerald font-semibold text-void hover:bg-emerald/90 disabled:bg-panel2;
     background-image: linear-gradient(135deg, #78e9a2, #45d181);
     box-shadow: 0 10px 28px -14px rgba(85, 220, 145, 0.75);
+  }
+
+  .button-primary,
+  .button-secondary,
+  .button-ghost {
+    -webkit-tap-highlight-color: transparent;
   }
 
   .button-primary:hover:not(:disabled) {
@@ -346,6 +661,20 @@
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
   }
 
+  .section-shell {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section-shell::after {
+    content: "";
+    position: absolute;
+    inset: 0 12% auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(85, 220, 145, 0.45), transparent);
+    pointer-events: none;
+  }
+
   .eyebrow {
     @apply inline-flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-emerald;
   }
@@ -378,7 +707,8 @@
     position: absolute;
     inset: 0;
     opacity: 0.28;
-    background-image: linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px),
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px),
       linear-gradient(90deg, rgba(148, 163, 184, 0.2) 1px, transparent 1px);
     background-size: 28px 28px;
     mask-image: radial-gradient(circle at center, black, transparent 72%);
@@ -398,5 +728,27 @@
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  body::before {
+    opacity: 0.09;
+    background-size: 56px 56px;
+  }
+
+  .hero-section::after {
+    top: 23%;
+    right: -20rem;
+    width: 34rem;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-hover,
+  .section-shell {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }

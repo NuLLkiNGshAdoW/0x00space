@@ -13,10 +13,7 @@ export default function FeaturedVideos() {
   });
 
   return (
-    <section
-      aria-labelledby="featured-title"
-      className="container-app pb-16 pt-4 sm:pb-20"
-    >
+    <section aria-labelledby="featured-title" className="container-app pb-16 pt-4 sm:pb-20">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="eyebrow">Сейчас в эфире</p>
@@ -27,7 +24,8 @@ export default function FeaturedVideos() {
             Свежие публикации
           </h2>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-mute">
-            Три последних ролика канала — от спокойного выживания до кооп-хорроров.
+            Выбирай приключение на вечер: выживание, кооперативные игры и хорроры. Новые публикации
+            — в одном месте.
           </p>
         </div>
         <Link to="/videos" className="button-secondary hidden self-start sm:inline-flex">
@@ -49,7 +47,7 @@ export default function FeaturedVideos() {
             onClick={() =>
               trackEvent("video_open", { video_id: video.video_id, source: "featured" })
             }
-            className="group relative overflow-hidden rounded-2xl border border-line bg-panel/70 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-emerald/50 hover:shadow-[0_24px_60px_-24px_rgba(52,211,153,0.35)]"
+            className="video-feature-card group relative overflow-hidden rounded-2xl border border-line bg-panel/70 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-emerald/50 hover:shadow-[0_24px_60px_-24px_rgba(52,211,153,0.35)]"
           >
             <div className="relative aspect-video overflow-hidden bg-panel2">
               <img

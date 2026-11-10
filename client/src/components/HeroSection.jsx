@@ -27,7 +27,7 @@ export default function HeroSection() {
   });
 
   return (
-    <section id="top" className="relative overflow-hidden">
+    <section id="top" className="hero-section relative overflow-hidden">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0 bg-grid-fade bg-[size:44px_44px] opacity-30 max-sm:opacity-15"
@@ -44,33 +44,33 @@ export default function HeroSection() {
             Новые истории и материалы
           </div>
 
-          <h1 className="max-w-3xl font-display text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-ink sm:text-5xl lg:text-7xl">
+          <h1 className="hero-title max-w-3xl font-display text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-ink sm:text-5xl lg:text-7xl">
             <span className="sr-only">Minecraft, выживание — </span>
-            <span className="text-emerald">Minecraft</span>,{" "}
-            <span className="text-violet">кооп</span>
+            <span className="hero-accent-green">Minecraft</span>,{" "}
+            <span className="hero-accent-violet">кооп</span>
             <span className="block">
-              и <span className="text-emerald">хорроры</span>
+              и <span className="hero-accent-green">хорроры</span>
             </span>
             <span className="mt-2 block text-ink">на одной частоте.</span>
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-mute sm:text-lg">
-            0x00 SPACE — игровой портал для тех, кто любит атмосферные прохождения, честные гайды и
-            совместные приключения. Смотрим, играем и собираемся в одну команду.
+            Атмосферные прохождения, кооперативные приключения и полезные материалы из роликов —
+            смотри, выбирай игру и присоединяйся к следующему совместному запуску.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link to="/videos" className="button-primary button-glow whitespace-nowrap">
               <Play className="h-4 w-4" fill="currentColor" />
-              Смотреть ролики
+              Смотреть новое видео
             </Link>
             <Link to="/materials" className="button-secondary whitespace-nowrap">
               <PackageOpen className="h-4 w-4" />
-              Материалы и сиды
+              Найти гайды и сиды
             </Link>
             <a href="#application" className="button-ghost whitespace-nowrap">
               <CalendarPlus className="h-4 w-4" />
-              Подать заявку
+              Как попасть в игру?
             </a>
           </div>
 

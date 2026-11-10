@@ -58,7 +58,7 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 overflow-x-clip border-b transition-colors duration-300",
+        "site-header sticky top-0 z-50 overflow-x-clip border-b transition-colors duration-300",
         isScrolled
           ? "border-line bg-void/95 shadow-[0_18px_50px_-24px_rgba(0,0,0,0.9)] backdrop-blur-xl"
           : "border-transparent bg-void/60 backdrop-blur-md",
@@ -89,7 +89,7 @@ export default function Navbar() {
 
           <nav
             aria-label="Основная навигация"
-            className="hidden min-w-0 items-center gap-0.5 rounded-full border border-line/70 bg-void/50 p-1 lg:flex"
+            className="primary-nav hidden min-w-0 items-center gap-0.5 rounded-full border border-line/70 bg-void/50 p-1 lg:flex"
           >
             {NAV_LINKS.map((link) => (
               <NavLink

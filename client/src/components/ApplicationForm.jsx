@@ -107,7 +107,7 @@ export default function ApplicationForm() {
   };
 
   return (
-    <section id="application" className="container-app py-16 sm:py-20">
+    <section id="application" className="application-section container-app py-16 sm:py-20">
       <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-start lg:gap-12">
         <div className="lg:sticky lg:top-24">
           <p className="eyebrow">Войти в команду</p>
@@ -124,7 +124,7 @@ export default function ApplicationForm() {
               ["02", "Опишите идею", "Что хотите сыграть и почему это будет интересно зрителям."],
               ["03", "Дождитесь ответа", "Мы свяжемся по указанному контакту перед записью."],
             ].map(([number, title, text]) => (
-              <li key={number} className="flex gap-3">
+              <li key={number} className="application-step flex gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-panel2 font-mono text-[10px] text-emerald">
                   {number}
                 </span>
@@ -147,7 +147,7 @@ export default function ApplicationForm() {
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="glass rounded-3xl p-5 shadow-2xl shadow-emerald/5 sm:p-8"
+          className="application-form glass rounded-3xl p-5 shadow-2xl shadow-emerald/5 sm:p-8"
         >
           <div className="mb-6 flex items-center justify-between gap-3 border-b border-line pb-4">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald">

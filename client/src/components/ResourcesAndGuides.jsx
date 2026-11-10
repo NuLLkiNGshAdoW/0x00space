@@ -116,7 +116,7 @@ export default function ResourcesAndGuides() {
         <div
           role="tablist"
           aria-label="Раздел материалов"
-          className="flex self-start rounded-full border border-line bg-panel/60 p-1"
+          className="catalog-tabs flex self-start rounded-full border border-line bg-panel/60 p-1"
         >
           {VIEWS.map((view) => (
             <button
@@ -145,7 +145,7 @@ export default function ResourcesAndGuides() {
         </div>
       </div>
 
-      <div className="mt-7 flex flex-col gap-3 rounded-2xl border border-line/80 bg-panel/35 p-3 sm:flex-row sm:items-center">
+      <div className="catalog-toolbar mt-7 flex flex-col gap-3 rounded-2xl border border-line/80 bg-panel/35 p-3 sm:flex-row sm:items-center">
         <div className="relative block flex-1">
           <label htmlFor="resource-search" className="sr-only">
             Поиск по материалам
@@ -199,7 +199,7 @@ export default function ResourcesAndGuides() {
 
       {activeView === "resources" && (
         <>
-          <div className="no-scrollbar -mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+          <div className="category-filters no-scrollbar -mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
             {GAME_FILTERS.map((filter) => (
               <button
                 key={filter.key || "all"}
@@ -212,7 +212,12 @@ export default function ResourcesAndGuides() {
             ))}
           </div>
 
-          <div id="resources-panel" role="tabpanel" aria-labelledby="resources-tab" className="mt-6">
+          <div
+            id="resources-panel"
+            role="tabpanel"
+            aria-labelledby="resources-tab"
+            className="mt-6"
+          >
             {resourcesStatus === "loading" && (
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -312,7 +317,10 @@ export default function ResourcesAndGuides() {
 function Pagination({ page, hasNext, setPage }) {
   if (page === 1 && !hasNext) return null;
   return (
-    <nav aria-label="Пагинация" className="mt-8 flex items-center justify-center gap-2">
+    <nav
+      aria-label="Пагинация"
+      className="catalog-pagination mt-8 flex items-center justify-center gap-2"
+    >
       <button
         type="button"
         disabled={page === 1}
@@ -338,7 +346,7 @@ function Pagination({ page, hasNext, setPage }) {
 
 function EmptyState({ icon: Icon, text, tone = "neutral" }) {
   return (
-    <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
+    <div className="catalog-empty glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
       <Icon
         className={cn("h-8 w-8", tone === "warning" ? "text-violet" : "text-mute")}
         strokeWidth={1.6}

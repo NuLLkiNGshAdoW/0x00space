@@ -104,7 +104,7 @@ export default function YouTubeGallery() {
         <div
           role="tablist"
           aria-label="Тип контента"
-          className="flex self-start rounded-full border border-line bg-panel/60 p-1"
+          className="catalog-tabs flex self-start rounded-full border border-line bg-panel/60 p-1"
         >
           {TABS.map((tab) => (
             <button
@@ -129,7 +129,7 @@ export default function YouTubeGallery() {
         </div>
       </div>
 
-      <div className="mt-7 flex flex-col gap-3 rounded-2xl border border-line/80 bg-panel/35 p-3 sm:flex-row sm:items-center">
+      <div className="catalog-toolbar mt-7 flex flex-col gap-3 rounded-2xl border border-line/80 bg-panel/35 p-3 sm:flex-row sm:items-center">
         <label className="relative block flex-1">
           <span className="sr-only">Поиск по видео</span>
           <Search
@@ -184,7 +184,7 @@ export default function YouTubeGallery() {
         )}
 
         {status === "error" && (
-          <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
+          <div className="catalog-empty glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
             <AlertTriangle className="h-8 w-8 text-violet" strokeWidth={1.6} />
             <p role="alert" className="max-w-md text-sm text-mute">
               {errorMessage}
@@ -196,7 +196,7 @@ export default function YouTubeGallery() {
         )}
 
         {status === "ready" && filteredVideos.length === 0 && (
-          <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
+          <div className="catalog-empty glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
             <Radio className="h-8 w-8 text-mute" strokeWidth={1.6} />
             <p className="text-sm text-mute">
               {search.trim()
@@ -222,7 +222,10 @@ export default function YouTubeGallery() {
         )}
 
         {status === "ready" && pages > 1 && (
-          <nav aria-label="Пагинация видео" className="mt-8 flex items-center justify-center gap-2">
+          <nav
+            aria-label="Пагинация видео"
+            className="catalog-pagination mt-8 flex items-center justify-center gap-2"
+          >
             <button
               type="button"
               disabled={visiblePage === 1}

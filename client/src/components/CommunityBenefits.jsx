@@ -1,21 +1,21 @@
-import { ArrowUpRight, Compass, HeartHandshake, Sparkles } from "lucide-react";
+import { ArrowUpRight, ClipboardList, Compass, HeartHandshake } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const BENEFITS = [
   {
     icon: Compass,
-    title: "Смотрите по теме",
-    text: "Фильтруйте видео по формату и находите свежие публикации канала.",
+    title: "Выберите игру",
+    text: "В заявке укажите Minecraft, кооп-хоррор или предложите свой вариант.",
   },
   {
     icon: HeartHandshake,
-    title: "Предложите участие",
-    text: "Оставьте заявку с игрой и контактом, если хотите попасть в будущий ивент.",
+    title: "Оставьте контакт",
+    text: "Напишите игровой ник и Discord или Telegram, чтобы с вами можно было связаться.",
   },
   {
-    icon: Sparkles,
-    title: "Добавьте идею",
-    text: "Расскажите, что стоит пройти или снять вместе с сообществом.",
+    icon: ClipboardList,
+    title: "Расскажите о задумке",
+    text: "Коротко опишите идею для видео или совместной игры — это поможет понять формат.",
   },
 ];
 
@@ -30,19 +30,19 @@ export default function CommunityBenefits() {
               id="community-title"
               className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
             >
-              Как пользоваться сайтом
+              Не только смотреть — играть вместе
             </h2>
             <p className="text-readable mt-3 text-sm leading-relaxed">
-              Здесь собраны реальные публикации канала и материалы, которые добавляются через
-              админку. Выберите свой способ подключиться.
+              Хочешь появиться в совместном ролике или предложить идею? Оставь заявку: команда
+              рассмотрит её и свяжется с тобой, если формат подойдёт.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link to="/videos" className="button-secondary">
-                Смотреть видео
+                Посмотреть ролики
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
               <a href="#application" className="button-ghost">
-                Подать заявку
+                Заполнить заявку
               </a>
             </div>
           </div>

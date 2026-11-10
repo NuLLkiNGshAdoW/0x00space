@@ -106,7 +106,7 @@ export default function EventsPage() {
           </nav>
 
           <div className="mt-7 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
+            <div className="page-intro max-w-2xl">
               <p className="eyebrow">Сообщество</p>
               <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
                 Игровые ивенты
@@ -117,7 +117,7 @@ export default function EventsPage() {
               </p>
             </div>
 
-            <div className="glass rounded-2xl p-4 sm:max-w-xs">
+            <div className="event-join-card glass rounded-2xl p-4 sm:max-w-xs">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-violet">
                 Хотите участвовать?
               </p>
@@ -132,7 +132,7 @@ export default function EventsPage() {
         </div>
 
         <div className="container-app py-10 sm:py-14">
-          <div className="flex flex-col gap-3 rounded-2xl border border-line/80 bg-panel/35 p-3 sm:flex-row sm:items-center">
+          <div className="event-filters catalog-toolbar flex flex-col gap-3 rounded-2xl border border-line/80 bg-panel/35 p-3 sm:flex-row sm:items-center">
             <div className="flex flex-1 flex-col gap-3 sm:flex-row">
               <label className="relative block flex-1">
                 <span className="sr-only">Фильтр по игре</span>
@@ -184,11 +184,10 @@ export default function EventsPage() {
               <ApiState status="error" error={error} onRetry={refetch} className="col-span-full" />
             )}
             {!isPending && !isError && events.length === 0 && (
-              <div className="glass col-span-full rounded-2xl px-6 py-16 text-center">
+              <div className="catalog-empty glass col-span-full rounded-2xl px-6 py-16 text-center">
                 <CalendarDays className="mx-auto h-8 w-8 text-mute" />
                 <p className="mt-3 text-readable">
-                  Запланированных событий пока нет. Загляните позже или отправьте заявку на
-                  участие.
+                  Запланированных событий пока нет. Загляните позже или отправьте заявку на участие.
                 </p>
                 <Link to="/#application" className="button-primary mt-6">
                   Подать заявку
@@ -240,7 +239,7 @@ function EventCard({ event }) {
   const statusStyle = STATUS_STYLES[event.status] || "bg-panel2 text-mute";
 
   return (
-    <article className="glass glass-hover flex h-full flex-col overflow-hidden rounded-2xl">
+    <article className="event-card glass glass-hover flex h-full flex-col overflow-hidden rounded-2xl">
       <div className="relative aspect-[16/9] overflow-hidden border-b border-line/70 bg-panel2">
         {event.image_url ? (
           <img
@@ -271,9 +270,7 @@ function EventCard({ event }) {
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <h2 className="font-display text-xl font-semibold leading-tight text-ink">
-          {event.title}
-        </h2>
+        <h2 className="font-display text-xl font-semibold leading-tight text-ink">{event.title}</h2>
         <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-readable">
           {event.description}
         </p>

@@ -15,7 +15,7 @@ export default function VideoCard({ video }) {
       to={`/videos/${video.video_id}`}
       onClick={() => trackEvent("video_open", { video_id: video.video_id })}
       interactive
-      className="group flex h-full flex-col"
+      className="video-card group flex h-full flex-col"
     >
       <div className="relative aspect-video overflow-hidden border-b border-line/70 bg-panel2">
         {imageFailed ? (

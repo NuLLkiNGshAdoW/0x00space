@@ -53,7 +53,7 @@ export default function CollectionPage({ type }) {
             <span className="text-ink">{isVideos ? "Видео" : "Материалы"}</span>
           </nav>
 
-          <div className="mt-7 max-w-3xl">
+          <div className="page-intro mt-7 max-w-3xl">
             <p className="eyebrow">{isVideos ? "Медиатека" : "Арсенал игрока"}</p>
             <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
               {isVideos ? "Видео 0x00 SPACE" : "Материалы и сиды Minecraft"}

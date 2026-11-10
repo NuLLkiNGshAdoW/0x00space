@@ -1,4 +1,12 @@
-import { Blocks, BookOpen, Download, LayoutGrid, Package, PackageOpen, Sparkles } from "lucide-react";
+import {
+  Blocks,
+  BookOpen,
+  Download,
+  LayoutGrid,
+  Package,
+  PackageOpen,
+  Sparkles,
+} from "lucide-react";
 import { trackEvent } from "../lib/analytics.js";
 import FavoriteButton from "./FavoriteButton.jsx";
 
@@ -24,7 +32,7 @@ export default function ResourceCard({ resource }) {
   const gameLabel = GAME_LABELS[resource.game_category] || resource.game_category;
 
   return (
-    <article className="glass glass-hover flex h-full flex-col overflow-hidden rounded-2xl">
+    <article className="resource-card glass glass-hover flex h-full flex-col overflow-hidden rounded-2xl">
       <div className="relative aspect-[16/10] overflow-hidden border-b border-line/70 bg-panel2">
         {resource.cover_image_url ? (
           <img
