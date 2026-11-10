@@ -5,9 +5,12 @@ const CHANGE_EVENT = "0x00space-background-animation-change";
 
 function readPreference() {
   try {
-    return window.localStorage.getItem(STORAGE_KEY) !== "off";
+    const savedPreference = window.localStorage.getItem(STORAGE_KEY);
+    if (savedPreference === "on") return true;
+    if (savedPreference === "off") return false;
+    return !window.matchMedia("(max-width: 640px)").matches;
   } catch {
-    return true;
+    return typeof window !== "undefined" && !window.matchMedia("(max-width: 640px)").matches;
   }
 }
 

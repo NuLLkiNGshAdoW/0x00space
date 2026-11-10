@@ -4,13 +4,20 @@ import { API_ORIGIN, BACKGROUNDS_QUERY_OPTIONS } from "../services/api.js";
 import { useBackgroundAnimation } from "../lib/backgroundAnimation.js";
 
 const LOCAL_POSTER = "/assets/minecraft-forest-poster.webp";
-const LOCAL_DESKTOP_MP4 = "/assets/minecraft-forest-desktop.mp4";
-const LOCAL_MOBILE_MP4 = "/assets/minecraft-forest-mobile.mp4";
+const LOCAL_DESKTOP_VIDEO = {
+  webm: "/assets/minecraft-forest-desktop.webm",
+  mp4: "/assets/minecraft-forest-desktop.mp4",
+};
+const LOCAL_MOBILE_VIDEO = {
+  webm: "/assets/minecraft-forest-mobile.webm",
+  mp4: "/assets/minecraft-forest-mobile.mp4",
+};
 
 export default function ProfileBackdrop() {
   const [background, setBackground] = useState(null);
   const [customFailed, setCustomFailed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [useMp4Fallback, setUseMp4Fallback] = useState(false);
   const localVideoRef = useRef(null);
   const customVideoRef = useRef(null);
   const [settings, setSettings] = useState({
@@ -78,13 +85,18 @@ export default function ProfileBackdrop() {
     "--profile-position": settings.position,
   };
   const mediaStyle = { ...style, objectPosition: settings.position };
-  const localVideoSrc =
+  const localVideoSources =
     typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches
-      ? LOCAL_MOBILE_MP4
-      : LOCAL_DESKTOP_MP4;
+      ? LOCAL_MOBILE_VIDEO
+      : LOCAL_DESKTOP_VIDEO;
+  const localVideoSrc = useMp4Fallback ? localVideoSources.mp4 : localVideoSources.webm;
   const showDatabaseVideo =
     activeBackground?.type === "video" && animationEnabled && !reducedMotion && !customFailed;
   const showDatabaseImage = activeBackground?.type === "image" && !customFailed;
+
+  useEffect(() => {
+    if (localVideoActive) setUseMp4Fallback(false);
+  }, [localVideoActive]);
 
   // Не полагаемся только на autoplay: после появления video в DOM явно запускаем
   // его один раз, а при смене состояния корректно останавливаем старый элемент.
@@ -170,7 +182,10 @@ export default function ProfileBackdrop() {
           ref={localVideoRef}
           src={localVideoSrc}
           poster={LOCAL_POSTER}
-          onError={() => setLocalVideoFailed(true)}
+          onError={() => {
+            if (!useMp4Fallback) setUseMp4Fallback(true);
+            else setLocalVideoFailed(true);
+          }}
           autoPlay
           preload="metadata"
           muted

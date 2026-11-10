@@ -168,15 +168,15 @@ export default function YouTubeGallery() {
         </div>
       </div>
 
-      <div className="mt-7">
+      <div
+        id="video-results"
+        role="tabpanel"
+        aria-live="polite"
+        aria-busy={status === "loading"}
+        className="mt-7"
+      >
         {status === "loading" && (
-          <div
-            id="video-results"
-            role="tabpanel"
-            aria-live="polite"
-            aria-busy="true"
-            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          >
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <VideoCardSkeleton key={i} />
             ))}
@@ -207,12 +207,7 @@ export default function YouTubeGallery() {
         )}
 
         {status === "ready" && filteredVideos.length > 0 && (
-          <div
-            id="video-results"
-            role="tabpanel"
-            aria-live="polite"
-            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          >
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredVideos
               .slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
               .map((video) => (

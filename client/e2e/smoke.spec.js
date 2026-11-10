@@ -48,7 +48,7 @@ test("home uses the optimized decorative background video", async ({ page }) => 
     await expect(video).toHaveAttribute("loop", "");
     await expect(video).toHaveAttribute("playsinline", "");
     await expect(video).toHaveAttribute("poster", "/assets/minecraft-forest-poster.webp");
-    await expect(video).toHaveAttribute("src", /minecraft-forest-(desktop|mobile)\.mp4/);
+    await expect(video).toHaveAttribute("src", /minecraft-forest-(desktop|mobile)\.webm/);
   }
 });
 
@@ -104,6 +104,17 @@ test("reduced motion uses the static background poster", async ({ page }) => {
   await expect(page.locator('img[src="/assets/minecraft-forest-poster.webp"]')).toBeVisible();
 });
 
+test("mobile starts with a static background until animation is enabled", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  await expect(page.locator("video.profile-backdrop-local")).toHaveCount(0);
+  await expect(page.locator('img[src="/assets/minecraft-forest-poster.webp"]')).toBeVisible();
+  const toggle = page.getByRole("button", { name: "Анимация фона: Выключена" }).last();
+  await toggle.click();
+  await expect(page.locator("video.profile-backdrop-local")).toHaveCount(1);
+});
+
 test("background animation preference disables playback and persists", async ({ page }) => {
   await page.goto("/");
   await page
@@ -129,6 +140,15 @@ test("background video failure falls back to the poster", async ({ page }) => {
   await expect(page.locator('img[src="/assets/minecraft-forest-poster.webp"]')).toBeVisible({
     timeout: 10000,
   });
+});
+
+test("background video falls back to MP4 when WebM is unavailable", async ({ page }) => {
+  await page.route("**/assets/minecraft-forest-desktop.webm", (route) => route.abort());
+  await page.goto("/");
+  const video = page.locator("video.profile-backdrop-local");
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute("src", /minecraft-forest-desktop\.mp4/);
+  await expect.poll(() => video.evaluate((element) => element.paused)).toBe(false);
 });
 
 test("home shows a waking-up state when the API times out", async ({ page }) => {
@@ -192,6 +212,43 @@ test("video search is debounced and reflected in the URL", async ({ page }) => {
   await search.fill("неизвестный ролик");
   await expect(page).toHaveURL(/video_q=/);
   await expect(page.getByText("Ничего не найдено")).toBeVisible();
+});
+
+test("video cards handle an unavailable thumbnail", async ({ page }) => {
+  await page.route("**/i.ytimg.com/**", (route) => route.abort());
+  await page.goto("/videos");
+
+  await expect(page.getByText("Превью недоступно")).toBeVisible();
+});
+
+test("material cards keep long titles and missing covers usable on mobile", async ({ page }) => {
+  const title =
+    "Большой атмосферный модпак для долгого совместного выживания в необычном мире Minecraft";
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.route(/\/resources(?:\?|$)/, (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            id: 7,
+            title,
+            description: "Подборка материалов для длинного прохождения вместе с друзьями.",
+            resource_type: "modpack",
+            game_category: "minecraft",
+            game_version: "1.21",
+            cover_image_url: null,
+            download_url: "https://example.com/download",
+          },
+        ],
+        has_next: false,
+      },
+    }),
+  );
+  await page.goto("/materials");
+
+  await expect(page.getByRole("heading", { name: title })).toBeVisible();
+  await expect(page.locator(".resource-card .media-fallback")).toBeVisible();
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 375);
 });
 
 test("mobile menu exposes navigation and closes after selection", async ({ page }) => {
