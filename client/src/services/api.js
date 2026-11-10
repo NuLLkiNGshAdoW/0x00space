@@ -126,6 +126,17 @@ export function getVideo(videoId) {
   }));
 }
 
+export function getGameLeaderboard(limit = 20) {
+  return request(`/game/leaderboard?limit=${limit}`);
+}
+
+export function submitGameScore(payload) {
+  return request("/game/leaderboard", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function loginAdmin(password) {
   return request("/auth/login", { method: "POST", body: JSON.stringify({ password }) });
 }

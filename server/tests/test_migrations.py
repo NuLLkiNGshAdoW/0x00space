@@ -22,9 +22,9 @@ def test_baseline_upgrade_creates_only_current_model_tables(tmp_path):
         check=True,
     )
 
-    assert "20260922_0001" in result.stdout + result.stderr
+    assert "20261111_0002" in result.stdout + result.stderr
     tables = set(inspect(create_engine(environment["DATABASE_URL"])).get_table_names())
-    assert tables == {"alembic_version", "applications", "resources", "seeds", "events"}
+    assert tables == {"alembic_version", "applications", "resources", "seeds", "events", "game_leaderboard"}
 
 
 def test_existing_baseline_schema_can_be_stamped_without_losing_data(tmp_path):
@@ -38,6 +38,7 @@ def test_existing_baseline_schema_can_be_stamped_without_losing_data(tmp_path):
     from sqlalchemy.orm import Session
 
     Base.metadata.create_all(bind=engine)
+    models.GameLeaderboardEntry.__table__.drop(engine)
     with Session(engine) as session:
         session.execute(
             models.Resource.__table__.insert().values(

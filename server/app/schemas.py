@@ -3,6 +3,7 @@ Pydantic-схемы (DTO) — контракт между фронтендом �
 """
 from datetime import datetime
 from typing import Literal, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
@@ -155,6 +156,39 @@ class EventPage(BaseModel):
     page: int
     limit: int
     has_next: bool
+
+
+# ---------- Game leaderboard ----------
+
+class GameScoreCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    player_id: UUID
+    nickname: str = Field(..., min_length=2, max_length=24)
+    score: int = Field(..., ge=0, le=10_000_000)
+    difficulty: Literal["explorer", "standard", "ace", "adaptive"]
+    ship: Literal["courier", "interceptor", "guardian", "seeker"]
+
+    @field_validator("nickname", mode="before")
+    @classmethod
+    def normalize_nickname(cls, value):
+        if not isinstance(value, str):
+            return value
+        value = value.strip()
+        if len(value) < 2:
+            raise ValueError("Ник должен содержать минимум 2 символа")
+        return value
+
+
+class GameScoreOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    player_id: str
+    nickname: str
+    score: int
+    difficulty: str
+    ship: str
+    updated_at: datetime
 
 
 # ---------- YouTube ----------

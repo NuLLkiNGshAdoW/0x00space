@@ -6,3 +6,4 @@ def test_openapi_contract_exposes_health_and_auth_routes():
     assert "/api/health" in paths
     assert "/api/auth/login" in paths
     assert "/api/auth/logout" in paths
+    assert "/api/game/leaderboard" in paths

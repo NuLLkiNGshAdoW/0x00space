@@ -25,7 +25,7 @@ def test_database_health_reports_missing_catalog_tables():
     assert payload == {
         "connected": True,
         "schema_ready": False,
-        "missing_tables": ["applications", "events", "resources", "seeds"],
+        "missing_tables": ["applications", "events", "game_leaderboard", "resources", "seeds"],
     }
     engine.dispose()
 

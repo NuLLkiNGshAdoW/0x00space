@@ -15,7 +15,7 @@ from sqlalchemy import inspect, text
 
 from app.config import get_settings, validate_production_security
 from app.database import Base, engine, is_sqlite
-from app.routers import youtube, applications, resources, backgrounds, auth, events
+from app.routers import youtube, applications, resources, backgrounds, auth, events, game
 from app.services.monitoring import capture_exception
 
 settings = get_settings()
@@ -50,6 +50,7 @@ app.include_router(resources.router, prefix=settings.API_PREFIX)
 app.include_router(backgrounds.router, prefix=settings.API_PREFIX)
 app.include_router(auth.router, prefix=settings.API_PREFIX)
 app.include_router(events.router, prefix=settings.API_PREFIX)
+app.include_router(game.router, prefix=settings.API_PREFIX)
 backgrounds.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/media/backgrounds", StaticFiles(directory=str(backgrounds.UPLOAD_DIR)), name="background-media")
 
@@ -95,7 +96,7 @@ def health_check():
 
 
 def _check_database_schema(database_engine=engine):
-    required_tables = {"applications", "resources", "seeds", "events"}
+    required_tables = {"applications", "resources", "seeds", "events", "game_leaderboard"}
     try:
         with database_engine.connect() as connection:
             connection.execute(text("SELECT 1"))

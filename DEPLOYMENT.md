@@ -109,6 +109,11 @@ alembic current
 psql "$DATABASE_URL" -c 'SELECT version_num FROM alembic_version;'
 ```
 
+Глобальный рейтинг мини-игры добавляет ревизия `20261111_0002` и таблица
+`game_leaderboard`. На существующей базе, уже отмеченной как baseline
+`20260922_0001`, перед публикацией новой версии API выполните одноразово
+`alembic upgrade head` по процедуре выше.
+
 ### A. Уже существующая production PostgreSQL
 
 Первая ревизия (`20260922_0001`) описывает модели `applications`, `resources`,

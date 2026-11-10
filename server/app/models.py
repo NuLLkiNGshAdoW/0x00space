@@ -3,7 +3,7 @@ ORM-модели проекта 0x00 SPACE.
 """
 import enum
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, String, Integer, Text, DateTime, Enum, Boolean
 
@@ -13,6 +13,11 @@ from app.database import Base
 def gen_uuid() -> str:
     """Генерируем UUID как строку — работает одинаково и в SQLite, и в PostgreSQL."""
     return str(uuid.uuid4())
+
+
+def utc_now_naive() -> datetime:
+    """UTC timestamp matching the database's existing naive DateTime columns."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class ApplicationStatus(str, enum.Enum):
@@ -119,3 +124,15 @@ class Event(Base):
     status = Column(Enum(EventStatus), default=EventStatus.PLANNED, nullable=False)
     registration_url = Column(String(512), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class GameLeaderboardEntry(Base):
+    """Personal best for one anonymous browser pilot in the space runner."""
+    __tablename__ = "game_leaderboard"
+
+    player_id = Column(String(36), primary_key=True)
+    nickname = Column(String(24), nullable=False)
+    score = Column(Integer, nullable=False, index=True)
+    difficulty = Column(String(16), nullable=False)
+    ship = Column(String(24), nullable=False)
+    updated_at = Column(DateTime, default=utc_now_naive, nullable=False)
