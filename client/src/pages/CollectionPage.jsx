@@ -12,6 +12,7 @@ import { absoluteUrl, breadcrumbSchema, SITE_NAME } from "../lib/seo.js";
 export default function CollectionPage({ type }) {
   const isVideos = type === "videos";
   const title = isVideos ? "Видео" : "Материалы";
+  const pageTitle = isVideos ? "Видео" : "Материалы и сиды Minecraft";
   const path = isVideos ? "/videos" : "/materials";
   const structuredData = [
     breadcrumbSchema([
@@ -21,7 +22,7 @@ export default function CollectionPage({ type }) {
     {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      name: `${title} — ${SITE_NAME}`,
+      name: `${pageTitle} — ${SITE_NAME}`,
       url: absoluteUrl(path),
       inLanguage: "ru-RU",
       isPartOf: { "@type": "WebSite", name: SITE_NAME, url: absoluteUrl("/") },
@@ -31,11 +32,11 @@ export default function CollectionPage({ type }) {
   return (
     <div className="min-h-screen">
       <Seo
-        title={`${title} — 0x00 SPACE`}
+        title={`${pageTitle} — 0x00 SPACE`}
         description={
           isVideos
-            ? "Последние видео и Shorts 0x00 SPACE."
-            : "Материалы, моды, шейдеры и сиды Minecraft от 0x00 SPACE."
+            ? "Последние видео и Shorts 0x00 SPACE о Minecraft, кооп-играх и хоррорах."
+            : "Моды, шейдеры, текстуры, гайды и сиды Minecraft из роликов 0x00 SPACE."
         }
         path={path}
         structuredData={structuredData}

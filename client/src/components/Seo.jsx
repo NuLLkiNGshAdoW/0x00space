@@ -40,6 +40,10 @@ export default function Seo({
     setMeta("twitter:image:alt", "0x00 SPACE — игровой канал");
     setLink("canonical", canonical);
 
+    document.head
+      .querySelectorAll('script[data-seo-prerender="true"]')
+      .forEach((script) => script.remove());
+
     let jsonLd = document.head.querySelector('script[data-seo-jsonld="true"]');
     if (structuredData) {
       if (!jsonLd) {
