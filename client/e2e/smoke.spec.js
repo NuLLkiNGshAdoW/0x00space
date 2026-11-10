@@ -250,6 +250,9 @@ test("navbar keeps branding and navigation separated across breakpoints", async 
     expect(brandBox).not.toBeNull();
     expect(homeBox).not.toBeNull();
     expect(homeBox.x).toBeGreaterThan(brandBox.x + brandBox.width);
+    expect(await desktopNavigation.evaluate((nav) => nav.scrollWidth <= nav.clientWidth)).toBe(
+      true,
+    );
     await expect(page.locator("body")).toHaveJSProperty("scrollWidth", width);
   }
 

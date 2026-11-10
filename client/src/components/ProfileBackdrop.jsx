@@ -191,7 +191,7 @@ export default function ProfileBackdrop() {
       )}
       <div
         className={`profile-backdrop-shade${localVideoActive ? " profile-backdrop-shade-local" : ""}`}
-        style={{ "--profile-shade": localVideoActive ? 0.44 : readableShade }}
+        style={{ "--profile-shade": localVideoActive ? 0.52 : readableShade }}
         aria-hidden="true"
       />
     </>

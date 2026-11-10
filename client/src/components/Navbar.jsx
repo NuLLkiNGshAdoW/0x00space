@@ -65,7 +65,7 @@ export default function Navbar() {
       )}
     >
       <div className="container-app flex h-[72px] items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-5 lg:gap-8">
+        <div className="flex min-w-0 items-center gap-4 xl:gap-6">
           <Link to="/" className="navbar-brand group flex shrink-0 items-center gap-3">
             <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-line bg-panel2">
               <img
@@ -98,7 +98,7 @@ export default function Navbar() {
                 end={link.href === "/"}
                 className={({ isActive }) =>
                   cn(
-                    "whitespace-nowrap rounded-full px-3.5 py-2 text-sm transition-colors",
+                    "whitespace-nowrap rounded-full px-2.5 py-2 text-sm transition-colors xl:px-3 2xl:px-3.5",
                     isActive
                       ? "bg-panel2 text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                       : "text-mute hover:bg-panel2/60 hover:text-ink",
@@ -121,7 +121,7 @@ export default function Navbar() {
           </nav>
         </div>
 
-        <div className="hidden shrink-0 items-center gap-1 xl:flex">
+        <div className="hidden shrink-0 items-center gap-1 2xl:flex">
           {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
             <a
               key={name}

@@ -96,9 +96,9 @@ export default function HeroSection() {
                 key={title}
                 className="rounded-2xl border border-line/70 bg-panel/45 px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] transition-colors hover:border-emerald/35 sm:px-4"
               >
-                <dt className="flex min-h-10 flex-col justify-between gap-2 text-[11px] font-semibold leading-tight text-ink sm:flex-row sm:items-center sm:text-sm">
+                <dt className="grid min-h-10 grid-cols-[1rem_1fr] items-center gap-x-2 text-[11px] font-semibold leading-tight text-ink sm:text-sm">
                   <Icon className={`h-4 w-4 shrink-0 ${tone}`} strokeWidth={1.8} />
-                  <span className="sm:ml-auto">{title}</span>
+                  <span>{title}</span>
                 </dt>
                 <dd className="mt-1.5 text-[10px] text-mute sm:text-xs">{text}</dd>
               </div>
