@@ -21,7 +21,7 @@ export default function TelegramFloat() {
 
   if (!visible || !mobileScrolled) return null;
   return (
-    <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-auto right-4 z-40 flex items-center gap-2 sm:bottom-5 sm:right-5">
+    <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-auto right-4 z-40 flex items-center gap-2 lg:bottom-5 lg:right-5">
       <button
         type="button"
         onClick={() => setVisible(false)}

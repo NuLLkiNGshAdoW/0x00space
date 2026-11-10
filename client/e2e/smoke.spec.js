@@ -164,6 +164,16 @@ test("home shows a waking-up state when the API times out", async ({ page }) => 
   await expect(page.getByRole("button", { name: "Повторить" })).toBeVisible();
 });
 
+test("home distinguishes unavailable materials from an empty catalog", async ({ page }) => {
+  await page.route("**/api/resources**", (route) =>
+    route.fulfill({ status: 500, json: { detail: "database unavailable" } }),
+  );
+  await page.goto("/");
+
+  await expect(page.getByText("Сервер вернул ошибку.")).toBeVisible();
+  await expect(page.getByText("Материалы появятся после следующего ролика.")).toHaveCount(0);
+});
+
 test("navigation opens the video collection", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Видео", exact: true }).first().click();
@@ -265,6 +275,27 @@ test("mobile menu exposes navigation and closes after selection", async ({ page 
   await expect(page.getByRole("button", { name: "Открыть меню" })).toBeVisible();
 });
 
+test("mobile quick navigation is thumb-friendly and stays clear of Telegram", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const quickNavigation = page.getByRole("navigation", { name: "Быстрая навигация" });
+  await expect(quickNavigation).toBeVisible();
+  await quickNavigation.getByRole("link", { name: "Материалы" }).click();
+  await expect(page).toHaveURL(/\/materials$/);
+  await expect(page.getByRole("heading", { name: "Материалы и миры" })).toBeVisible();
+  await expect(page.getByText("В этой категории пока нет материалов")).toBeVisible();
+
+  await page.evaluate(() => window.scrollTo(0, 500));
+  const telegram = page.getByRole("link", { name: "Открыть Telegram-канал 0x00 SPACE" });
+  await expect(telegram).toBeVisible();
+  const telegramBox = await telegram.boundingBox();
+  const navigationBox = await quickNavigation.boundingBox();
+  expect(telegramBox).not.toBeNull();
+  expect(navigationBox).not.toBeNull();
+  expect(telegramBox.y + telegramBox.height).toBeLessThan(navigationBox.y);
+});
+
 test("brand asset remains usable at the minimum supported width", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/");
@@ -279,6 +310,16 @@ test("public home stays within the supported responsive widths", async ({ page }
   for (const width of [320, 375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(page.locator("body")).toHaveJSProperty("scrollWidth", width);
+  }
+});
+
+test("video and material catalogs stay within supported viewport widths", async ({ page }) => {
+  for (const path of ["/videos", "/materials"]) {
+    await page.goto(path);
+    for (const width of [320, 375, 768, 1024, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(page.locator("body")).toHaveJSProperty("scrollWidth", width);
+    }
   }
 });
 
@@ -329,6 +370,10 @@ test("secondary copy remains opaque and readable over the backdrop", async ({ pa
 });
 
 test("application form validates and submits", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__trackingEvents = [];
+    window.gtag = (...event) => window.__trackingEvents.push(event);
+  });
   await page.goto("/");
   const form = page.locator("#application");
   await form.getByLabel("Игровой ник / имя").fill("Alex");
@@ -338,6 +383,14 @@ test("application form validates and submits", async ({ page }) => {
   await form.getByRole("checkbox").check();
   await form.getByRole("button", { name: "Отправить заявку" }).click();
   await expect(form.getByRole("status")).toContainText("Заявка отправлена");
+  const events = await page.evaluate(() => window.__trackingEvents);
+  expect(events.filter(([, name]) => name === "application_start")).toHaveLength(1);
+  expect(events.find(([, name]) => name === "application_start")).toEqual([
+    "event",
+    "application_start",
+    { source: "application_form" },
+  ]);
+  expect(events.some(([, name]) => name === "application_submit")).toBe(true);
 });
 
 test("application form explains missing privacy consent", async ({ page }) => {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Send, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { submitApplication, ApiError } from "../services/api.js";
 import { cn } from "../lib/utils.js";
@@ -60,6 +60,13 @@ export default function ApplicationForm() {
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
   const [serverError, setServerError] = useState("");
   const [touched, setTouched] = useState({});
+  const hasTrackedStart = useRef(false);
+
+  const trackApplicationStart = () => {
+    if (hasTrackedStart.current) return;
+    hasTrackedStart.current = true;
+    trackEvent("application_start", { source: "application_form" });
+  };
 
   const updateField = (field) => (e) => {
     const next = { ...form, [field]: e.target.value };
@@ -146,6 +153,7 @@ export default function ApplicationForm() {
 
         <form
           onSubmit={handleSubmit}
+          onFocusCapture={trackApplicationStart}
           noValidate
           className="application-form glass rounded-3xl p-5 shadow-2xl shadow-emerald/5 sm:p-8"
         >

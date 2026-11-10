@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, CalendarDays, House, Menu, PackageOpen, Play, X } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
 import { SOCIAL_LINKS } from "../lib/socials.js";
 import { cn } from "../lib/utils.js";
@@ -12,6 +12,13 @@ const NAV_LINKS = [
   { label: "О канале", href: "/about" },
   { label: "FAQ", href: "/faq" },
   { label: "Ивенты", href: "/events" },
+];
+
+const MOBILE_QUICK_LINKS = [
+  { label: "Главная", href: "/", icon: House },
+  { label: "Видео", href: "/videos", icon: Play },
+  { label: "Материалы", href: "/materials", icon: PackageOpen },
+  { label: "Ивенты", href: "/events", icon: CalendarDays },
 ];
 
 export default function Navbar() {
@@ -56,146 +63,166 @@ export default function Navbar() {
   const handleNavClick = closeMenu;
 
   return (
-    <header
-      className={cn(
-        "site-header sticky top-0 z-50 overflow-x-clip border-b transition-colors duration-300",
-        isScrolled
-          ? "border-line bg-void/95 shadow-[0_18px_50px_-24px_rgba(0,0,0,0.9)] backdrop-blur-xl"
-          : "border-transparent bg-void/60 backdrop-blur-md",
-      )}
-    >
-      <div className="container-app flex h-[72px] items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-4 xl:gap-6">
-          <Link to="/" className="navbar-brand group flex shrink-0 items-center gap-3">
-            <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-line bg-panel2">
-              <img
-                src="/brand-mark.png"
-                alt=""
-                width="40"
-                height="40"
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-white/10" />
-            </span>
-            <span className="flex flex-col leading-none">
-              <span className="font-display text-[17px] font-semibold tracking-tight text-ink">
-                0x00 <span className="text-emerald">SPACE</span>
+    <>
+      <header
+        className={cn(
+          "site-header sticky top-0 z-50 overflow-x-clip border-b transition-colors duration-300",
+          isScrolled
+            ? "border-line bg-void/95 shadow-[0_18px_50px_-24px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+            : "border-transparent bg-void/60 backdrop-blur-md",
+        )}
+      >
+        <div className="container-app flex h-[72px] items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4 xl:gap-6">
+            <Link to="/" className="navbar-brand group flex shrink-0 items-center gap-3">
+              <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-line bg-panel2">
+                <img
+                  src="/brand-mark.png"
+                  alt=""
+                  width="40"
+                  height="40"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-white/10" />
               </span>
-              <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-mute">
-                play together
+              <span className="flex flex-col leading-none">
+                <span className="font-display text-[17px] font-semibold tracking-tight text-ink">
+                  0x00 <span className="text-emerald">SPACE</span>
+                </span>
+                <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-mute">
+                  play together
+                </span>
               </span>
-            </span>
+            </Link>
+
+            <nav
+              aria-label="Основная навигация"
+              className="primary-nav hidden shrink-0 items-center gap-0.5 rounded-full border border-line/70 bg-void/50 p-1 lg:flex"
+            >
+              {NAV_LINKS.map((link) => (
+                <NavLink
+                  key={link.href}
+                  to={link.href}
+                  end={link.href === "/"}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex-none whitespace-nowrap rounded-full px-2.5 py-2 text-sm transition-colors xl:px-3 2xl:px-3.5",
+                      isActive
+                        ? "bg-panel2 text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                        : "text-mute hover:bg-panel2/60 hover:text-ink",
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full transition-colors",
+                          isActive ? "bg-emerald" : "bg-transparent",
+                        )}
+                      />
+                      {link.label}
+                    </span>
+                  )}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+
+          <Link
+            to="/videos"
+            className="button-primary hidden min-h-10 gap-1.5 whitespace-nowrap px-4 py-2 text-xs xl:inline-flex"
+          >
+            Смотреть видео
+            <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
 
-          <nav
-            aria-label="Основная навигация"
-            className="primary-nav hidden shrink-0 items-center gap-0.5 rounded-full border border-line/70 bg-void/50 p-1 lg:flex"
+          <button
+            type="button"
+            ref={menuButtonRef}
+            onClick={() => setIsOpen((v) => !v)}
+            aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
+            aria-expanded={isOpen}
+            aria-controls="mobile-navigation"
+            className="icon-button text-ink lg:hidden"
           >
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.href}
-                to={link.href}
-                end={link.href === "/"}
-                className={({ isActive }) =>
-                  cn(
-                    "flex-none whitespace-nowrap rounded-full px-2.5 py-2 text-sm transition-colors xl:px-3 2xl:px-3.5",
-                    isActive
-                      ? "bg-panel2 text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                      : "text-mute hover:bg-panel2/60 hover:text-ink",
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <span className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        "h-1.5 w-1.5 rounded-full transition-colors",
-                        isActive ? "bg-emerald" : "bg-transparent",
-                      )}
-                    />
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+        {isOpen && (
+          <div
+            id="mobile-navigation"
+            ref={menuRef}
+            className="border-t border-line bg-void/95 shadow-2xl backdrop-blur-xl lg:hidden"
+          >
+            <nav
+              aria-label="Мобильная навигация"
+              className="container-app flex flex-col gap-1 py-4"
+            >
+              {NAV_LINKS.map((link, index) => (
+                <NavLink
+                  key={link.href}
+                  to={link.href}
+                  end={link.href === "/"}
+                  onClick={handleNavClick}
+                  className={({ isActive }) =>
+                    cn(
+                      "interactive-control flex items-center justify-between rounded-xl px-3 py-3 text-left text-sm transition-colors",
+                      isActive
+                        ? "bg-panel2 text-emerald"
+                        : "text-ink hover:bg-panel2/70 hover:text-emerald",
+                    )
+                  }
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="font-mono text-[10px] text-mute">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
                     {link.label}
                   </span>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-
-        <Link
-          to="/videos"
-          className="button-primary hidden min-h-10 gap-1.5 whitespace-nowrap px-4 py-2 text-xs xl:inline-flex"
-        >
-          Смотреть видео
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </Link>
-
-        <button
-          type="button"
-          ref={menuButtonRef}
-          onClick={() => setIsOpen((v) => !v)}
-          aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
-          aria-expanded={isOpen}
-          aria-controls="mobile-navigation"
-          className="icon-button text-ink lg:hidden"
-        >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
-
-      {isOpen && (
-        <div
-          id="mobile-navigation"
-          ref={menuRef}
-          className="border-t border-line bg-void/95 shadow-2xl backdrop-blur-xl lg:hidden"
-        >
-          <nav aria-label="Мобильная навигация" className="container-app flex flex-col gap-1 py-4">
-            {NAV_LINKS.map((link, index) => (
-              <NavLink
-                key={link.href}
-                to={link.href}
-                end={link.href === "/"}
-                onClick={handleNavClick}
-                className={({ isActive }) =>
-                  cn(
-                    "interactive-control flex items-center justify-between rounded-xl px-3 py-3 text-left text-sm transition-colors",
-                    isActive
-                      ? "bg-panel2 text-emerald"
-                      : "text-ink hover:bg-panel2/70 hover:text-emerald",
-                  )
-                }
-              >
-                <span className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] text-mute">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  {link.label}
-                </span>
-                <ArrowUpRight className="h-4 w-4 text-mute" />
-              </NavLink>
-            ))}
-            <Link to="/videos" onClick={handleNavClick} className="button-primary mt-3 w-full">
-              Смотреть видео
-            </Link>
-            <div className="mt-3 rounded-xl border border-line bg-panel/50 p-1">
-              <BackgroundAnimationToggle compact />
-            </div>
-            <div className="mt-3 flex items-center gap-1 border-t border-line px-1 pt-3">
-              {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
-                <a
-                  key={name}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={name}
-                  className="rounded-xl p-2.5 text-mute hover:bg-panel2 hover:text-emerald"
-                >
-                  <Icon className="h-5 w-5" strokeWidth={1.8} />
-                </a>
+                  <ArrowUpRight className="h-4 w-4 text-mute" />
+                </NavLink>
               ))}
-            </div>
-          </nav>
-        </div>
-      )}
-    </header>
+              <Link to="/videos" onClick={handleNavClick} className="button-primary mt-3 w-full">
+                Смотреть видео
+              </Link>
+              <div className="mt-3 rounded-xl border border-line bg-panel/50 p-1">
+                <BackgroundAnimationToggle compact />
+              </div>
+              <div className="mt-3 flex items-center gap-1 border-t border-line px-1 pt-3">
+                {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
+                  <a
+                    key={name}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={name}
+                    className="rounded-xl p-2.5 text-mute hover:bg-panel2 hover:text-emerald"
+                  >
+                    <Icon className="h-5 w-5" strokeWidth={1.8} />
+                  </a>
+                ))}
+              </div>
+            </nav>
+          </div>
+        )}
+      </header>
+      <nav aria-label="Быстрая навигация" className="mobile-tab-bar lg:hidden">
+        {MOBILE_QUICK_LINKS.map(({ label, href, icon: Icon }) => (
+          <NavLink
+            key={href}
+            to={href}
+            end={href === "/"}
+            className={({ isActive }) =>
+              cn("mobile-tab-link", isActive && "mobile-tab-link-active")
+            }
+          >
+            <Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
+    </>
   );
 }

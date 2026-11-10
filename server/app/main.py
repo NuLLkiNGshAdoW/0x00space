@@ -11,6 +11,7 @@ import uuid
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import inspect, text
 
 from app.config import get_settings, validate_production_security
 from app.database import Base, engine, is_sqlite
@@ -74,15 +75,39 @@ async def request_logging(request: Request, call_next):
 
 @app.get(f"{settings.API_PREFIX}/health", tags=["health"])
 def health_check():
-    """Healthcheck without exposing credentials or filesystem paths."""
+    """Healthcheck exposes service readiness without credentials or filesystem paths."""
     storage = _check_storage(backgrounds.UPLOAD_DIR)
+    database = _check_database_schema()
     youtube_configured = bool(settings.YOUTUBE_API_KEY and settings.YOUTUBE_CHANNEL_ID)
-    healthy = storage["readable"] and storage["writable"]
+    healthy = (
+        storage["readable"]
+        and storage["writable"]
+        and database["connected"]
+        and database["schema_ready"]
+    )
     return {
         "status": "ok" if healthy else "degraded",
         "service": settings.APP_NAME,
         "storage": storage,
+        "database": database,
         "youtube_configured": youtube_configured,
+    }
+
+
+def _check_database_schema(database_engine=engine):
+    required_tables = {"applications", "resources", "seeds", "events"}
+    try:
+        with database_engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+            available_tables = set(inspect(connection).get_table_names())
+    except Exception:
+        return {"connected": False, "schema_ready": False, "missing_tables": []}
+
+    missing_tables = sorted(required_tables - available_tables)
+    return {
+        "connected": True,
+        "schema_ready": not missing_tables,
+        "missing_tables": missing_tables,
     }
 
 

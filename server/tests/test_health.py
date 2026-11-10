@@ -1,5 +1,8 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
 
+from app.database import Base
+from app.models import Application, Event, Resource, Seed
 from app.main import app
 import app.main as main_module
 import app.routers.backgrounds as backgrounds_router
@@ -8,7 +11,33 @@ import app.routers.backgrounds as backgrounds_router
 def test_healthcheck():
     response = TestClient(app).get("/api/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    payload = response.json()
+    assert payload["status"] in {"ok", "degraded"}
+    assert "connected" in payload["database"]
+    assert "schema_ready" in payload["database"]
+
+
+def test_database_health_reports_missing_catalog_tables():
+    engine = create_engine("sqlite://")
+
+    payload = main_module._check_database_schema(engine)
+
+    assert payload == {
+        "connected": True,
+        "schema_ready": False,
+        "missing_tables": ["applications", "events", "resources", "seeds"],
+    }
+    engine.dispose()
+
+
+def test_database_health_reports_ready_schema():
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(bind=engine)
+
+    payload = main_module._check_database_schema(engine)
+
+    assert payload == {"connected": True, "schema_ready": True, "missing_tables": []}
+    engine.dispose()
 
 
 def test_health_reports_storage_capabilities_without_secrets(monkeypatch, tmp_path):

@@ -44,8 +44,8 @@ VITE_SENTRY_DSN=
 - Соберите frontend из `client` и проверьте локальный preview: `npm run build`, затем `npm run preview`.
 - Прогоните `npm run lint` и `npm run test:e2e`; backend проверяйте из venv командой `server/venv/Scripts/python.exe -m pytest server/tests` на Windows или `server/venv/bin/python -m pytest server/tests` на Unix.
 - В браузере проверьте viewport `320/375/768/1440`, keyboard-only navigation и states `loading/error/empty/success`.
-- Запустите Lighthouse из Chrome DevTools на preview или production URL. Это локальная проверка без внешнего сервиса; не добавляйте её в обязательный CI без стабильного production-like server.
-- После изменения API URL проверьте CORS, `/api/health`, thumbnails YouTube, отправку формы и SPA refresh на каждой публичной странице.
+- CI запускает Lighthouse на production preview после `npm run build` и проверяет минимальные оценки и бюджет передачи. После deploy дополнительно проверьте production URL с реальным API: данные, CORS и метрики могут отличаться от локального preview.
+- После изменения API URL проверьте CORS, `/api/health` (`status: ok`, `database.schema_ready: true`), чтение `/api/resources`, `/api/seeds` и `/api/events`, thumbnails YouTube, отправку формы и SPA refresh на каждой публичной странице.
 
 ## Ограничения бесплатного варианта
 

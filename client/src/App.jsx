@@ -10,12 +10,12 @@ import TelegramFloat from "./components/TelegramFloat.jsx";
 import FeaturedVideos from "./components/FeaturedVideos.jsx";
 import FeaturedResources from "./components/FeaturedResources.jsx";
 import CommunityBenefits from "./components/CommunityBenefits.jsx";
+import CollectionPage from "./pages/CollectionPage.jsx";
 import Seo from "./components/Seo.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 const LazyAdminPage = lazy(() => import("./pages/AdminPage.jsx"));
 const LazyVideoDetailPage = lazy(() => import("./pages/VideoDetailPage.jsx"));
-const LazyCollectionPage = lazy(() => import("./pages/CollectionPage.jsx"));
 const LazyEventsPage = lazy(() => import("./pages/EventsPage.jsx"));
 const LazyGuidesPage = lazy(() => import("./pages/GuidesPage.jsx"));
 const LazySeedsPage = lazy(() => import("./pages/SeedsPage.jsx"));
@@ -42,23 +42,9 @@ export default function App() {
               </LazyRoute>
             }
           />
-          <Route
-            path="/videos"
-            element={
-              <LazyRoute>
-                <LazyCollectionPage type="videos" />
-              </LazyRoute>
-            }
-          />
+          <Route path="/videos" element={<CollectionPage type="videos" />} />
           <Route path="/videos/:videoId" element={<VideoRoute />} />
-          <Route
-            path="/materials"
-            element={
-              <LazyRoute>
-                <LazyCollectionPage type="materials" />
-              </LazyRoute>
-            }
-          />
+          <Route path="/materials" element={<CollectionPage type="materials" />} />
           <Route
             path="/events"
             element={

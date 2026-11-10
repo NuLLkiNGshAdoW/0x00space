@@ -2,12 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, PackageOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getResources } from "../services/api.js";
+import ApiState from "./ApiState.jsx";
 import ResourceCard from "./ResourceCard.jsx";
 
 const CATEGORIES = ["Текстур-паки", "Шейдеры", "Моды", "Сборки", "Гайды"];
 
 export default function FeaturedResources() {
-  const { data, isPending } = useQuery({
+  const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ["resources", "home-preview"],
     queryFn: () => getResources(undefined, undefined, { sort: "newest", page: 1, limit: 4 }),
     select: (result) => (Array.isArray(result) ? result : result?.items || []).slice(0, 4),
@@ -57,7 +58,9 @@ export default function FeaturedResources() {
             </div>
           )}
 
-          {!isPending && resources.length > 0 && (
+          {isError && <ApiState status="error" error={error} onRetry={refetch} />}
+
+          {!isPending && !isError && resources.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {resources.map((resource) => (
                 <ResourceCard key={resource.id} resource={resource} />
@@ -65,7 +68,7 @@ export default function FeaturedResources() {
             </div>
           )}
 
-          {!isPending && resources.length === 0 && (
+          {!isPending && !isError && resources.length === 0 && (
             <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
               <PackageOpen className="h-8 w-8 text-mute" strokeWidth={1.6} />
               <p className="text-sm text-mute">

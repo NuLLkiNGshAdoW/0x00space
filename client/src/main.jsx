@@ -3,7 +3,41 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { onCLS, onINP, onLCP } from "web-vitals";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import { trackEvent } from "./lib/analytics.js";
+
+const GOOGLE_FONTS_URL =
+  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap";
+
+function loadFontsWithoutBlockingFirstPaint() {
+  const stylesheet = document.createElement("link");
+  stylesheet.rel = "stylesheet";
+  stylesheet.media = "print";
+  stylesheet.href = GOOGLE_FONTS_URL;
+  stylesheet.addEventListener(
+    "load",
+    () => {
+      stylesheet.media = "all";
+    },
+    { once: true },
+  );
+  document.head.appendChild(stylesheet);
+}
+
+window.requestAnimationFrame(loadFontsWithoutBlockingFirstPaint);
+
+function reportWebVital({ name, value, rating }) {
+  trackEvent("web_vital", {
+    metric_name: name,
+    value: Math.round(value),
+    rating,
+  });
+}
+
+onCLS(reportWebVital);
+onINP(reportWebVital);
+onLCP(reportWebVital);
 
 // Аналитика включается только после добавления ID в client/.env.
 const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;

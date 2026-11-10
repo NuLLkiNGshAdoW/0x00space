@@ -22,6 +22,33 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npx playwright install --with-deps chromium
+      - name: Start production preview
+        run: npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/0x00space-preview.log 2>&1 &
+      - name: Wait for production preview
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/0x00space-preview.log
+          exit 1
+      - name: Run Lighthouse mobile audit
+        run: >-
+          CHROME_PATH="$(node -e 'console.log(require("@playwright/test").chromium.executablePath())')"
+          npx --yes lighthouse@13.6.0 http://127.0.0.1:4173/
+          --only-categories=performance,accessibility,best-practices,seo
+          --output=json --output-path=/tmp/0x00space-lighthouse.json
+          --chrome-flags="--headless --no-sandbox"
+          --quiet
+      - name: Check Lighthouse budgets
+        run: node scripts/check-lighthouse.mjs /tmp/0x00space-lighthouse.json
+      - name: Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-mobile-report
+          path: /tmp/0x00space-lighthouse.json
+          if-no-files-found: ignore
       - run: npm run test:e2e
 
   backend:
