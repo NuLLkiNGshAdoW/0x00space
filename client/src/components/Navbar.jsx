@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+﻿import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
 import { SOCIAL_LINKS } from "../lib/socials.js";
 import { cn } from "../lib/utils.js";
@@ -27,7 +27,8 @@ export default function Navbar() {
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", onScroll);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -52,36 +53,43 @@ export default function Navbar() {
     };
   }, [isOpen, closeMenu]);
 
-  // Закрываем мобильное меню при переходе по ссылке
   const handleNavClick = closeMenu;
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 overflow-x-clip border-b transition-colors",
+        "sticky top-0 z-50 overflow-x-clip border-b transition-colors duration-300",
         isScrolled
-          ? "border-line bg-void/95 shadow-lg shadow-black/20 backdrop-blur-xl"
-          : "border-line/70 bg-void/80 backdrop-blur-xl",
+          ? "border-line bg-void/95 shadow-[0_18px_50px_-24px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+          : "border-transparent bg-void/60 backdrop-blur-md",
       )}
     >
-      <div className="container-app flex h-16 items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-6 lg:gap-8">
-          <Link to="/" className="navbar-brand flex shrink-0 items-center gap-2.5">
-            <img
-              src="/brand-mark.png"
-              alt=""
-              width="40"
-              height="40"
-              className="h-8 w-8 object-contain"
-            />
-            <span className="font-display text-lg font-semibold tracking-tight text-ink">
-              0x00 <span className="text-emerald">SPACE</span>
+      <div className="container-app flex h-[72px] items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-5 lg:gap-8">
+          <Link to="/" className="navbar-brand group flex shrink-0 items-center gap-3">
+            <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-line bg-panel2">
+              <img
+                src="/brand-mark.png"
+                alt=""
+                width="40"
+                height="40"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-white/10" />
+            </span>
+            <span className="flex flex-col leading-none">
+              <span className="font-display text-[17px] font-semibold tracking-tight text-ink">
+                0x00 <span className="text-emerald">SPACE</span>
+              </span>
+              <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.2em] text-mute">
+                play together
+              </span>
             </span>
           </Link>
 
           <nav
             aria-label="Основная навигация"
-            className="hidden min-w-0 shrink items-center gap-4 lg:flex lg:gap-8"
+            className="hidden min-w-0 items-center gap-0.5 rounded-full border border-line/70 bg-void/50 p-1 lg:flex"
           >
             {NAV_LINKS.map((link) => (
               <NavLink
@@ -90,18 +98,30 @@ export default function Navbar() {
                 end={link.href === "/"}
                 className={({ isActive }) =>
                   cn(
-                    "whitespace-nowrap text-sm transition-colors hover:text-ink",
-                    isActive ? "text-emerald" : "text-mute",
+                    "whitespace-nowrap rounded-full px-3.5 py-2 text-sm transition-colors",
+                    isActive
+                      ? "bg-panel2 text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                      : "text-mute hover:bg-panel2/60 hover:text-ink",
                   )
                 }
               >
-                {link.label}
+                {({ isActive }) => (
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full transition-colors",
+                        isActive ? "bg-emerald" : "bg-transparent",
+                      )}
+                    />
+                    {link.label}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>
         </div>
 
-        <div className="hidden shrink-0 items-center gap-2 lg:flex">
+        <div className="hidden shrink-0 items-center gap-1 xl:flex">
           {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
             <a
               key={name}
@@ -109,7 +129,7 @@ export default function Navbar() {
               target="_blank"
               rel="noreferrer"
               aria-label={name}
-              className="rounded-lg p-2 text-mute transition-colors hover:bg-panel2 hover:text-emerald"
+              className="rounded-xl p-2.5 text-mute transition-colors hover:bg-panel2 hover:text-emerald"
             >
               <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
             </a>
@@ -118,9 +138,10 @@ export default function Navbar() {
 
         <Link
           to="/videos"
-          className="button-primary hidden min-h-10 px-4 py-2 text-xs xl:inline-flex"
+          className="button-primary hidden min-h-10 gap-1.5 whitespace-nowrap px-4 py-2 text-xs xl:inline-flex"
         >
           Смотреть видео
+          <ArrowUpRight className="h-3.5 w-3.5" />
         </Link>
 
         <button
@@ -140,10 +161,10 @@ export default function Navbar() {
         <div
           id="mobile-navigation"
           ref={menuRef}
-          className="border-t border-line bg-panel/95 shadow-2xl backdrop-blur-xl lg:hidden"
+          className="border-t border-line bg-void/95 shadow-2xl backdrop-blur-xl lg:hidden"
         >
-          <nav aria-label="Мобильная навигация" className="container-app flex flex-col gap-1 py-3">
-            {NAV_LINKS.map((link) => (
+          <nav aria-label="Мобильная навигация" className="container-app flex flex-col gap-1 py-4">
+            {NAV_LINKS.map((link, index) => (
               <NavLink
                 key={link.href}
                 to={link.href}
@@ -151,19 +172,29 @@ export default function Navbar() {
                 onClick={handleNavClick}
                 className={({ isActive }) =>
                   cn(
-                    "interactive-control rounded-lg px-3 py-2.5 text-left text-sm hover:bg-panel2",
-                    isActive ? "bg-panel2 text-emerald" : "text-ink",
+                    "interactive-control flex items-center justify-between rounded-xl px-3 py-3 text-left text-sm transition-colors",
+                    isActive
+                      ? "bg-panel2 text-emerald"
+                      : "text-ink hover:bg-panel2/70 hover:text-emerald",
                   )
                 }
               >
-                {link.label}
+                <span className="flex items-center gap-3">
+                  <span className="font-mono text-[10px] text-mute">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  {link.label}
+                </span>
+                <ArrowUpRight className="h-4 w-4 text-mute" />
               </NavLink>
             ))}
-            <Link to="/videos" onClick={handleNavClick} className="button-primary mt-2 w-full">
+            <Link to="/videos" onClick={handleNavClick} className="button-primary mt-3 w-full">
               Смотреть видео
             </Link>
-            <BackgroundAnimationToggle compact />
-            <div className="mt-2 flex items-center gap-1 border-t border-line px-3 pt-3">
+            <div className="mt-3 rounded-xl border border-line bg-panel/50 p-1">
+              <BackgroundAnimationToggle compact />
+            </div>
+            <div className="mt-3 flex items-center gap-1 border-t border-line px-1 pt-3">
               {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
                 <a
                   key={name}
@@ -171,7 +202,7 @@ export default function Navbar() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={name}
-                  className="rounded-lg p-2 text-mute hover:bg-panel2 hover:text-emerald"
+                  className="rounded-xl p-2.5 text-mute hover:bg-panel2 hover:text-emerald"
                 >
                   <Icon className="h-5 w-5" strokeWidth={1.8} />
                 </a>

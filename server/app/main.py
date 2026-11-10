@@ -63,10 +63,16 @@ async def request_logging(request: Request, call_next):
         raise
     elapsed_ms = (time.perf_counter() - started) * 1000
     logger.info("%s %s %s %.1fms", request.method, request.url.path, response.status_code, elapsed_ms)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    if request.url.path.startswith("/media/backgrounds/"):
+        # Uploaded files use an immutable random UUID name.
+        response.headers.setdefault("Cache-Control", "public, max-age=31536000, immutable")
     return response
 
 
-@app.get("/api/health", tags=["health"])
+@app.get(f"{settings.API_PREFIX}/health", tags=["health"])
 def health_check():
     """Healthcheck without exposing credentials or filesystem paths."""
     storage = _check_storage(backgrounds.UPLOAD_DIR)

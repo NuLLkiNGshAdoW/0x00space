@@ -20,6 +20,8 @@ services:
         generateValue: true
       - key: COOKIE_SECURE
         value: "true"
+      - key: TRUSTED_CLIENT_IP_HEADER
+        value: cf-connecting-ip
       - key: SENTRY_DSN
         sync: false
       - key: BACKGROUND_UPLOAD_DIR

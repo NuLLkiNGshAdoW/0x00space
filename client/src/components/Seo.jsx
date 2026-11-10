@@ -1,6 +1,6 @@
 import { useEffect } from "react";
+import { SITE_NAME, SITE_URL } from "../lib/seo.js";
 
-const SITE_URL = import.meta.env.VITE_SITE_URL || "https://0x00space.vercel.app";
 const DEFAULT_IMAGE = `${SITE_URL}/brand-logo-transparent.png`;
 
 export default function Seo({
@@ -20,6 +20,8 @@ export default function Seo({
     setMeta("og:title", title, "property");
     setMeta("og:description", description, "property");
     setMeta("og:type", type, "property");
+    setMeta("og:locale", "ru_RU", "property");
+    setMeta("og:site_name", SITE_NAME, "property");
     setMeta("og:url", canonical, "property");
     setMeta("og:image", image, "property");
     setMeta("og:image:alt", "0x00 SPACE — игровой канал", "property");
@@ -35,6 +37,7 @@ export default function Seo({
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:description", description);
     setMeta("twitter:image", image);
+    setMeta("twitter:image:alt", "0x00 SPACE — игровой канал");
     setLink("canonical", canonical);
 
     let jsonLd = document.head.querySelector('script[data-seo-jsonld="true"]');

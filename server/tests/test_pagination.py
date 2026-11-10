@@ -130,6 +130,13 @@ def test_resources_pages_filters_and_legacy_response(paginated_client):
     assert isinstance(legacy.json(), list)
 
 
+def test_event_games_are_independent_of_active_filters(paginated_client):
+    response = paginated_client.get("/api/events/games")
+
+    assert response.status_code == 200
+    assert response.json() == ["Coop", "Minecraft"]
+
+
 def test_events_pagination_preserves_filters_and_stable_sort(paginated_client):
     response = paginated_client.get(
         "/api/events?page=1&limit=1&game=Minecraft&status=registration_open"

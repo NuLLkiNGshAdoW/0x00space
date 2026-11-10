@@ -57,7 +57,9 @@ export default function ProfileBackdrop() {
     };
   }, [data]);
 
-  const activeBackground = data?.active ?? background;
+  // background выставляется при первой загрузке и обновляется таймером ротации,
+  // поэтому он в приоритете над статичным data.active.
+  const activeBackground = background ?? data?.active;
   const hasDatabaseBackground = Boolean(activeBackground?.url);
   const localVideoActive =
     !hasDatabaseBackground && animationEnabled && !reducedMotion && !localVideoFailed;

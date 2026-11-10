@@ -4,7 +4,7 @@ export default function Card({ as: Component = "div", interactive = false, class
   return (
     <Component
       {...props}
-      className={cn("glass overflow-hidden rounded-xl", interactive && "glass-hover", className)}
+      className={cn("glass overflow-hidden rounded-2xl", interactive && "glass-hover", className)}
     />
   );
 }

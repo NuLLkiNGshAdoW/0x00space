@@ -40,7 +40,7 @@ export default function ApiState({
         <AlertTriangle className="mx-auto h-7 w-7 shrink-0 text-violet" aria-hidden="true" />
       )}
       <span>{text}</span>
-      {onRetry && !isLoading && (
+      {onRetry && state !== "loading" && (
         <Button type="button" variant="secondary" onClick={onRetry}>
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
           Повторить

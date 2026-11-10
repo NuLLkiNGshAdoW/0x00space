@@ -2,14 +2,13 @@ import { BrowserRouter, Route, Routes, useLocation, useParams } from "react-rout
 import { lazy, Suspense, useEffect } from "react";
 import Navbar from "./components/Navbar.jsx";
 import HeroSection from "./components/HeroSection.jsx";
-import YouTubeGallery from "./components/YouTubeGallery.jsx";
-import ResourcesAndGuides from "./components/ResourcesAndGuides.jsx";
 import ApplicationForm from "./components/ApplicationForm.jsx";
 import Footer from "./components/Footer.jsx";
 import AboutAndFaq from "./components/AboutAndFaq.jsx";
 import ProfileBackdrop from "./components/ProfileBackdrop.jsx";
 import TelegramFloat from "./components/TelegramFloat.jsx";
 import FeaturedVideos from "./components/FeaturedVideos.jsx";
+import FeaturedResources from "./components/FeaturedResources.jsx";
 import CommunityBenefits from "./components/CommunityBenefits.jsx";
 import CollectionPage from "./pages/CollectionPage.jsx";
 import Seo from "./components/Seo.jsx";
@@ -27,6 +26,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollManager />
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-emerald focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-void"
+      >
+        К содержанию
+      </a>
       <Suspense fallback={<RouteLoadingFallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -100,14 +105,44 @@ export default function App() {
 function ScrollManager() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    if (hash) {
-      const target = document.getElementById(hash.slice(1));
-      if (target) {
-        window.requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
-        return;
-      }
+    if (!hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      return undefined;
     }
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+
+    let id = hash.slice(1);
+    try {
+      id = decodeURIComponent(id);
+    } catch {
+      // Keep the raw hash if it contains invalid percent-encoding.
+    }
+    let stopped = false;
+    const stop = () => {
+      stopped = true;
+    };
+    const options = { passive: true };
+    const align = () => {
+      if (stopped) return;
+      document.getElementById(id)?.scrollIntoView({ block: "start", behavior: "instant" });
+    };
+
+    window.addEventListener("wheel", stop, options);
+    window.addEventListener("touchmove", stop, options);
+    window.addEventListener("keydown", stop);
+
+    const frame = window.requestAnimationFrame(align);
+    const observer = new ResizeObserver(align);
+    observer.observe(document.documentElement);
+    const timer = window.setTimeout(() => observer.disconnect(), 2500);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+      observer.disconnect();
+      window.removeEventListener("wheel", stop, options);
+      window.removeEventListener("touchmove", stop, options);
+      window.removeEventListener("keydown", stop);
+    };
   }, [pathname, hash]);
   return null;
 }
@@ -152,9 +187,8 @@ function HomePage() {
       <main id="main-content">
         <HeroSection />
         <FeaturedVideos />
+        <FeaturedResources />
         <CommunityBenefits />
-        <YouTubeGallery />
-        <ResourcesAndGuides />
         <AboutAndFaq />
         <ApplicationForm />
       </main>

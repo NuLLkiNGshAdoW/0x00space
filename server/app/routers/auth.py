@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from app.config import get_settings, is_production
 from app.services.admin_auth import COOKIE_NAME, authenticate, create_session, login_allowed, record_failure
+from app.services.client_ip import get_client_ip
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -16,11 +17,16 @@ class LoginPayload(BaseModel):
 @router.post("/login")
 def login(payload: LoginPayload, request: Request, response: Response):
     settings = get_settings()
-    ip = request.client.host if request.client else "unknown"
+    ip = get_client_ip(request)
     if is_production(settings) and not settings.ADMIN_SESSION_SECRET:
         raise HTTPException(status_code=503, detail="Админ-аутентификация не настроена: отсутствует session secret")
     configured = settings.ADMIN_PASSWORD or settings.ADMIN_TOKEN
-    if not configured or not login_allowed(ip):
+    if not configured:
+        raise HTTPException(
+            status_code=503,
+            detail="Админ-аутентификация не настроена: задайте ADMIN_PASSWORD",
+        )
+    if not login_allowed(ip):
         raise HTTPException(status_code=429, detail="Слишком много неудачных попыток. Попробуйте позже.")
     if not secrets.compare_digest(payload.password, configured):
         record_failure(ip)

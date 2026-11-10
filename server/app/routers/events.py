@@ -40,6 +40,18 @@ def list_events(
     }
 
 
+@router.get("/events/games", response_model=list[str])
+def list_event_games(db: Session = Depends(get_db)):
+    """Return all games that have events, independent of the current filters."""
+    rows = (
+        db.query(models.Event.game)
+        .distinct()
+        .order_by(models.Event.game.asc())
+        .all()
+    )
+    return [row[0] for row in rows]
+
+
 @router.get("/events/{event_id}", response_model=schemas.EventOut)
 def get_event(event_id: str, db: Session = Depends(get_db)):
     event = db.query(models.Event).filter(models.Event.id == event_id).first()

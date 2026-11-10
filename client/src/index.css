@@ -4,34 +4,67 @@
 
 @layer base {
   :root {
-    --brand-void: #05070d;
-    --brand-panel: #0d1420;
-    --brand-panel-raised: #101a29;
-    --brand-line: #25334a;
-    --brand-ink: #f1f5f9;
-    --brand-mute: #aebbd0;
+    --brand-void: #05070f;
+    --brand-panel: #0b1220;
+    --brand-panel-raised: #111b2c;
+    --brand-line: #223049;
+    --brand-ink: #f8fafc;
+    --brand-mute: #a8b7cc;
     --brand-emerald: #34d399;
-    --brand-violet: #b69cff;
+    --brand-violet: #a78bfa;
+    --brand-amber: #fbbf24;
   }
 
   html {
     scroll-behavior: smooth;
-    background: #050914;
+    background: #04060c;
+  }
+
+  [id] {
+    scroll-margin-top: 6rem;
   }
 
   body {
     @apply bg-void text-ink font-body antialiased;
     font-size: 16px;
-    line-height: 1.6;
-    background-image: radial-gradient(
-      circle at 50% -10%,
-      rgba(52, 211, 153, 0.09),
-      transparent 32rem
-    );
+    line-height: 1.65;
+    background-image:
+      radial-gradient(circle at 10% -8%, rgba(52, 211, 153, 0.11), transparent 30rem),
+      radial-gradient(circle at 92% 2%, rgba(167, 139, 250, 0.1), transparent 32rem);
     min-width: 320px;
     padding-bottom: env(safe-area-inset-bottom);
     overflow-x: hidden;
     text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #04060c;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid #04060c;
+    border-radius: 999px;
+    background: #283750;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a4d6b;
   }
 
   /* Единый backdrop в стиле профиля Steam: остаётся на месте при скролле. */
@@ -92,16 +125,16 @@
     z-index: 1;
     display: block;
     background:
-      linear-gradient(180deg, rgba(5, 7, 13, 0.3), rgba(5, 7, 13, 0.66)),
+      linear-gradient(180deg, rgba(5, 7, 15, 0.34), rgba(5, 7, 15, 0.72)),
       radial-gradient(circle at 78% 16%, rgba(52, 211, 153, 0.07), transparent 38%),
-      rgba(5, 7, 13, var(--profile-shade, 0.68));
+      rgba(5, 7, 15, var(--profile-shade, 0.68));
   }
 
   .profile-backdrop-shade-local {
     background:
-      linear-gradient(180deg, rgba(5, 7, 13, 0.25), rgba(5, 7, 13, 0.62)),
+      linear-gradient(180deg, rgba(5, 7, 15, 0.28), rgba(5, 7, 15, 0.68)),
       radial-gradient(circle at 78% 16%, rgba(52, 211, 153, 0.08), transparent 38%),
-      rgba(5, 7, 13, var(--profile-shade, 0.44));
+      rgba(5, 7, 15, var(--profile-shade, 0.44));
   }
 
   #root {
@@ -116,12 +149,12 @@
   }
 
   ::selection {
-    color: #f4f7fb;
-    background: #166534;
+    color: #04110d;
+    background: #6ee7b7;
   }
 
   .text-mute {
-    color: #cbd5e1;
+    color: #a8b7cc;
   }
   .text-readable {
     color: #e2e8f0;
@@ -138,21 +171,21 @@
 
   input::placeholder,
   textarea::placeholder {
-    color: #cbd5e1;
+    color: #8fa1ba;
     opacity: 1;
   }
 
   button:disabled {
-    color: #cbd5e1;
+    color: #8fa1ba;
     opacity: 1;
-    background-color: #263241;
+    background-color: #1a2537;
   }
 
   /* Видимый keyboard focus — не убираем outline, а стилизуем его под дизайн-систему */
   :focus-visible {
     outline: 2px solid theme("colors.emerald.DEFAULT");
-    outline-offset: 2px;
-    border-radius: 2px;
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -171,29 +204,30 @@
   /* Стеклянная панель — базовый строительный блок карточек и Navbar */
   .glass {
     @apply border border-line bg-panel;
-    background: linear-gradient(145deg, rgba(16, 26, 41, 0.94), rgba(9, 15, 26, 0.94));
+    background: linear-gradient(150deg, rgba(17, 27, 44, 0.94), rgba(8, 14, 25, 0.96));
     box-shadow:
-      0 18px 50px rgba(0, 0, 0, 0.22),
-      inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      0 24px 60px rgba(0, 0, 0, 0.26),
+      inset 0 1px 0 rgba(255, 255, 255, 0.045);
   }
 
   /* Непрозрачная поверхность для длинных текстовых страниц: фон не конкурирует
      с содержанием и сохраняется читаемый контраст. */
   .content-page-surface {
-    border: 1px solid #25334a;
-    background: rgba(5, 9, 20, 0.94);
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
+    border: 1px solid #223049;
+    background:
+      linear-gradient(160deg, rgba(17, 27, 44, 0.96), rgba(6, 11, 20, 0.98));
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.4);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
   }
 
   .content-page-card {
-    border: 1px solid #25334a;
-    background: #0d1420;
+    border: 1px solid rgba(34, 48, 73, 0.9);
+    background: rgba(11, 18, 32, 0.82);
   }
 
   .content-page-copy {
-    color: #dbe5f1;
+    color: #d7e2f1;
   }
 
   .glass-hover {
@@ -201,11 +235,11 @@
   }
 
   .glass-hover:hover {
-    border-color: rgba(52, 211, 153, 0.65);
+    border-color: rgba(52, 211, 153, 0.55);
     box-shadow:
-      0 18px 50px rgba(0, 0, 0, 0.3),
-      0 0 28px rgba(52, 211, 153, 0.08);
-    transform: translateY(-3px);
+      0 26px 60px rgba(0, 0, 0, 0.35),
+      0 0 32px rgba(52, 211, 153, 0.09);
+    transform: translateY(-4px);
   }
 
   .glass-hover:focus-within {
@@ -213,17 +247,17 @@
   }
 
   .button-glow {
-    box-shadow: 0 0 0 rgba(52, 211, 153, 0);
+    box-shadow: 0 8px 26px -10px rgba(52, 211, 153, 0.65);
   }
 
   .button-glow:hover {
-    box-shadow: 0 0 28px rgba(52, 211, 153, 0.3);
+    box-shadow: 0 12px 34px -8px rgba(52, 211, 153, 0.55);
   }
 
   .button-primary,
   .button-secondary,
   .button-ghost {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm transition-colors focus-visible:outline-offset-2 disabled:cursor-not-allowed;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-all duration-200 focus-visible:outline-offset-2 disabled:cursor-not-allowed;
   }
 
   .interactive-control {
@@ -231,19 +265,19 @@
   }
 
   .icon-button {
-    @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 transition-colors hover:bg-panel2 hover:text-emerald;
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl p-2.5 transition-colors hover:bg-panel2 hover:text-emerald;
   }
 
   .button-primary {
-    @apply bg-emerald font-semibold text-void hover:bg-emerald disabled:bg-panel2;
+    @apply bg-emerald font-semibold text-void hover:bg-emerald/90 disabled:bg-panel2;
   }
 
   .button-secondary {
-    @apply border border-line bg-panel font-medium text-ink hover:border-emerald hover:text-emerald disabled:border-line;
+    @apply border border-line bg-panel/80 font-medium text-ink hover:border-emerald/60 hover:bg-panel2 hover:text-emerald disabled:border-line;
   }
 
   .button-ghost {
-    @apply px-3 py-2 text-ink hover:bg-panel2 hover:text-ink;
+    @apply px-3 py-2 text-mute hover:bg-panel2 hover:text-ink;
   }
 
   /* Тонкая градиентная рамка (emerald -> violet) для акцентных карточек */
@@ -256,7 +290,7 @@
     inset: 0;
     padding: 1px;
     border-radius: inherit;
-    background: #34d399;
+    background: linear-gradient(135deg, #34d399, #a78bfa);
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -270,7 +304,7 @@
   }
 
   .field-control {
-    @apply min-h-11 rounded-lg border border-line bg-void px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-slate-400 focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald;
+    @apply min-h-11 rounded-xl border border-line bg-void/80 px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-slate-400 focus:border-emerald focus:outline-none focus:ring-2 focus:ring-emerald/30;
   }
 
   .status-error {
@@ -278,16 +312,71 @@
   }
 
   .section-divider {
-    background: linear-gradient(90deg, #05070d, #34d399, #8b5cf6, #05070d);
+    background: linear-gradient(90deg, transparent, #34d399, #a78bfa, transparent);
   }
 
   .section-label {
-    @apply font-mono text-[10px] uppercase tracking-[0.2em] text-emerald;
+    @apply font-mono text-[10px] uppercase tracking-[0.22em] text-emerald;
   }
 
   .section-shell {
     @apply rounded-3xl border border-line/80 bg-panel/40;
-    background: rgba(5, 7, 13, 0.84);
-    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
+    background:
+      linear-gradient(155deg, rgba(17, 27, 44, 0.88), rgba(6, 11, 20, 0.9));
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.22em] text-emerald;
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 1.5rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.7;
+  }
+
+  .chip {
+    @apply inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line bg-panel/60 px-3.5 py-1.5 text-xs font-medium text-mute transition-colors hover:border-emerald/40 hover:text-ink;
+  }
+
+  .chip-active {
+    @apply border-emerald/50 bg-emerald-soft text-emerald;
+  }
+
+  .media-fallback {
+    background:
+      linear-gradient(135deg, rgba(52, 211, 153, 0.12), transparent 45%),
+      linear-gradient(315deg, rgba(167, 139, 250, 0.14), transparent 50%),
+      #0a1220;
+  }
+
+  .media-fallback::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.28;
+    background-image: linear-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.2) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(circle at center, black, transparent 72%);
+  }
+
+  .card-tag {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium;
+  }
+
+  .link-arrow {
+    @apply inline-flex items-center gap-1.5 text-sm font-medium text-mute transition-colors hover:text-emerald;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }

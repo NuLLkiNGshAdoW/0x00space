@@ -183,6 +183,10 @@ export function getBackgrounds() {
   return request("/backgrounds");
 }
 
+export function getEventGames() {
+  return request("/events/games");
+}
+
 export function getEvents(filters = {}) {
   const params = new URLSearchParams();
   if (filters.game) params.set("game", filters.game);

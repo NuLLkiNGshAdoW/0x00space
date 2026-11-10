@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ProfileBackdrop from "../components/ProfileBackdrop.jsx";
@@ -6,29 +7,64 @@ import ResourcesAndGuides from "../components/ResourcesAndGuides.jsx";
 import TelegramFloat from "../components/TelegramFloat.jsx";
 import { Link } from "react-router-dom";
 import Seo from "../components/Seo.jsx";
+import { absoluteUrl, breadcrumbSchema, SITE_NAME } from "../lib/seo.js";
 
 export default function CollectionPage({ type }) {
   const isVideos = type === "videos";
+  const title = isVideos ? "Видео" : "Материалы";
+  const path = isVideos ? "/videos" : "/materials";
+  const structuredData = [
+    breadcrumbSchema([
+      { name: "Главная", path: "/" },
+      { name: title, path },
+    ]),
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: `${title} — ${SITE_NAME}`,
+      url: absoluteUrl(path),
+      inLanguage: "ru-RU",
+      isPartOf: { "@type": "WebSite", name: SITE_NAME, url: absoluteUrl("/") },
+    },
+  ];
+
   return (
     <div className="min-h-screen">
       <Seo
-        title={`${isVideos ? "Видео" : "Материалы"} — 0x00 SPACE`}
+        title={`${title} — 0x00 SPACE`}
         description={
           isVideos
             ? "Последние видео и Shorts 0x00 SPACE."
             : "Материалы, моды, шейдеры и сиды Minecraft от 0x00 SPACE."
         }
-        path={isVideos ? "/videos" : "/materials"}
+        path={path}
+        structuredData={structuredData}
       />
       <ProfileBackdrop />
       <Navbar />
-      <main id="main-content" className="pt-8">
-        <div className="container-app mb-2">
-          <Link to="/" className="text-sm text-mute hover:text-emerald">
-            ← На главную
-          </Link>
+      <main id="main-content" className="pt-6 sm:pt-10">
+        <div className="container-app">
+          <nav aria-label="Хлебные крошки" className="flex items-center gap-1.5 text-xs text-mute">
+            <Link to="/" className="transition-colors hover:text-emerald">
+              Главная
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5" />
+            <span className="text-ink">{isVideos ? "Видео" : "Материалы"}</span>
+          </nav>
+
+          <div className="mt-7 max-w-3xl">
+            <p className="eyebrow">{isVideos ? "Медиатека" : "Арсенал игрока"}</p>
+            <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
+              {isVideos ? "Видео 0x00 SPACE" : "Материалы и сиды Minecraft"}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mute sm:text-base">
+              {isVideos
+                ? "Все ролики и Shorts канала в одном месте: ищите по названию, фильтруйте формат и открывайте выпуск."
+                : "Моды, шейдеры, текстур-паки, гайды и сиды миров. Фильтруйте по игре и забирайте то, что пригодится в следующем прохождении."}
+            </p>
+          </div>
         </div>
-        <h1 className="sr-only">{isVideos ? "Видео 0x00 SPACE" : "Материалы и сиды Minecraft"}</h1>
+
         {isVideos ? <YouTubeGallery /> : <ResourcesAndGuides />}
       </main>
       <TelegramFloat />

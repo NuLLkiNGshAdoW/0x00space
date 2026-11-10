@@ -174,6 +174,18 @@ test("materials collection has a single accessible page heading", async ({ page 
   ).toBeAttached();
 });
 
+test("events page exposes canonical URL and breadcrumb structured data", async ({ page }) => {
+  await page.goto("/events");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    "https://0x00space.vercel.app/events",
+  );
+  const jsonLd = await page.locator('script[data-seo-jsonld="true"]').textContent();
+  expect(JSON.parse(jsonLd)).toEqual(
+    expect.arrayContaining([expect.objectContaining({ "@type": "BreadcrumbList" })]),
+  );
+});
+
 test("video search is debounced and reflected in the URL", async ({ page }) => {
   await page.goto("/videos");
   const search = page.getByLabel("Поиск по видео");

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, Radio, Search } from "lucide-react";
+import { AlertTriangle, ChevronDown, Radio, Search } from "lucide-react";
 import { getLatestVideos, ApiError, LATEST_VIDEOS_QUERY_KEY } from "../services/api.js";
 import Button from "./Button.jsx";
 import VideoCard from "./VideoCard.jsx";
@@ -83,23 +83,20 @@ export default function YouTubeGallery() {
   }, [debouncedSearch, params, patchParams]);
 
   const pages = Math.ceil(filteredVideos.length / pageSize);
-
   const visiblePage = pages > 0 ? Math.min(page, pages) : 1;
 
   return (
-    <section id="videos" aria-labelledby="videos-title" className="container-app py-16 sm:py-20">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <section id="videos" aria-labelledby="videos-title" className="container-app py-12 sm:py-16">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald">
-            Из канала
-          </p>
+          <p className="eyebrow">Из канала</p>
           <h2
             id="videos-title"
-            className="font-display text-2xl font-semibold text-ink sm:text-3xl"
+            className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
           >
             Последние ролики
           </h2>
-          <p className="mt-2 max-w-md text-sm text-mute">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-mute">
             Реальные видео и Shorts из YouTube API. Ищите по названию или отфильтруйте формат.
           </p>
         </div>
@@ -107,7 +104,7 @@ export default function YouTubeGallery() {
         <div
           role="tablist"
           aria-label="Тип контента"
-          className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start"
+          className="flex self-start rounded-full border border-line bg-panel/60 p-1"
         >
           {TABS.map((tab) => (
             <button
@@ -120,9 +117,9 @@ export default function YouTubeGallery() {
                 patchParams({ video_type: tab.key === "all" ? "" : tab.key, video_page: "" })
               }
               className={cn(
-                "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
+                "interactive-control rounded-full px-3.5 py-1.5 text-sm transition-colors",
                 activeTab === tab.key
-                  ? "bg-emerald text-void font-medium"
+                  ? "bg-emerald font-semibold text-void"
                   : "text-mute hover:text-ink",
               )}
             >
@@ -132,38 +129,46 @@ export default function YouTubeGallery() {
         </div>
       </div>
 
-      <label className="mt-3 block max-w-xs">
-        <span className="sr-only">Сортировка видео</span>
-        <select
-          value={sort}
-          onChange={(event) =>
-            patchParams({
-              video_sort: event.target.value === "newest" ? "" : event.target.value,
-              video_page: "",
-            })
-          }
-          className="field-control w-full"
-        >
-          <option value="newest">Сначала новые</option>
-          <option value="title">По названию</option>
-        </select>
-      </label>
+      <div className="mt-7 flex flex-col gap-3 rounded-2xl border border-line/80 bg-panel/35 p-3 sm:flex-row sm:items-center">
+        <label className="relative block flex-1">
+          <span className="sr-only">Поиск по видео</span>
+          <Search
+            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
+            aria-hidden="true"
+          />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Найти ролик…"
+            className="field-control w-full pl-10 pr-3"
+          />
+        </label>
 
-      <label className="relative mt-6 block max-w-md">
-        <span className="sr-only">Поиск по видео</span>
-        <Search
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
-          aria-hidden="true"
-        />
-        <input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Найти ролик…"
-          className="field-control w-full pl-9 pr-3"
-        />
-      </label>
+        <div className="flex items-center gap-2">
+          <label className="relative block sm:w-48">
+            <span className="sr-only">Сортировка видео</span>
+            <select
+              value={sort}
+              onChange={(event) =>
+                patchParams({
+                  video_sort: event.target.value === "newest" ? "" : event.target.value,
+                  video_page: "",
+                })
+              }
+              className="field-control w-full appearance-none pr-9"
+            >
+              <option value="newest">Сначала новые</option>
+              <option value="title">По названию</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute" />
+          </label>
+          <span className="hidden whitespace-nowrap rounded-full border border-line px-3 py-2 font-mono text-[11px] text-mute sm:inline-flex">
+            {filteredVideos.length} роликов
+          </span>
+        </div>
+      </div>
 
-      <div className="mt-8">
+      <div className="mt-7">
         {status === "loading" && (
           <div
             id="video-results"
@@ -179,9 +184,9 @@ export default function YouTubeGallery() {
         )}
 
         {status === "error" && (
-          <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
+          <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
             <AlertTriangle className="h-8 w-8 text-violet" strokeWidth={1.6} />
-            <p role="alert" className="text-sm text-mute">
+            <p role="alert" className="max-w-md text-sm text-mute">
               {errorMessage}
             </p>
             <Button type="button" variant="secondary" onClick={() => refetch()}>
@@ -191,7 +196,7 @@ export default function YouTubeGallery() {
         )}
 
         {status === "ready" && filteredVideos.length === 0 && (
-          <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
+          <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
             <Radio className="h-8 w-8 text-mute" strokeWidth={1.6} />
             <p className="text-sm text-mute">
               {search.trim()
@@ -215,24 +220,25 @@ export default function YouTubeGallery() {
               ))}
           </div>
         )}
+
         {status === "ready" && pages > 1 && (
-          <nav aria-label="Пагинация видео" className="mt-7 flex items-center justify-center gap-2">
+          <nav aria-label="Пагинация видео" className="mt-8 flex items-center justify-center gap-2">
             <button
               type="button"
               disabled={visiblePage === 1}
               onClick={() => patchParams({ video_page: visiblePage - 1 })}
-              className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink"
+              className="interactive-control rounded-xl border border-line px-4 py-2 text-xs text-ink transition-colors hover:border-emerald/40 hover:text-emerald disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
             >
               Назад
             </button>
-            <span className="px-2 font-mono text-xs text-mute">
+            <span className="rounded-lg border border-line bg-panel/50 px-3 py-2 font-mono text-xs text-mute">
               {visiblePage} / {pages}
             </span>
             <button
               type="button"
               disabled={visiblePage === pages}
               onClick={() => patchParams({ video_page: visiblePage + 1 })}
-              className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-ink"
+              className="interactive-control rounded-xl border border-line px-4 py-2 text-xs text-ink transition-colors hover:border-emerald/40 hover:text-emerald disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
             >
               Далее
             </button>

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db, SessionLocal
 from app import models, schemas
+from app.services.client_ip import get_client_ip
 from app.services.telegram import notify_new_application
 
 router = APIRouter(prefix="/applications", tags=["applications"])
@@ -21,7 +22,7 @@ _RATE_LIMIT = 5
 
 
 def _check_rate_limit(request: Request) -> None:
-    client_key = request.client.host if request.client else "unknown"
+    client_key = get_client_ip(request)
     now = monotonic()
     recent = _request_log[client_key]
     while recent and now - recent[0] > _RATE_WINDOW_SECONDS:

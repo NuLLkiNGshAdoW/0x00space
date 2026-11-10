@@ -133,6 +133,18 @@ def test_production_requires_dedicated_session_secret(monkeypatch):
     get_settings.cache_clear()
 
 
+def test_auth_reports_missing_configuration_instead_of_rate_limit(monkeypatch):
+    monkeypatch.setenv("DEBUG", "true")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("ADMIN_PASSWORD", raising=False)
+    monkeypatch.delenv("ADMIN_TOKEN", raising=False)
+    get_settings.cache_clear()
+    response = TestClient(app).post("/api/auth/login", json={"password": "anything"})
+    assert response.status_code == 503
+    assert "не настроена" in response.json()["detail"]
+    get_settings.cache_clear()
+
+
 def test_production_auth_rejects_legacy_token_without_session_secret(monkeypatch):
     monkeypatch.setenv("DEBUG", "false")
     monkeypatch.setenv("DATABASE_URL", "postgresql://db/app")

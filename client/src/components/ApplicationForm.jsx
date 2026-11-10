@@ -108,24 +108,55 @@ export default function ApplicationForm() {
 
   return (
     <section id="application" className="container-app py-16 sm:py-20">
-      <div className="mx-auto max-w-2xl">
-        <div className="text-center sm:text-left">
-          <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald">
-            Войти в команду
-          </p>
-          <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
+      <div className="grid gap-8 lg:grid-cols-[.78fr_1.22fr] lg:items-start lg:gap-12">
+        <div className="lg:sticky lg:top-24">
+          <p className="eyebrow">Войти в команду</p>
+          <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink sm:text-4xl">
             Заявка на участие
           </h2>
-          <p className="mt-2 text-sm text-mute">
-            Хотите сыграть с нами на ролике или ивенте — заполните форму, мы читаем каждую заявку.
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-mute">
+            Хотите сыграть с нами на ролике или ивенте — заполните форму. Мы читаем каждую заявку.
           </p>
+
+          <ol className="mt-8 space-y-4">
+            {[
+              ["01", "Расскажите о себе", "Ник, контакт и удобная игра для совместной записи."],
+              ["02", "Опишите идею", "Что хотите сыграть и почему это будет интересно зрителям."],
+              ["03", "Дождитесь ответа", "Мы свяжемся по указанному контакту перед записью."],
+            ].map(([number, title, text]) => (
+              <li key={number} className="flex gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-panel2 font-mono text-[10px] text-emerald">
+                  {number}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-ink">{title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-mute">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-7 rounded-2xl border border-line bg-panel/40 p-4">
+            <p className="text-xs font-medium text-ink">Что дальше?</p>
+            <p className="mt-1 text-xs leading-relaxed text-mute">
+              Заявка попадает в общую очередь. Если формат подойдёт, мы напишем и обсудим детали.
+            </p>
+          </div>
         </div>
 
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="glass mt-8 rounded-2xl p-5 shadow-2xl shadow-emerald/5 sm:p-7"
+          className="glass rounded-3xl p-5 shadow-2xl shadow-emerald/5 sm:p-8"
         >
+          <div className="mb-6 flex items-center justify-between gap-3 border-b border-line pb-4">
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald">
+              Форма заявки
+            </span>
+            <span className="rounded-full border border-line px-2.5 py-1 font-mono text-[10px] text-mute">
+              ~2 минуты
+            </span>
+          </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <Field id="nickname" label="Игровой ник / имя" error={errors.nickname}>
               <input

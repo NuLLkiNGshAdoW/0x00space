@@ -1,10 +1,21 @@
-import { ArrowLeft, BookOpen, CalendarDays, Mail, ShieldCheck, Map, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  ChevronRight,
+  Mail,
+  ShieldCheck,
+  Map,
+  Users,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import TelegramFloat from "../components/TelegramFloat.jsx";
 import ProfileBackdrop from "../components/ProfileBackdrop.jsx";
 import Seo from "../components/Seo.jsx";
+import { absoluteUrl, breadcrumbSchema, SITE_NAME } from "../lib/seo.js";
 
 const PAGES = {
   "/about": {
@@ -139,6 +150,33 @@ const PAGES = {
 export default function ContentPage({ path }) {
   const page = PAGES[path];
   const Icon = page?.icon;
+  const structuredData = page
+    ? [
+        breadcrumbSchema([
+          { name: "Главная", path: "/" },
+          { name: page.title, path },
+        ]),
+        path === "/faq"
+          ? {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: page.items.map(([question, answer]) => ({
+                "@type": "Question",
+                name: question,
+                acceptedAnswer: { "@type": "Answer", text: answer },
+              })),
+            }
+          : {
+              "@context": "https://schema.org",
+              "@type": path === "/about" ? "AboutPage" : "WebPage",
+              name: `${page.title} — ${SITE_NAME}`,
+              description: page.description,
+              url: absoluteUrl(path),
+              inLanguage: "ru-RU",
+              isPartOf: { "@type": "WebSite", name: SITE_NAME, url: absoluteUrl("/") },
+            },
+      ]
+    : undefined;
 
   return (
     <div className="min-h-screen">
@@ -147,39 +185,80 @@ export default function ContentPage({ path }) {
         description={page?.description || "Страница не найдена."}
         path={path}
         noindex={!page}
+        structuredData={structuredData}
       />
       <ProfileBackdrop />
       <Navbar />
-      <main id="main-content" className="container-app py-16 sm:py-24">
+      <main id="main-content" className="container-app py-10 sm:py-16">
         {page ? (
-          <article className="content-page-surface mx-auto max-w-4xl rounded-3xl p-5 sm:p-10">
-            <Link
-              to="/"
-              className="content-page-copy inline-flex items-center gap-2 text-sm hover:text-emerald"
+          <div className="mx-auto max-w-5xl">
+            <nav
+              aria-label="Хлебные крошки"
+              className="flex items-center gap-1.5 text-xs text-mute"
             >
-              <ArrowLeft className="h-4 w-4" /> На главную
-            </Link>
-            <Icon className="mt-12 h-8 w-8 text-emerald" aria-hidden="true" />
-            <h1 className="mt-5 break-words font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
-              {page.title}
-            </h1>
-            <p className="content-page-copy mt-4 max-w-2xl text-base leading-relaxed">
-              {page.description}
-            </p>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
-              {page.items.map(([title, text]) => (
-                <section key={title} className="content-page-card rounded-xl p-5">
-                  <h2 className="text-base font-medium text-ink">{title}</h2>
-                  <p className="content-page-copy mt-3 text-sm leading-relaxed">{text}</p>
-                </section>
-              ))}
-            </div>
-            {path === "/events" && (
-              <Link to="/#application" className="button-primary mt-10">
-                Подать заявку
+              <Link to="/" className="transition-colors hover:text-emerald">
+                Главная
               </Link>
-            )}
-          </article>
+              <ChevronRight className="h-3.5 w-3.5" />
+              <span className="text-ink">{page.title}</span>
+            </nav>
+
+            <article className="content-page-surface mt-6 overflow-hidden rounded-3xl">
+              <header className="relative border-b border-line px-5 py-8 sm:px-10 sm:py-12">
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-emerald/10 blur-3xl"
+                />
+                <div className="relative flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="max-w-2xl">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-line bg-panel2 text-emerald">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <h1 className="mt-5 break-words font-display text-3xl font-semibold tracking-tight text-ink sm:text-5xl">
+                      {page.title}
+                    </h1>
+                    <p className="content-page-copy mt-4 max-w-xl text-base leading-relaxed">
+                      {page.description}
+                    </p>
+                  </div>
+                  <Link to="/" className="button-secondary shrink-0 self-start">
+                    <ArrowLeft className="h-4 w-4" />
+                    На главную
+                  </Link>
+                </div>
+              </header>
+
+              <div className="grid gap-4 p-5 sm:p-10 md:grid-cols-3">
+                {page.items.map(([title, text], index) => (
+                  <section
+                    key={title}
+                    className="content-page-card rounded-2xl p-5 transition-colors hover:border-emerald/30"
+                  >
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-violet">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <h2 className="mt-3 text-base font-semibold text-ink">{title}</h2>
+                    <p className="content-page-copy mt-2 text-sm leading-relaxed">{text}</p>
+                  </section>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-line px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-10">
+                <p className="text-xs text-mute">0x00 SPACE · играем вместе</p>
+                <div className="flex flex-wrap gap-2">
+                  {path === "/events" && (
+                    <Link to="/#application" className="button-primary">
+                      Подать заявку
+                    </Link>
+                  )}
+                  <Link to="/videos" className="button-secondary">
+                    Смотреть видео
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </article>
+          </div>
         ) : (
           <div className="content-page-surface mx-auto max-w-2xl rounded-3xl p-8 py-20 text-center sm:p-16">
             <p className="font-mono text-6xl text-emerald">404</p>

@@ -1,4 +1,13 @@
-import { ChevronDown, Gamepad2, Users, Sparkles } from "lucide-react";
+import {
+  ArrowUpRight,
+  BookOpen,
+  CalendarDays,
+  ChevronDown,
+  Gamepad2,
+  Map,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const FAQ = [
@@ -20,13 +29,25 @@ const FAQ = [
   ],
 ];
 
-const GUIDES = [
-  ["Сиды Minecraft", "Интересные миры, координаты и версии игры для новых приключений."],
-  [
-    "Моды и шейдеры",
-    "Подборки материалов, которые помогают сделать выживание красивее и интереснее.",
-  ],
-  ["Кооперативные хорроры", "Игры, в которых страшнее всего становится именно вместе с друзьями."],
+const SECTIONS = [
+  {
+    icon: Map,
+    title: "Сиды Minecraft",
+    text: "Интересные миры, координаты и версии игры для новых приключений.",
+    href: "/seeds",
+  },
+  {
+    icon: BookOpen,
+    title: "Моды и шейдеры",
+    text: "Подборки материалов, которые помогают сделать выживание красивее.",
+    href: "/guides",
+  },
+  {
+    icon: CalendarDays,
+    title: "Кооп-хорроры",
+    text: "Игры, в которых страшнее всего становится именно вместе с друзьями.",
+    href: "/events",
+  },
 ];
 
 export default function AboutAndFaq() {
@@ -37,103 +58,102 @@ export default function AboutAndFaq() {
       className="border-t border-line py-16 sm:py-20"
     >
       <div className="container-app">
-        <div className="max-w-2xl">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-emerald">О канале</p>
-          <h2
-            id="about-title"
-            className="mt-3 font-display text-2xl font-semibold text-ink sm:text-3xl"
-          >
-            Играем вместе, а не просто смотрим
-          </h2>
-          <p className="text-readable mt-3 text-sm leading-relaxed">
-            0x00 SPACE — канал о Minecraft, кооперативных играх и хоррорах. На сайте можно смотреть
-            публикации канала, открывать доступные материалы и отправлять идеи для совместных игр.
-          </p>
-          <p className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
-            <Link className="text-emerald underline-offset-4 hover:underline" to="/events">
-              Правила участия и ивенты
-            </Link>
-            <Link className="text-emerald underline-offset-4 hover:underline" to="/contacts">
-              Контакты
-            </Link>
-          </p>
-        </div>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {[
-            [Gamepad2, "Разные игры", "От Minecraft до свежих кооперативных проектов."],
-            [
-              Users,
-              "Участие по заявке",
-              "Оставьте контакт и идею: команда рассмотрит заявку перед ивентом.",
-            ],
-            [Sparkles, "Полезный контент", "Гайды, сиды и материалы собраны в одном месте."],
-          ].map(([Icon, title, text]) => (
-            <div key={title} className="glass glass-hover rounded-xl p-5">
-              <Icon className="h-5 w-5 text-emerald" aria-hidden="true" />
-              <h3 className="mt-4 text-sm font-medium text-ink">{title}</h3>
-              <p className="text-readable mt-1.5 text-xs leading-relaxed">{text}</p>
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+          <div>
+            <p className="eyebrow">О канале</p>
+            <h2
+              id="about-title"
+              className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
+            >
+              Играем вместе, а не просто смотрим
+            </h2>
+            <p className="text-readable mt-3 max-w-xl text-sm leading-relaxed">
+              0x00 SPACE — канал о Minecraft, кооперативных играх и хоррорах. На сайте можно
+              смотреть публикации канала, открывать доступные материалы и отправлять идеи для
+              совместных игр.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link to="/about" className="button-secondary">
+                Подробнее о канале
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <Link to="/contacts" className="button-ghost">
+                Контакты
+              </Link>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <div className="mt-8 grid gap-3 rounded-2xl border border-emerald/20 bg-emerald-soft/20 p-5 sm:grid-cols-3">
-          <p className="text-sm font-medium text-ink">Выберите следующий шаг:</p>
-          <Link className="text-sm text-emerald hover:underline" to="/videos">
-            Открыть видео
-          </Link>
-          <a className="text-sm text-emerald hover:underline" href="#application">
-            Отправить идею
-          </a>
-        </div>
-
-        <div className="mt-16" aria-labelledby="how-it-works-title">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-violet">
-            Как это работает
-          </p>
-          <h2 id="how-it-works-title" className="mt-3 font-display text-2xl font-semibold text-ink">
-            От идеи до совместной игры
-          </h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             {[
-              ["01", "Смотрите", "Выбирайте ролики и материалы по игре или формату."],
-              ["02", "Предлагайте", "Оставьте заявку с идеей, игрой и удобным контактом."],
-              ["03", "Договариваемся", "Если формат подойдёт, мы свяжемся с вами перед записью."],
-            ].map(([number, title, text]) => (
-              <section
-                key={number}
-                className="glass-hover rounded-xl border border-line bg-panel/50 p-5"
-              >
-                <span className="font-mono text-xs text-violet">{number}</span>
-                <h3 className="mt-3 text-sm font-medium text-ink">{title}</h3>
-                <p className="text-readable mt-2 text-xs leading-relaxed">{text}</p>
-              </section>
+              [Gamepad2, "Разные игры", "От Minecraft до свежих кооперативных проектов."],
+              [
+                Users,
+                "Участие по заявке",
+                "Оставьте контакт и идею: команда рассмотрит заявку перед ивентом.",
+              ],
+              [Sparkles, "Полезный контент", "Гайды, сиды и материалы собраны в одном месте."],
+            ].map(([Icon, title, text], index) => (
+              <div key={title} className="glass-hover rounded-2xl border border-line bg-panel/50 p-4">
+                <div className="flex items-center justify-between">
+                  <Icon className="h-5 w-5 text-emerald" aria-hidden="true" />
+                  <span className="font-mono text-[10px] text-mute">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <h3 className="mt-4 text-sm font-semibold text-ink">{title}</h3>
+                <p className="text-readable mt-1.5 text-xs leading-relaxed">{text}</p>
+              </div>
             ))}
           </div>
         </div>
 
-        <div id="guides" className="mt-16">
-          <h2 className="font-display text-2xl font-semibold text-ink">Полезные разделы</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            {GUIDES.map(([title, text], index) => (
-              <article
+        <div className="mt-12">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow text-violet">Навигация</p>
+              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
+                Полезные разделы
+              </h2>
+            </div>
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            {SECTIONS.map(({ icon: Icon, title, text, href }) => (
+              <Link
                 key={title}
-                className="glass-hover rounded-xl border border-line bg-panel/50 p-5"
+                to={href}
+                className="group flex flex-col rounded-2xl border border-line bg-panel/45 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-emerald/40 hover:bg-panel2/60"
               >
-                <h3 className="text-sm font-medium text-ink">
-                  <Link className="hover:text-emerald" to={index === 0 ? "/seeds" : "/guides"}>
-                    {title}
-                  </Link>
+                <div className="flex items-center justify-between">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-void/40 text-emerald">
+                    <Icon className="h-4 w-4" strokeWidth={1.8} />
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 text-mute transition-colors group-hover:text-emerald" />
+                </div>
+                <h3 className="mt-4 text-sm font-semibold text-ink group-hover:text-emerald">
+                  {title}
                 </h3>
-                <p className="mt-2 text-xs leading-relaxed text-mute">{text}</p>
-              </article>
+                <p className="mt-1.5 text-xs leading-relaxed text-mute">{text}</p>
+              </Link>
             ))}
           </div>
         </div>
 
-        <div id="faq" className="mt-16 max-w-3xl">
-          <h2 className="font-display text-2xl font-semibold text-ink">Частые вопросы</h2>
-          <div className="mt-5 divide-y divide-line rounded-xl border border-line bg-panel/50 px-5 shadow-xl shadow-black/10">
+        <div id="faq" className="mt-14 grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
+          <div>
+            <p className="eyebrow text-violet">FAQ</p>
+            <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
+              Частые вопросы
+            </h2>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-mute">
+              Коротко о том, как попасть в ролик, где искать материалы и как предложить идею.
+            </p>
+            <Link to="/faq" className="link-arrow mt-4">
+              Все вопросы
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="divide-y divide-line rounded-2xl border border-line bg-panel/50 px-5 shadow-xl shadow-black/10">
             {FAQ.map(([question, answer]) => (
               <details key={question} className="group py-4">
                 <summary className="interactive-control flex cursor-pointer list-none items-center justify-between gap-4 text-left text-sm font-medium text-ink">

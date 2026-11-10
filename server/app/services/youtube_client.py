@@ -62,6 +62,14 @@ async def fetch_video(video_id: str) -> YoutubeVideoOut | None:
     return result
 
 
+def _response_json(response: httpx.Response) -> dict:
+    """Parse an API response or turn malformed JSON into a controlled YoutubeApiError."""
+    try:
+        return response.json()
+    except (TypeError, ValueError) as exc:
+        raise YoutubeApiError("YouTube API вернул некорректный ответ") from exc
+
+
 def _parse_iso8601_duration_to_seconds(duration: str) -> int:
     """
     Разбирает ISO 8601 duration формата 'PT1M30S' в секунды.
@@ -110,13 +118,16 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
                 "key": settings.YOUTUBE_API_KEY,
             },
         )
-        channels_data = channels_resp.json()
+        channels_data = _response_json(channels_resp)
 
         items = channels_data.get("items", [])
         if not items:
             raise YoutubeApiError("Канал не найден — проверьте YOUTUBE_CHANNEL_ID")
 
-        uploads_playlist_id = items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        try:
+            uploads_playlist_id = items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        except (KeyError, TypeError) as exc:
+            raise YoutubeApiError("YouTube API вернул неполные данные канала") from exc
 
         # Шаг 2: последние видео из uploads-плейлиста
         playlist_resp = await _youtube_get(
@@ -129,12 +140,13 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
                 "key": settings.YOUTUBE_API_KEY,
             },
         )
-        playlist_data = playlist_resp.json()
+        playlist_data = _response_json(playlist_resp)
 
-        video_ids = [
-            entry["snippet"]["resourceId"]["videoId"]
-            for entry in playlist_data.get("items", [])
-        ]
+        video_ids = []
+        for entry in playlist_data.get("items", []):
+            video_id = entry.get("snippet", {}).get("resourceId", {}).get("videoId")
+            if video_id:
+                video_ids.append(video_id)
 
         if not video_ids:
             cache.set(cache_key, [], settings.YOUTUBE_CACHE_TTL_SECONDS)
@@ -150,30 +162,34 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
                 "key": settings.YOUTUBE_API_KEY,
             },
         )
-        videos_data = videos_resp.json()
+        videos_data = _response_json(videos_resp)
 
     result: List[YoutubeVideoOut] = []
     for video in videos_data.get("items", []):
-        snippet = video["snippet"]
-        duration_seconds = _parse_iso8601_duration_to_seconds(
-            video["contentDetails"]["duration"]
-        )
-        video_id = video["id"]
-        view_count = int(video.get("statistics", {}).get("viewCount", 0))
-
-        result.append(
-            YoutubeVideoOut(
-                video_id=video_id,
-                title=snippet["title"],
-                description=snippet.get("description", ""),
-                thumbnail_url=snippet["thumbnails"].get("high", snippet["thumbnails"]["default"])["url"],
-                published_at=datetime.fromisoformat(snippet["publishedAt"].replace("Z", "+00:00")),
-                is_short=duration_seconds <= 60,
-                url=f"https://www.youtube.com/watch?v={video_id}",
-                duration_seconds=duration_seconds,
-                view_count=view_count,
+        try:
+            snippet = video["snippet"]
+            thumbnails = snippet["thumbnails"]
+            thumbnail = thumbnails.get("high") or thumbnails["default"]
+            duration_seconds = _parse_iso8601_duration_to_seconds(
+                video["contentDetails"]["duration"]
             )
-        )
+            video_id = video["id"]
+            view_count = int(video.get("statistics", {}).get("viewCount", 0))
+            result.append(
+                YoutubeVideoOut(
+                    video_id=video_id,
+                    title=snippet["title"],
+                    description=snippet.get("description", ""),
+                    thumbnail_url=thumbnail["url"],
+                    published_at=datetime.fromisoformat(snippet["publishedAt"].replace("Z", "+00:00")),
+                    is_short=duration_seconds <= 60,
+                    url=f"https://www.youtube.com/watch?v={video_id}",
+                    duration_seconds=duration_seconds,
+                    view_count=view_count,
+                )
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise YoutubeApiError("YouTube API вернул неполные данные видео") from exc
 
     # Сортируем от новых к старым на случай, если порядок из API не гарантирован
     result.sort(key=lambda v: v.published_at, reverse=True)

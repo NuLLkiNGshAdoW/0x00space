@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { PackageOpen, AlertTriangle, Search } from "lucide-react";
+import { AlertTriangle, ChevronDown, PackageOpen, Search, X } from "lucide-react";
 import { getResources, getSeeds, ApiError } from "../services/api.js";
 import ResourceCard from "./ResourceCard.jsx";
 import SeedCard from "./SeedCard.jsx";
@@ -100,176 +100,136 @@ export default function ResourcesAndGuides() {
   }, [debouncedSearch, params, patchParams]);
 
   return (
-    <section id="resources" className="border-y border-line/70 bg-panel/20 py-16 sm:py-20">
-      <div className="container-app">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em] text-violet">
-              Арсенал игрока
-            </p>
-            <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">
-              Материалы и сиды
-            </h2>
-            <p className="mt-2 max-w-md text-sm text-mute">
-              Текстуры, шейдеры, моды, гайды по хоррорам и интересные миры — всё, что упоминается в
-              роликах.
-            </p>
-          </div>
-
-          <div
-            role="tablist"
-            aria-label="Раздел материалов"
-            className="flex gap-1 rounded-lg border border-line bg-panel/60 p-1 self-start"
-          >
-            {VIEWS.map((view) => (
-              <button
-                key={view.key}
-                type="button"
-                id={`${view.key}-tab`}
-                role="tab"
-                aria-selected={activeView === view.key}
-                aria-controls={`${view.key}-panel`}
-                onClick={() =>
-                  patchParams({
-                    resource_view: view.key === "resources" ? "" : view.key,
-                    resource_page: "",
-                  })
-                }
-                className={cn(
-                  "interactive-control rounded-md px-3.5 py-1.5 text-sm transition-colors",
-                  activeView === view.key
-                    ? "bg-violet text-void font-medium"
-                    : "text-mute hover:text-ink",
-                )}
-              >
-                {view.label}
-              </button>
-            ))}
-          </div>
+    <section id="resources" className="container-app py-12 sm:py-16">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="eyebrow">Арсенал игрока</p>
+          <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            Материалы и миры
+          </h2>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-mute">
+            Текстуры, шейдеры, моды, гайды по хоррорам и интересные миры — всё, что упоминается в
+            роликах.
+          </p>
         </div>
 
-        <label className="relative mt-6 block max-w-md">
-          <span className="sr-only">Поиск по материалам</span>
+        <div
+          role="tablist"
+          aria-label="Раздел материалов"
+          className="flex self-start rounded-full border border-line bg-panel/60 p-1"
+        >
+          {VIEWS.map((view) => (
+            <button
+              key={view.key}
+              type="button"
+              id={`${view.key}-tab`}
+              role="tab"
+              aria-selected={activeView === view.key}
+              aria-controls={`${view.key}-panel`}
+              onClick={() =>
+                patchParams({
+                  resource_view: view.key === "resources" ? "" : view.key,
+                  resource_page: "",
+                })
+              }
+              className={cn(
+                "interactive-control rounded-full px-3.5 py-1.5 text-sm transition-colors",
+                activeView === view.key
+                  ? "bg-violet font-semibold text-void"
+                  : "text-mute hover:text-ink",
+              )}
+            >
+              {view.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-7 flex flex-col gap-3 rounded-2xl border border-line/80 bg-panel/35 p-3 sm:flex-row sm:items-center">
+        <div className="relative block flex-1">
+          <label htmlFor="resource-search" className="sr-only">
+            Поиск по материалам
+          </label>
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
+            className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
             aria-hidden="true"
           />
           <input
+            id="resource-search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Поиск по материалам и сидам…"
-            className="field-control w-full pl-9 pr-3"
+            className="field-control w-full pl-10 pr-10"
           />
-        </label>
-
-        <label className="mt-3 block max-w-xs">
-          <span className="sr-only">Сортировка материалов</span>
-          <select
-            value={sort}
-            onChange={(event) =>
-              patchParams({
-                resource_sort: event.target.value === "newest" ? "" : event.target.value,
-                resource_page: "",
-              })
-            }
-            className="field-control w-full"
-          >
-            <option value="newest">Сначала новые</option>
-            <option value="title">По названию</option>
-          </select>
-        </label>
-
-        {activeView === "resources" && (
-          <>
-            <div className="mt-7 flex flex-wrap gap-2">
-              {GAME_FILTERS.map((filter) => (
-                <button
-                  key={filter.key || "all"}
-                  type="button"
-                  onClick={() => patchParams({ resource_game: filter.key, resource_page: "" })}
-                  className={cn(
-                    "interactive-control rounded-full border px-3.5 py-1.5 text-xs transition-colors",
-                    gameFilter === filter.key
-                      ? "border-emerald/60 bg-emerald-soft text-emerald"
-                      : "border-line text-mute hover:border-emerald/30 hover:text-ink",
-                  )}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-
-            <div
-              id="resources-panel"
-              role="tabpanel"
-              aria-labelledby="resources-tab"
-              className="mt-6"
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              aria-label="Очистить поиск"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-mute transition-colors hover:bg-panel2 hover:text-ink"
             >
-              {resourcesStatus === "loading" && (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="glass aspect-[4/5] animate-pulse rounded-xl" />
-                  ))}
-                </div>
-              )}
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
 
-              {resourcesStatus === "error" && (
-                <EmptyState icon={AlertTriangle} text={resourcesError} tone="warning" />
-              )}
+        <div className="flex items-center gap-2">
+          <label className="relative block sm:w-48">
+            <span className="sr-only">Сортировка материалов</span>
+            <select
+              value={sort}
+              onChange={(event) =>
+                patchParams({
+                  resource_sort: event.target.value === "newest" ? "" : event.target.value,
+                  resource_page: "",
+                })
+              }
+              className="field-control w-full appearance-none pr-9"
+            >
+              <option value="newest">Сначала новые</option>
+              <option value="title">По названию</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute" />
+          </label>
+          <span className="hidden whitespace-nowrap rounded-full border border-line px-3 py-2 font-mono text-[11px] text-mute sm:inline-flex">
+            {activeView === "resources" ? resources.length : seeds.length} на странице
+          </span>
+        </div>
+      </div>
 
-              {resourcesStatus === "ready" && resources.length === 0 && (
-                <>
-                  <EmptyState
-                    icon={PackageOpen}
-                    text="В этой категории пока нет материалов — загляните позже."
-                  />
-                  {page > 1 && (
-                    <Pagination
-                      page={page}
-                      hasNext={false}
-                      setPage={(nextPage) => patchParams({ resource_page: nextPage })}
-                    />
-                  )}
-                </>
-              )}
+      {activeView === "resources" && (
+        <>
+          <div className="no-scrollbar -mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+            {GAME_FILTERS.map((filter) => (
+              <button
+                key={filter.key || "all"}
+                type="button"
+                onClick={() => patchParams({ resource_game: filter.key, resource_page: "" })}
+                className={cn("chip whitespace-nowrap", gameFilter === filter.key && "chip-active")}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
 
-              {resourcesStatus === "ready" && resources.length > 0 && (
-                <>
-                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {resources.map((resource) => (
-                      <ResourceCard key={resource.id} resource={resource} />
-                    ))}
-                  </div>
-                  <Pagination
-                    page={page}
-                    hasNext={resourcesPage.has_next}
-                    setPage={(nextPage) => patchParams({ resource_page: nextPage })}
-                  />
-                </>
-              )}
-            </div>
-          </>
-        )}
-
-        {activeView === "seeds" && (
-          <div id="seeds-panel" role="tabpanel" aria-labelledby="seeds-tab" className="mt-7">
-            {seedsStatus === "loading" && (
+          <div id="resources-panel" role="tabpanel" aria-labelledby="resources-tab" className="mt-6">
+            {resourcesStatus === "loading" && (
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="glass aspect-[4/5] animate-pulse rounded-xl" />
+                  <div key={i} className="glass aspect-[4/5] animate-pulse rounded-2xl" />
                 ))}
               </div>
             )}
 
-            {seedsStatus === "error" && (
-              <EmptyState icon={AlertTriangle} text={seedsError} tone="warning" />
+            {resourcesStatus === "error" && (
+              <EmptyState icon={AlertTriangle} text={resourcesError} tone="warning" />
             )}
 
-            {seedsStatus === "ready" && seeds.length === 0 && (
+            {resourcesStatus === "ready" && resources.length === 0 && (
               <>
                 <EmptyState
                   icon={PackageOpen}
-                  text="Сидов пока нет — они появятся после следующего ролика."
+                  text="В этой категории пока нет материалов — загляните позже."
                 />
                 {page > 1 && (
                   <Pagination
@@ -281,23 +241,70 @@ export default function ResourcesAndGuides() {
               </>
             )}
 
-            {seedsStatus === "ready" && seeds.length > 0 && (
+            {resourcesStatus === "ready" && resources.length > 0 && (
               <>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {seeds.map((seed) => (
-                    <SeedCard key={seed.id} seed={seed} />
+                  {resources.map((resource) => (
+                    <ResourceCard key={resource.id} resource={resource} />
                   ))}
                 </div>
                 <Pagination
                   page={page}
-                  hasNext={seedsPage.has_next}
+                  hasNext={resourcesPage.has_next}
                   setPage={(nextPage) => patchParams({ resource_page: nextPage })}
                 />
               </>
             )}
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {activeView === "seeds" && (
+        <div id="seeds-panel" role="tabpanel" aria-labelledby="seeds-tab" className="mt-6">
+          {seedsStatus === "loading" && (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="glass aspect-[4/5] animate-pulse rounded-2xl" />
+              ))}
+            </div>
+          )}
+
+          {seedsStatus === "error" && (
+            <EmptyState icon={AlertTriangle} text={seedsError} tone="warning" />
+          )}
+
+          {seedsStatus === "ready" && seeds.length === 0 && (
+            <>
+              <EmptyState
+                icon={PackageOpen}
+                text="Сидов пока нет — они появятся после следующего ролика."
+              />
+              {page > 1 && (
+                <Pagination
+                  page={page}
+                  hasNext={false}
+                  setPage={(nextPage) => patchParams({ resource_page: nextPage })}
+                />
+              )}
+            </>
+          )}
+
+          {seedsStatus === "ready" && seeds.length > 0 && (
+            <>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {seeds.map((seed) => (
+                  <SeedCard key={seed.id} seed={seed} />
+                ))}
+              </div>
+              <Pagination
+                page={page}
+                hasNext={seedsPage.has_next}
+                setPage={(nextPage) => patchParams({ resource_page: nextPage })}
+              />
+            </>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -305,21 +312,23 @@ export default function ResourcesAndGuides() {
 function Pagination({ page, hasNext, setPage }) {
   if (page === 1 && !hasNext) return null;
   return (
-    <nav aria-label="Пагинация" className="mt-7 flex items-center justify-center gap-2">
+    <nav aria-label="Пагинация" className="mt-8 flex items-center justify-center gap-2">
       <button
         type="button"
         disabled={page === 1}
         onClick={() => setPage(page - 1)}
-        className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
+        className="interactive-control rounded-xl border border-line px-4 py-2 text-xs text-mute transition-colors hover:border-emerald/40 hover:text-emerald disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Назад
       </button>
-      <span className="px-2 font-mono text-xs text-mute">Страница {page}</span>
+      <span className="rounded-lg border border-line bg-panel/50 px-3 py-2 font-mono text-xs text-mute">
+        Страница {page}
+      </span>
       <button
         type="button"
         disabled={!hasNext}
         onClick={() => setPage(page + 1)}
-        className="interactive-control rounded-lg border border-line px-3 py-1.5 text-xs text-mute disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
+        className="interactive-control rounded-xl border border-line px-4 py-2 text-xs text-mute transition-colors hover:border-emerald/40 hover:text-emerald disabled:cursor-not-allowed disabled:bg-panel2 disabled:text-mute"
       >
         Далее
       </button>
@@ -329,12 +338,12 @@ function Pagination({ page, hasNext, setPage }) {
 
 function EmptyState({ icon: Icon, text, tone = "neutral" }) {
   return (
-    <div className="glass flex flex-col items-center gap-3 rounded-xl px-6 py-14 text-center">
+    <div className="glass flex flex-col items-center gap-3 rounded-2xl px-6 py-14 text-center">
       <Icon
         className={cn("h-8 w-8", tone === "warning" ? "text-violet" : "text-mute")}
         strokeWidth={1.6}
       />
-      <p className="text-sm text-mute">{text}</p>
+      <p className="max-w-md text-sm text-mute">{text}</p>
     </div>
   );
 }

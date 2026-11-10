@@ -14,14 +14,14 @@ YOUTUBE_API_KEY=...
 YOUTUBE_CHANNEL_ID=...
 ```
 
-5. Скопируйте URL backend, например `https://0x00space-api.onrender.com`.
+5. Скопируйте URL backend, например `https://zerox00space-api.onrender.com`.
 
 ## 2. Frontend на Vercel
 
 Для текущего backend используйте API URL:
 
 ```env
-VITE_API_BASE_URL=https://0x00space-api.onrender.com/api
+VITE_API_BASE_URL=https://zerox00space-api.onrender.com/api
 ```
 
 1. В Vercel выберите **Import Project**.
@@ -30,7 +30,7 @@ VITE_API_BASE_URL=https://0x00space-api.onrender.com/api
 4. Добавьте переменную:
 
 ```env
-VITE_API_BASE_URL=https://0x00space-api.onrender.com/api
+VITE_API_BASE_URL=https://zerox00space-api.onrender.com/api
 VITE_SITE_URL=https://ваш-проект.vercel.app
 # optional, leave empty for a no-op integration
 VITE_SENTRY_DSN=
@@ -59,7 +59,7 @@ VITE_SENTRY_DSN=
 
 ## Админ-сессия
 
-Браузер получает короткоживущую HttpOnly cookie через `/api/auth/login`; пароль в `localStorage` больше не используется. `ADMIN_SESSION_SECRET` должен быть отдельным случайным secret и задаётся в Render Environment отдельно от `ADMIN_PASSWORD` и `ADMIN_TOKEN`. На HTTPS включайте `COOKIE_SECURE=true`. Старый `ADMIN_TOKEN` и заголовок `X-Admin-Token` остаются только для backward compatibility скриптов и считаются deprecated; frontend их не использует. В production отсутствие `ADMIN_SESSION_SECRET` блокирует admin authentication. Неудачные логины ограничиваются в памяти процесса, поэтому для нескольких реплик нужен общий rate-limit на reverse proxy.
+Браузер получает короткоживущую HttpOnly cookie через `/api/auth/login`; пароль в `localStorage` больше не используется. `ADMIN_SESSION_SECRET` должен быть отдельным случайным secret и задаётся в Render Environment отдельно от `ADMIN_PASSWORD` и `ADMIN_TOKEN`. На HTTPS включайте `COOKIE_SECURE=true`. Старый `ADMIN_TOKEN` и заголовок `X-Admin-Token` остаются только для backward compatibility скриптов и считаются deprecated; frontend их не использует. В production отсутствие `ADMIN_SESSION_SECRET` блокирует admin authentication. Неудачные логины ограничиваются в памяти процесса, поэтому для нескольких реплик нужен общий rate-limit на reverse proxy. На Render за Cloudflare задайте `TRUSTED_CLIENT_IP_HEADER=cf-connecting-ip`, иначе rate limit и блокировка логина увидят IP прокси и будут общими для всех посетителей.
 
 ## Бэкапы Render и базы
 
