@@ -291,7 +291,7 @@ test("navbar keeps branding and navigation separated across breakpoints", async 
     .locator('footer[aria-label="Подвал сайта"]')
     .getByRole("button", { name: /Анимация фона:/ });
 
-  for (const width of [1024, 1280, 1440]) {
+  for (const width of [1024, 1280, 1440, 1536, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(desktopNavigation).toBeVisible();
     await expect(header.getByRole("button", { name: /Анимация фона:/ })).toHaveCount(0);

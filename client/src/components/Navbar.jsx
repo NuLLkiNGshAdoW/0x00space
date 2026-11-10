@@ -89,7 +89,7 @@ export default function Navbar() {
 
           <nav
             aria-label="Основная навигация"
-            className="primary-nav hidden min-w-0 items-center gap-0.5 rounded-full border border-line/70 bg-void/50 p-1 lg:flex"
+            className="primary-nav hidden shrink-0 items-center gap-0.5 rounded-full border border-line/70 bg-void/50 p-1 lg:flex"
           >
             {NAV_LINKS.map((link) => (
               <NavLink
@@ -98,7 +98,7 @@ export default function Navbar() {
                 end={link.href === "/"}
                 className={({ isActive }) =>
                   cn(
-                    "whitespace-nowrap rounded-full px-2.5 py-2 text-sm transition-colors xl:px-3 2xl:px-3.5",
+                    "flex-none whitespace-nowrap rounded-full px-2.5 py-2 text-sm transition-colors xl:px-3 2xl:px-3.5",
                     isActive
                       ? "bg-panel2 text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                       : "text-mute hover:bg-panel2/60 hover:text-ink",
@@ -119,21 +119,6 @@ export default function Navbar() {
               </NavLink>
             ))}
           </nav>
-        </div>
-
-        <div className="hidden shrink-0 items-center gap-1 2xl:flex">
-          {SOCIAL_LINKS.map(({ name, href, icon: Icon }) => (
-            <a
-              key={name}
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={name}
-              className="rounded-xl p-2.5 text-mute transition-colors hover:bg-panel2 hover:text-emerald"
-            >
-              <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
-            </a>
-          ))}
         </div>
 
         <Link
