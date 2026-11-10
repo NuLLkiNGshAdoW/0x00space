@@ -20,6 +20,7 @@ const LazyEventsPage = lazy(() => import("./pages/EventsPage.jsx"));
 const LazyGuidesPage = lazy(() => import("./pages/GuidesPage.jsx"));
 const LazySeedsPage = lazy(() => import("./pages/SeedsPage.jsx"));
 const LazyContentPage = lazy(() => import("./pages/ContentPage.jsx"));
+const LazyGamePage = lazy(() => import("./pages/GamePage.jsx"));
 
 export default function App() {
   return (
@@ -34,6 +35,14 @@ export default function App() {
       <Suspense fallback={<RouteLoadingFallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route
+            path="/game"
+            element={
+              <LazyRoute>
+                <LazyGamePage />
+              </LazyRoute>
+            }
+          />
           <Route
             path="/admin"
             element={

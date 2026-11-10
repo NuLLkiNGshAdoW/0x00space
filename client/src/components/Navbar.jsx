@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, CalendarDays, House, Menu, PackageOpen, Play, X } from "lucide-react";
+import { ArrowUpRight, Gamepad2, House, Menu, PackageOpen, Play, X } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
 import { SOCIAL_LINKS } from "../lib/socials.js";
 import { cn } from "../lib/utils.js";
@@ -8,6 +8,7 @@ import BackgroundAnimationToggle from "./BackgroundAnimationToggle.jsx";
 const NAV_LINKS = [
   { label: "Главная", href: "/" },
   { label: "Видео", href: "/videos" },
+  { label: "Игра", href: "/game" },
   { label: "Материалы", href: "/materials" },
   { label: "О канале", href: "/about" },
   { label: "FAQ", href: "/faq" },
@@ -18,7 +19,7 @@ const MOBILE_QUICK_LINKS = [
   { label: "Главная", href: "/", icon: House },
   { label: "Видео", href: "/videos", icon: Play },
   { label: "Материалы", href: "/materials", icon: PackageOpen },
-  { label: "Ивенты", href: "/events", icon: CalendarDays },
+  { label: "Игра", href: "/game", icon: Gamepad2 },
 ];
 
 export default function Navbar() {
