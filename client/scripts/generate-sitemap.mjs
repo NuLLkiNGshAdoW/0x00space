@@ -248,6 +248,18 @@ async function generateStaticSeoPages(outputDir, videos) {
     await writeFile(outputPath, html, "utf8");
   }
 
+  const adminHtml = renderSeoHtml(template, {
+    title: "Админ-панель — 0x00 SPACE",
+    description: "Вход в админ-панель 0x00 SPACE.",
+    path: "/admin",
+    image: `${siteUrl}/brand-logo-transparent.png`,
+  });
+  await writeFile(
+    resolve(outputDir, "admin.html"),
+    replaceMeta(adminHtml, "robots", "noindex, nofollow"),
+    "utf8",
+  );
+
   const videoDir = resolve(outputDir, "videos");
   await mkdir(videoDir, { recursive: true });
   for (const video of videos) {
