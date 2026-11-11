@@ -454,7 +454,8 @@ test("application form explains missing privacy consent", async ({ page }) => {
 
 test("unknown route exposes a keyboard reachable 404", async ({ page }) => {
   await page.goto("/does-not-exist");
-  await expect(page.getByText("404", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Кажется, мы улетели не на ту планету." })).toBeVisible();
+  await expect(page.getByRole("main").getByRole("link", { name: /Смотреть видео/ })).toHaveAttribute("href", "/videos");
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toBeVisible();
 });

@@ -8,6 +8,10 @@ import {
   ShieldCheck,
   Map,
   Users,
+  ArrowUpRight,
+  House,
+  Orbit,
+  Search,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
@@ -260,15 +264,56 @@ export default function ContentPage({ path }) {
             </article>
           </div>
         ) : (
-          <div className="content-page-surface mx-auto max-w-2xl rounded-3xl p-8 py-20 text-center sm:p-16">
-            <p className="font-mono text-6xl text-emerald">404</p>
-            <h1 className="mt-5 font-display text-3xl font-semibold text-ink">
-              Страница не найдена
-            </h1>
-            <p className="content-page-copy mt-3">Проверьте адрес или вернитесь на главную.</p>
-            <Link to="/" className="button-primary mt-8">
-              На главную
-            </Link>
+          <div className="content-page-surface relative isolate mx-auto max-w-5xl overflow-hidden rounded-3xl border border-line/80 px-6 py-10 shadow-2xl shadow-black/25 sm:px-10 sm:py-14">
+            <div aria-hidden="true" className="pointer-events-none absolute -left-24 -top-28 -z-10 h-80 w-80 rounded-full bg-violet/15 blur-3xl" />
+            <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 -right-20 -z-10 h-96 w-96 rounded-full bg-emerald/10 blur-3xl" />
+            <div className="grid items-center gap-10 lg:grid-cols-[1fr_.9fr] lg:gap-6">
+              <div className="relative z-10">
+                <p className="eyebrow inline-flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet" />
+                  Сигнал потерян · ошибка 404
+                </p>
+                <h1 className="mt-5 max-w-xl font-display text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
+                  Кажется, мы улетели не на ту планету.
+                </h1>
+                <p className="content-page-copy mt-4 max-w-lg text-sm leading-relaxed sm:text-base">
+                  Такой страницы нет в нашей галактике. Проверь адрес или возвращайся к видео и приключениям 0x00 SPACE.
+                </p>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link to="/" className="button-primary">
+                    <House className="h-4 w-4" aria-hidden="true" /> На главную
+                  </Link>
+                  <Link to="/videos" className="button-secondary">
+                    Смотреть видео <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                  <Link to="/search" aria-label="Поиск по сайту" className="icon-button border border-line text-mute hover:text-emerald">
+                    <Search className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </div>
+                <p className="mt-8 border-t border-line pt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-mute">
+                  0x00 SPACE <span className="mx-2 text-line">/</span> возвращаемся на курс
+                </p>
+              </div>
+
+              <div className="relative mx-auto flex aspect-square w-full max-w-sm items-center justify-center" aria-hidden="true">
+                <span className="absolute inset-[8%] rounded-full border border-violet/20" />
+                <span className="absolute inset-[19%] rounded-full border border-emerald/20" />
+                <span className="absolute inset-[30%] rounded-full border border-line/80" />
+                <span className="absolute left-[17%] top-[22%] h-2 w-2 rounded-full bg-violet shadow-[0_0_18px_rgba(167,139,250,.9)]" />
+                <span className="absolute bottom-[20%] right-[17%] h-1.5 w-1.5 rounded-full bg-emerald shadow-[0_0_16px_rgba(52,211,153,.9)]" />
+                <span className="absolute right-[22%] top-[16%] h-1 w-1 rounded-full bg-ink/80" />
+                <div className="relative flex h-36 w-36 items-center justify-center rounded-[2rem] border border-emerald/30 bg-panel/80 shadow-[0_0_80px_-24px_rgba(52,211,153,.5)] backdrop-blur sm:h-44 sm:w-44">
+                  <div className="absolute inset-2 rounded-[1.5rem] border border-white/5" />
+                  <div className="text-center">
+                    <Orbit className="mx-auto h-10 w-10 text-emerald sm:h-12 sm:w-12" strokeWidth={1.3} />
+                    <span className="mt-2 block font-mono text-3xl font-semibold tracking-[-0.12em] text-ink sm:text-4xl">404</span>
+                  </div>
+                </div>
+                <span className="absolute bottom-[12%] left-1/2 -translate-x-1/2 rounded-full border border-line bg-void/70 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.18em] text-mute">
+                  <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-violet" /> координаты неизвестны
+                </span>
+              </div>
+            </div>
           </div>
         )}
       </main>
