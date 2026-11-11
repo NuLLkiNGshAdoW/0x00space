@@ -4,12 +4,8 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/admin", "destination": "/index.html" },
-    { "source": "/game", "destination": "/index.html" },
-    { "source": "/search", "destination": "/index.html" },
-    { "source": "/favorites", "destination": "/index.html" },
-    { "source": "/videos/:videoId", "destination": "/index.html" },
-    { "source": "/((?!api(?:/|$)).*)", "destination": "/index.html" }
+    { "source": "/api/:path*", "destination": "https://zerox00space-api.onrender.com/api/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
