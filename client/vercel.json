@@ -3,7 +3,14 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
-  "rewrites": [{ "source": "/((?!api(?:/|$)).*)", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/game", "destination": "/index.html" },
+    { "source": "/search", "destination": "/index.html" },
+    { "source": "/favorites", "destination": "/index.html" },
+    { "source": "/videos/:videoId", "destination": "/index.html" },
+    { "source": "/((?!api(?:/|$)).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
