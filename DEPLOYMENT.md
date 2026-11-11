@@ -46,6 +46,8 @@ VITE_SENTRY_DSN=
 - В браузере проверьте viewport `320/375/768/1440`, keyboard-only navigation и states `loading/error/empty/success`.
 - CI запускает Lighthouse на production preview после `npm run build` и проверяет минимальные оценки и бюджет передачи. После deploy дополнительно проверьте production URL с реальным API: данные, CORS и метрики могут отличаться от локального preview.
 - После изменения API URL проверьте CORS, `/api/health` (`status: ok`, `database.schema_ready: true`), чтение `/api/resources`, `/api/seeds` и `/api/events`, thumbnails YouTube, отправку формы и SPA refresh на каждой публичной странице.
+- GitHub Actions запускает `API uptime and resource links` каждые 6 часов и по кнопке **Run workflow**. Он проверяет `/api/health` и ссылки скачивания всех материалов; результат с ошибками завершает workflow как failed. При необходимости задайте GitHub Actions variable `API_BASE_URL` (URL API вместе с `/api`); по умолчанию используется production API из `render.yaml`.
+- Чтобы получать уведомления о failed workflow, включите уведомления GitHub Actions в настройках GitHub: **Settings → Notifications → Actions**. При HTTP 5xx или `status: degraded` проверка завершится до проверки ссылок каталога.
 
 ## Ограничения бесплатного варианта
 
@@ -64,6 +66,19 @@ VITE_SENTRY_DSN=
 ## Бэкапы Render и базы
 
 - Для production включите managed PostgreSQL и проверьте в Render раздел **Backups**: расписание, retention и восстановление в отдельную базу.
+- GitHub Actions workflow `Encrypted PostgreSQL backup and restore test` ежедневно создаёт `pg_dump`, шифрует его AES-256, проверяет расшифровку и восстанавливает копию во временный PostgreSQL. Зашифрованный архив хранится как приватный GitHub Actions artifact 30 дней.
+- Для запуска workflow добавьте в **GitHub → Settings → Secrets and variables → Actions** секреты `DATABASE_URL` (внешний PostgreSQL URL из Render) и `BACKUP_ENCRYPTION_PASSPHRASE` (длинная случайная парольная фраза). Сохраните парольную фразу также в password manager вне GitHub: без неё архивы не восстановить. Настройте доступ Render PostgreSQL с GitHub-hosted runners; секреты не печатаются workflow.
+- GitHub artifact — дополнительная зашифрованная копия с 30-дневным retention, а не замена Render backups. Для восстановления скачайте `production.dump.enc` из успешного workflow и выполните на доверенной машине:
+
+```bash
+openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+  -in production.dump.enc -out production.dump \
+  -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+pg_restore --list production.dump
+pg_restore --exit-on-error --no-owner --no-acl \
+  --dbname="$RESTORE_DATABASE_URL" production.dump
+```
+
 - Перед миграциями создавайте ручную точку восстановления или экспортируйте SQL через `pg_dump`; храните архив вне репозитория и ограничьте доступ.
 - После восстановления проверьте `/api/health`, чтение материалов и вход администратора до переключения трафика.
 - SQLite-файл из локальной разработки (`server/local.db`) не является production-бэкапом. Render filesystem и uploads на web service не считаются постоянным хранилищем.
@@ -113,6 +128,11 @@ psql "$DATABASE_URL" -c 'SELECT version_num FROM alembic_version;'
 `game_leaderboard`. На существующей базе, уже отмеченной как baseline
 `20260922_0001`, перед публикацией новой версии API выполните одноразово
 `alembic upgrade head` по процедуре выше.
+
+Архивирование материалов, сидов и событий добавляет ревизия `20261112_0003` с
+nullable `archived_at` колонками. Перед deploy новой версии API примените
+`alembic upgrade head`; healthcheck покажет `schema_ready: false` и недостающие
+колонки, пока миграция не завершится.
 
 ### A. Уже существующая production PostgreSQL
 

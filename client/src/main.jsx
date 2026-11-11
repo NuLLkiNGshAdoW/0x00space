@@ -27,6 +27,14 @@ function loadFontsWithoutBlockingFirstPaint() {
 
 window.requestAnimationFrame(loadFontsWithoutBlockingFirstPaint);
 
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((error) => {
+      console.warn("Не удалось включить офлайн-режим:", error);
+    });
+  }, { once: true });
+}
+
 function reportWebVital({ name, value, rating }) {
   trackEvent("web_vital", {
     metric_name: name,

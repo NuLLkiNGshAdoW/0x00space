@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ChevronDown, PackageOpen, Search, X } from "lucide-react";
-import { getResources, getSeeds, ApiError } from "../services/api.js";
+import { getResources, getResourceFilters, getSeeds, ApiError } from "../services/api.js";
 import ResourceCard from "./ResourceCard.jsx";
 import SeedCard from "./SeedCard.jsx";
 import { cn } from "../lib/utils.js";
@@ -22,6 +22,15 @@ const VIEWS = [
 ];
 const VIEW_KEYS = new Set(VIEWS.map((view) => view.key));
 const SORT_KEYS = new Set(["newest", "title"]);
+const RESOURCE_TYPES = [
+  { key: "texture_pack", label: "Текстур-паки" },
+  { key: "shader", label: "Шейдеры" },
+  { key: "mod", label: "Моды" },
+  { key: "modpack", label: "Сборки" },
+  { key: "guide", label: "Гайды" },
+  { key: "other", label: "Другое" },
+];
+const RESOURCE_TYPE_KEYS = new Set(RESOURCE_TYPES.map(({ key }) => key));
 
 export default function ResourcesAndGuides() {
   const [params, setParams] = useSearchParams();
@@ -29,11 +38,21 @@ export default function ResourcesAndGuides() {
     ? params.get("resource_view")
     : "resources";
   const gameFilter = params.get("resource_game") || "";
+  const resourceType = RESOURCE_TYPE_KEYS.has(params.get("resource_type"))
+    ? params.get("resource_type")
+    : "";
+  const resourceVersion = params.get("resource_version") || "";
   const [search, setSearch] = useState(() => params.get("resource_q") || "");
   const page = Math.max(1, Number.parseInt(params.get("resource_page"), 10) || 1);
   const sort = SORT_KEYS.has(params.get("resource_sort")) ? params.get("resource_sort") : "newest";
   const debouncedSearch = useDebouncedValue(search);
   const pageSize = 8;
+  const filtersQuery = useQuery({
+    queryKey: ["resource-filters"],
+    queryFn: getResourceFilters,
+    enabled: activeView === "resources",
+    staleTime: 5 * 60 * 1000,
+  });
   const patchParams = useCallback(
     (changes) => {
       setParams(
@@ -52,10 +71,20 @@ export default function ResourcesAndGuides() {
   );
 
   const resourcesQuery = useQuery({
-    queryKey: ["resources", gameFilter, debouncedSearch, sort, page, pageSize],
+    queryKey: [
+      "resources",
+      gameFilter,
+      resourceType,
+      resourceVersion,
+      debouncedSearch,
+      sort,
+      page,
+      pageSize,
+    ],
     queryFn: () =>
-      getResources(undefined, gameFilter || undefined, {
+      getResources(resourceType || undefined, gameFilter || undefined, {
         search: debouncedSearch.trim() || undefined,
+        gameVersion: resourceVersion || undefined,
         sort,
         page,
         limit: pageSize,
@@ -210,6 +239,53 @@ export default function ResourcesAndGuides() {
                 {filter.label}
               </button>
             ))}
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <label className="relative block sm:w-56">
+              <span className="sr-only">Тип материала</span>
+              <select
+                aria-label="Тип материала"
+                value={resourceType}
+                onChange={(event) =>
+                  patchParams({ resource_type: event.target.value, resource_page: "" })
+                }
+                className="field-control w-full appearance-none pr-9"
+              >
+                <option value="">Все типы</option>
+                {RESOURCE_TYPES.map((type) => (
+                  <option key={type.key} value={type.key}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
+                aria-hidden="true"
+              />
+            </label>
+            <label className="relative block sm:w-56">
+              <span className="sr-only">Версия Minecraft</span>
+              <select
+                aria-label="Версия Minecraft"
+                value={resourceVersion}
+                onChange={(event) =>
+                  patchParams({ resource_version: event.target.value, resource_page: "" })
+                }
+                className="field-control w-full appearance-none pr-9"
+              >
+                <option value="">Все версии</option>
+                {(filtersQuery.data?.game_versions || []).map((version) => (
+                  <option key={version} value={version}>
+                    {version}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute"
+                aria-hidden="true"
+              />
+            </label>
           </div>
 
           <div

@@ -24,7 +24,8 @@
 
 ## Backup and recovery
 
-- [ ] PostgreSQL backup schedule, retention, restore permissions and alerting проверены в Render.
+- [ ] PostgreSQL backup schedule/retention проверены в Render; GitHub secrets `DATABASE_URL` и `BACKUP_ENCRYPTION_PASSPHRASE` настроены для ежедневного зашифрованного dump и restore-test workflow.
+- [ ] Успешный backup artifact проверен, срок хранения 30 дней, парольная фраза хранится в отдельном password manager, а уведомления GitHub Actions включены.
 - [ ] Перед миграцией сделан `pg_dump` или restore point; архив зашифрован, хранится вне Git и доступ ограничен.
 - [ ] Metadata фоновых файлов включена в backup plan; сами media-файлы бэкапятся отдельно в object storage с lifecycle/retention.
 - [ ] Выполнено восстановление в отдельную базу и отдельное storage namespace; проверены `/api/health`, чтение материалов, login и активный background.

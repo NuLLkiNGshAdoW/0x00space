@@ -23,6 +23,7 @@ export default function FavoriteButton({ id, label = "Добавить в изб
         : [...current, String(id)];
       localStorage.setItem(KEY, JSON.stringify(next));
       setFavorite(!favorite);
+      window.dispatchEvent(new Event("favorites-change"));
     } catch {
       /* storage unavailable */
     }

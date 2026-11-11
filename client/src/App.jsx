@@ -13,6 +13,7 @@ import CommunityBenefits from "./components/CommunityBenefits.jsx";
 import CollectionPage from "./pages/CollectionPage.jsx";
 import Seo from "./components/Seo.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import OfflineNotice from "./components/OfflineNotice.jsx";
 
 const LazyAdminPage = lazy(() => import("./pages/AdminPage.jsx"));
 const LazyVideoDetailPage = lazy(() => import("./pages/VideoDetailPage.jsx"));
@@ -21,11 +22,14 @@ const LazyGuidesPage = lazy(() => import("./pages/GuidesPage.jsx"));
 const LazySeedsPage = lazy(() => import("./pages/SeedsPage.jsx"));
 const LazyContentPage = lazy(() => import("./pages/ContentPage.jsx"));
 const LazyGamePage = lazy(() => import("./pages/GamePage.jsx"));
+const LazySearchPage = lazy(() => import("./pages/SearchPage.jsx"));
+const LazyFavoritesPage = lazy(() => import("./pages/FavoritesPage.jsx"));
 
 export default function App() {
   return (
     <BrowserRouter>
       <ScrollManager />
+      <OfflineNotice />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-emerald focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-void"
@@ -52,6 +56,8 @@ export default function App() {
             }
           />
           <Route path="/videos" element={<CollectionPage type="videos" />} />
+          <Route path="/search" element={<LazyRoute><LazySearchPage /></LazyRoute>} />
+          <Route path="/favorites" element={<LazyRoute><LazyFavoritesPage /></LazyRoute>} />
           <Route path="/videos/:videoId" element={<VideoRoute />} />
           <Route path="/materials" element={<CollectionPage type="materials" />} />
           <Route

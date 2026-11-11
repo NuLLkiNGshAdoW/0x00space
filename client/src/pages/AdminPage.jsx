@@ -14,6 +14,9 @@ import {
 } from "../services/api.js";
 import Seo from "../components/Seo.jsx";
 import ApiState from "../components/ApiState.jsx";
+import AdminCatalog from "../components/AdminCatalog.jsx";
+import AdminEvents from "../components/AdminEvents.jsx";
+import AdminApplications from "../components/AdminApplications.jsx";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
@@ -124,6 +127,7 @@ export default function AdminPage() {
       .finally(() => {
         setAuthenticated(false);
         queryClient.removeQueries({ queryKey: BACKGROUNDS_QUERY_KEY });
+        queryClient.removeQueries({ queryKey: ["admin-catalog"] });
       });
     setPassword("");
     setMessage("Сессия завершена");
@@ -432,6 +436,13 @@ export default function AdminPage() {
             </article>
           ))}
         </div>
+        {authenticated && (
+          <>
+            <AdminCatalog />
+            <AdminEvents />
+            <AdminApplications />
+          </>
+        )}
       </main>
     </div>
   );

@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Gamepad2, House, Menu, PackageOpen, Play, X } from "lucide-react";
+import { ArrowUpRight, Gamepad2, House, Menu, PackageOpen, Play, Search, X } from "lucide-react";
 import { NavLink, Link } from "react-router-dom";
 import { SOCIAL_LINKS } from "../lib/socials.js";
 import { cn } from "../lib/utils.js";
@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { label: "О канале", href: "/about" },
   { label: "FAQ", href: "/faq" },
   { label: "Ивенты", href: "/events" },
+  { label: "Избранное", href: "/favorites" },
 ];
 
 const MOBILE_QUICK_LINKS = [
@@ -128,6 +129,9 @@ export default function Navbar() {
                 </NavLink>
               ))}
             </nav>
+              <Link to="/search" aria-label="Поиск по сайту" title="Поиск по сайту" className="icon-button hidden text-mute hover:text-emerald lg:inline-flex">
+                <Search className="h-4 w-4" />
+              </Link>
           </div>
 
           <Link
@@ -185,6 +189,9 @@ export default function Navbar() {
                   <ArrowUpRight className="h-4 w-4 text-mute" />
                 </NavLink>
               ))}
+              <Link to="/search" onClick={handleNavClick} className="interactive-control flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-ink hover:bg-panel2/70 hover:text-emerald">
+                <Search className="h-4 w-4" /> Поиск по сайту
+              </Link>
               <Link to="/videos" onClick={handleNavClick} className="button-primary mt-3 w-full">
                 Смотреть видео
               </Link>

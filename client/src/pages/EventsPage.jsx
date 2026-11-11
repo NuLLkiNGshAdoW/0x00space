@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { CalendarDays, ChevronDown, ChevronRight, Clock3, Users } from "lucide-react";
+import { CalendarDays, CalendarPlus, ChevronDown, ChevronRight, Clock3, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
@@ -235,8 +235,11 @@ export default function EventsPage() {
   );
 }
 
-function EventCard({ event }) {
+export function EventCard({ event }) {
   const statusStyle = STATUS_STYLES[event.status] || "bg-panel2 text-mute";
+  const registrationUrl = getHttpUrl(event.registration_url);
+  const applicationCapacityFull = !registrationUrl && event.max_participants != null &&
+    (event.application_count || 0) >= event.max_participants;
 
   return (
     <article className="event-card glass glass-hover flex h-full flex-col overflow-hidden rounded-2xl">
@@ -282,23 +285,99 @@ function EventCard({ event }) {
               timeStyle: "short",
             })}
           </span>
-          {event.max_participants && (
+          {event.max_participants && !(
+            event.status === "registration_open" && !registrationUrl
+          ) && (
             <span className="flex items-center gap-2">
               <Users className="h-4 w-4 text-violet" />
               До {event.max_participants} участников
             </span>
           )}
+          {event.status === "registration_open" && !registrationUrl && (
+            <span className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-violet" />
+              Заявки: {event.application_count || 0}{event.max_participants ? ` / ${event.max_participants}` : ""}
+            </span>
+          )}
         </div>
-        {event.status === "registration_open" ? (
-          <Link to="/#application" className="button-primary mt-5 w-full">
-            Подать заявку
-          </Link>
+        {event.status === "registration_open" && !applicationCapacityFull ? (
+          registrationUrl ? (
+            <a
+              href={registrationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button-primary mt-5 w-full"
+            >
+              Зарегистрироваться
+            </a>
+          ) : (
+            <Link to={`/?event_id=${encodeURIComponent(event.id)}#application`} className="button-primary mt-5 w-full">
+              Подать заявку
+            </Link>
+          )
         ) : (
           <span className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-line bg-panel/40 px-4 text-xs text-mute">
-            {event.status === "completed" ? "Событие завершено" : "Регистрация скоро откроется"}
+            {event.status === "completed" ? "Событие завершено" : applicationCapacityFull ? "Все места заняты" : "Регистрация скоро откроется"}
           </span>
+        )}
+        {event.status !== "completed" && (
+          <button type="button" onClick={() => downloadEventCalendar(event)} className="button-secondary mt-2 w-full">
+            <CalendarPlus className="h-4 w-4" /> Добавить в календарь
+          </button>
         )}
       </div>
     </article>
   );
+}
+
+function downloadEventCalendar(event) {
+  const start = new Date(event.starts_at);
+  if (Number.isNaN(start.getTime())) return;
+  // Продолжительность неизвестна из модели события; задаём стандартное окно на 1 час.
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const formatDate = (date) => date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const escapeText = (value = "") => String(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/\r?\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+  const content = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//0x00 SPACE//Events//RU",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    `UID:event-${event.id}@0x00space`,
+    `DTSTAMP:${formatDate(new Date())}`,
+    `DTSTART:${formatDate(start)}`,
+    `DTEND:${formatDate(end)}`,
+    `SUMMARY:${escapeText(event.title)}`,
+    `DESCRIPTION:${escapeText([event.description, `Игра: ${event.game}`].filter(Boolean).join("\n"))}`,
+    "BEGIN:VALARM",
+    "TRIGGER:-PT30M",
+    "ACTION:DISPLAY",
+    `DESCRIPTION:${escapeText(`Скоро начнётся событие: ${event.title}`)}`,
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  const blob = new Blob([`\uFEFF${content}`], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${String(event.title).replace(/[^\p{L}\p{N}-]+/gu, "-").replace(/^-|-$/g, "") || "event"}.ics`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function getHttpUrl(value) {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : null;
+  } catch {
+    return null;
+  }
 }

@@ -13,12 +13,14 @@ import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ProfileBackdrop from "../components/ProfileBackdrop.jsx";
 import VideoCard from "../components/VideoCard.jsx";
-import { getVideo } from "../services/api.js";
+import { getResources, getSeeds, getVideo } from "../services/api.js";
 import { formatDuration, formatViews } from "../lib/utils.js";
 import ShareButton from "../components/ShareButton.jsx";
 import Seo from "../components/Seo.jsx";
 import { absoluteUrl, breadcrumbSchema, organizationRef } from "../lib/seo.js";
 import ApiState from "../components/ApiState.jsx";
+import ResourceCard from "../components/ResourceCard.jsx";
+import SeedCard from "../components/SeedCard.jsx";
 
 export default function VideoDetailPage({ videoId }) {
   const { data, isPending, isError, error, refetch } = useQuery({
@@ -28,6 +30,20 @@ export default function VideoDetailPage({ videoId }) {
   });
   const video = data?.video;
   const related = data?.related || [];
+  const relatedContent = useQuery({
+    queryKey: ["video-related-content", video?.video_id],
+    enabled: Boolean(video),
+    queryFn: async () => {
+      const [resources, seeds] = await Promise.all([
+        getResources(undefined, undefined, { videoId: video.video_id, page: 1, limit: 6 }),
+        getSeeds({ videoId: video.video_id, page: 1, limit: 6 }),
+      ]);
+      return { resources: resources?.items || [], seeds: seeds?.items || [] };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+  const relatedResources = relatedContent.data?.resources || [];
+  const relatedSeeds = relatedContent.data?.seeds || [];
   const status = isPending
     ? "loading"
     : isError
@@ -193,6 +209,22 @@ export default function VideoDetailPage({ videoId }) {
                 <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-mute">
                   {video.description}
                 </p>
+              </section>
+            )}
+
+            {(relatedResources.length > 0 || relatedSeeds.length > 0) && (
+              <section className="mt-12" aria-labelledby="related-content-title">
+                <p className="eyebrow">Продолжение</p>
+                <h2 id="related-content-title" className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink">
+                  Материалы к этому видео
+                </h2>
+                {relatedResources.length > 0 && <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {relatedResources.map((resource) => <ResourceCard key={resource.id} resource={resource} excludeVideoId={video.video_id} />)}
+                </div>}
+                {relatedSeeds.length > 0 && <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {relatedSeeds.map((seed) => <SeedCard key={seed.id} seed={seed} excludeVideoId={video.video_id} />)}
+                </div>}
+                <Link to="/materials" className="button-secondary mt-5">Смотреть все материалы</Link>
               </section>
             )}
 

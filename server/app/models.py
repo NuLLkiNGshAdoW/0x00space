@@ -5,7 +5,8 @@ import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, Integer, Text, DateTime, Enum, Boolean
+from sqlalchemy import Column, String, Integer, Text, DateTime, Enum, Boolean, ForeignKey, Index
+from sqlalchemy.orm import relationship
 
 from app.database import Base
 
@@ -40,6 +41,8 @@ class Application(Base):
     __tablename__ = "applications"
 
     id = Column(String, primary_key=True, default=gen_uuid)
+    event_id = Column(String, ForeignKey("events.id", ondelete="SET NULL"), nullable=True, index=True)
+    event = relationship("Event", back_populates="applications", lazy="joined")
 
     nickname = Column(String(64), nullable=False)           # Игровой ник / имя
     age = Column(Integer, nullable=False)                   # Возраст
@@ -52,6 +55,10 @@ class Application(Base):
     telegram_notified = Column(Boolean, default=False)      # Успешно ли ушло уведомление в TG
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    @property
+    def event_title(self) -> str | None:
+        return self.event.title if self.event else None
 
 
 class ResourceType(str, enum.Enum):
@@ -91,6 +98,20 @@ class Resource(Base):
     download_url = Column(String(512), nullable=False)
     cover_image_url = Column(String(512), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    archived_at = Column(DateTime, nullable=True, index=True)
+    related_videos = relationship("ResourceVideoLink", cascade="all, delete-orphan", lazy="selectin")
+
+    @property
+    def related_video_ids(self) -> list[str]:
+        return [link.video_id for link in self.related_videos]
+
+
+class ResourceVideoLink(Base):
+    __tablename__ = "resource_video_links"
+
+    resource_id = Column(String, ForeignKey("resources.id", ondelete="CASCADE"), primary_key=True)
+    video_id = Column(String(11), primary_key=True)
+    __table_args__ = (Index("ix_resource_video_links_video_id", "video_id"),)
 
 
 class Seed(Base):
@@ -108,6 +129,20 @@ class Seed(Base):
     description = Column(Text, nullable=True)
     screenshot_url = Column(String(512), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    archived_at = Column(DateTime, nullable=True, index=True)
+    related_videos = relationship("SeedVideoLink", cascade="all, delete-orphan", lazy="selectin")
+
+    @property
+    def related_video_ids(self) -> list[str]:
+        return [link.video_id for link in self.related_videos]
+
+
+class SeedVideoLink(Base):
+    __tablename__ = "seed_video_links"
+
+    seed_id = Column(String, ForeignKey("seeds.id", ondelete="CASCADE"), primary_key=True)
+    video_id = Column(String(11), primary_key=True)
+    __table_args__ = (Index("ix_seed_video_links_video_id", "video_id"),)
 
 
 class Event(Base):
@@ -124,6 +159,8 @@ class Event(Base):
     status = Column(Enum(EventStatus), default=EventStatus.PLANNED, nullable=False)
     registration_url = Column(String(512), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    archived_at = Column(DateTime, nullable=True, index=True)
+    applications = relationship("Application", back_populates="event")
 
 
 class GameLeaderboardEntry(Base):

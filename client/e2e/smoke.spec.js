@@ -37,6 +37,14 @@ test("home renders API-backed hero and latest video CTA", async ({ page }) => {
   );
 });
 
+test("offline connection status is announced and clears when connectivity returns", async ({ page }) => {
+  await page.goto("/");
+  await page.context().setOffline(true);
+  await expect(page.getByRole("status").getByText(/Нет подключения к интернету/)).toBeVisible();
+  await page.context().setOffline(false);
+  await expect(page.getByRole("status").getByText(/Нет подключения к интернету/)).toHaveCount(0);
+});
+
 test("home uses the optimized decorative background video", async ({ page }) => {
   await page.goto("/");
   const video = page.locator("video.profile-backdrop-local");
@@ -311,6 +319,50 @@ test("public home stays within the supported responsive widths", async ({ page }
     await page.setViewportSize({ width, height: 900 });
     await expect(page.locator("body")).toHaveJSProperty("scrollWidth", width);
   }
+});
+
+test("mobile game keeps touch controls thumb-sized and supports fullscreen", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto("/game");
+
+  const controls = page.locator(".game-mobile-pad");
+  await expect(controls).toBeVisible();
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 320);
+  for (const button of await controls.locator("button").all()) {
+    const box = await button.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+  }
+
+  const game = page.locator(".game-shell");
+  await page.getByRole("button", { name: "На весь экран" }).click();
+  await expect.poll(() => game.evaluate((element) => document.fullscreenElement === element)).toBe(
+    true,
+  );
+  await page.getByRole("button", { name: "Выйти из полноэкранного режима" }).click();
+  await expect.poll(() => game.evaluate((element) => document.fullscreenElement === element)).toBe(
+    false,
+  );
+});
+
+test("game restores pilot records saved in the browser", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "space-runner-records",
+      JSON.stringify([
+        { score: 851, difficulty: "ace", playedAt: "2026-11-10T12:00:00.000Z" },
+        { score: 420, difficulty: "standard", playedAt: "2026-11-09T12:00:00.000Z" },
+      ]),
+    );
+  });
+  await page.goto("/game");
+
+  const records = page.locator(".game-record-list");
+  await expect(records.locator("li")).toHaveCount(2);
+  await expect(records.locator("li").first()).toContainText("851");
+  await expect(records.locator("li").first()).toContainText("Айс");
+  await page.reload();
+  await expect(page.locator(".game-record-list li").first()).toContainText("851");
 });
 
 test("video and material catalogs stay within supported viewport widths", async ({ page }) => {

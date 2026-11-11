@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "0x00 SPACE — игровое сообщество",
+  "short_name": "0x00 SPACE",
+  "description": "Видео, материалы, сиды и игровые ивенты 0x00 SPACE.",
+  "lang": "ru",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#06100b",
+  "theme_color": "#06100b",
+  "icons": [
+    {
+      "src": "/brand-mark.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

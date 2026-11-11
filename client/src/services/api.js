@@ -163,7 +163,9 @@ export function getResources(resourceType, gameCategory, options = {}) {
   const params = new URLSearchParams();
   if (resourceType) params.set("resource_type", resourceType);
   if (gameCategory) params.set("game_category", gameCategory);
+  if (options.gameVersion) params.set("game_version", options.gameVersion);
   if (options.search) params.set("search", options.search);
+  if (options.videoId) params.set("video_id", options.videoId);
   if (options.sort) params.set("sort", options.sort);
   if (options.page != null) params.set("page", options.page);
   if (options.limit != null) params.set("limit", options.limit);
@@ -171,10 +173,44 @@ export function getResources(resourceType, gameCategory, options = {}) {
   return request(`/resources${query}`);
 }
 
+export function getResourceFilters() {
+  return request("/resources/filters");
+}
+
+export function getAdminResources(options = {}) {
+  const params = new URLSearchParams();
+  if (options.search) params.set("search", options.search);
+  if (options.archive) params.set("archive", options.archive);
+  if (options.page != null) params.set("page", options.page);
+  if (options.limit != null) params.set("limit", options.limit);
+  return request(`/admin/resources?${params}`);
+}
+
+export function saveAdminResource(payload, resourceId) {
+  return request(
+    resourceId ? `/admin/resources/${encodeURIComponent(resourceId)}` : "/admin/resources",
+    {
+      method: resourceId ? "PUT" : "POST",
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function deleteAdminResource(resourceId) {
+  return request(`/admin/resources/${encodeURIComponent(resourceId)}`, { method: "DELETE" });
+}
+
+export function restoreAdminResource(resourceId) {
+  return request(`/admin/resources/${encodeURIComponent(resourceId)}/restore`, {
+    method: "POST",
+  });
+}
+
 /** GET /api/seeds — интересные сиды миров с optional pagination. */
 export function getSeeds(options = {}) {
   const params = new URLSearchParams();
   if (options.search) params.set("search", options.search);
+  if (options.videoId) params.set("video_id", options.videoId);
   if (options.sort) params.set("sort", options.sort);
   if (options.page != null) params.set("page", options.page);
   if (options.limit != null) params.set("limit", options.limit);
@@ -182,11 +218,51 @@ export function getSeeds(options = {}) {
   return request(`/seeds${query}`);
 }
 
+export function getAdminSeeds(options = {}) {
+  const params = new URLSearchParams();
+  if (options.search) params.set("search", options.search);
+  if (options.archive) params.set("archive", options.archive);
+  if (options.page != null) params.set("page", options.page);
+  if (options.limit != null) params.set("limit", options.limit);
+  return request(`/admin/seeds?${params}`);
+}
+
+export function saveAdminSeed(payload, seedId) {
+  return request(seedId ? `/admin/seeds/${encodeURIComponent(seedId)}` : "/admin/seeds", {
+    method: seedId ? "PUT" : "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminSeed(seedId) {
+  return request(`/admin/seeds/${encodeURIComponent(seedId)}`, { method: "DELETE" });
+}
+
+export function restoreAdminSeed(seedId) {
+  return request(`/admin/seeds/${encodeURIComponent(seedId)}/restore`, { method: "POST" });
+}
+
 /** POST /api/applications — отправка заявки подписчика. */
 export function submitApplication(payload) {
   return request("/applications", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export function getAdminApplications(options = {}) {
+  const params = new URLSearchParams();
+  if (options.search) params.set("search", options.search);
+  if (options.status) params.set("status", options.status);
+  if (options.page != null) params.set("page", options.page);
+  if (options.limit != null) params.set("limit", options.limit);
+  return request(`/applications/admin?${params}`);
+}
+
+export function updateAdminApplicationStatus(applicationId, status) {
+  return request(`/applications/admin/${encodeURIComponent(applicationId)}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
   });
 }
 
@@ -198,6 +274,10 @@ export function getEventGames() {
   return request("/events/games");
 }
 
+export function getEvent(eventId) {
+  return request(`/events/${encodeURIComponent(eventId)}`);
+}
+
 export function getEvents(filters = {}) {
   const params = new URLSearchParams();
   if (filters.game) params.set("game", filters.game);
@@ -206,4 +286,28 @@ export function getEvents(filters = {}) {
   if (filters.limit != null) params.set("limit", filters.limit);
   const query = params.toString() ? `?${params.toString()}` : "";
   return request(`/events${query}`);
+}
+
+export function getAdminEvents(options = {}) {
+  const params = new URLSearchParams();
+  if (options.search) params.set("search", options.search);
+  if (options.archive) params.set("archive", options.archive);
+  if (options.page != null) params.set("page", options.page);
+  if (options.limit != null) params.set("limit", options.limit);
+  return request(`/admin/events?${params}`);
+}
+
+export function saveAdminEvent(payload, eventId) {
+  return request(eventId ? `/admin/events/${encodeURIComponent(eventId)}` : "/admin/events", {
+    method: eventId ? "PUT" : "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminEvent(eventId) {
+  return request(`/admin/events/${encodeURIComponent(eventId)}`, { method: "DELETE" });
+}
+
+export function restoreAdminEvent(eventId) {
+  return request(`/admin/events/${encodeURIComponent(eventId)}/restore`, { method: "POST" });
 }

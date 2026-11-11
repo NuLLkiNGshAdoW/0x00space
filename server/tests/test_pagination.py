@@ -29,6 +29,7 @@ def paginated_client():
                 description="Minecraft pack",
                 resource_type=models.ResourceType.MOD,
                 game_category=models.GameCategory.MINECRAFT,
+                game_version="1.21",
                 download_url="https://example.test/a",
                 created_at=now,
             ),
@@ -45,6 +46,7 @@ def paginated_client():
                 description="Another Minecraft resource",
                 resource_type=models.ResourceType.SHADER,
                 game_category=models.GameCategory.MINECRAFT,
+                game_version="1.20.4",
                 download_url="https://example.test/c",
                 created_at=now + timedelta(seconds=2),
             ),
@@ -124,6 +126,17 @@ def test_resources_pages_filters_and_legacy_response(paginated_client):
         "/api/resources?page=1&limit=2&game_category=minecraft&sort=title&search=resource"
     )
     assert [item["title"] for item in second.json()["items"]] == ["Alpha resource", "Gamma shader"]
+
+    by_type_and_version = paginated_client.get(
+        "/api/resources?resource_type=mod&game_version=1.21&page=1&limit=8"
+    )
+    assert [item["title"] for item in by_type_and_version.json()["items"]] == ["Alpha resource"]
+
+    filters = paginated_client.get("/api/resources/filters")
+    assert filters.json() == {
+        "resource_types": ["texture_pack", "shader", "mod", "modpack", "guide", "other"],
+        "game_versions": ["1.20.4", "1.21"],
+    }
 
     legacy = paginated_client.get("/api/resources")
     assert legacy.status_code == 200

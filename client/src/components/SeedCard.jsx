@@ -1,8 +1,10 @@
 import { Hash, MapPin, Mountain } from "lucide-react";
 import CopyButton from "./CopyButton.jsx";
 import FavoriteButton from "./FavoriteButton.jsx";
+import { Link } from "react-router-dom";
 
-export default function SeedCard({ seed }) {
+export default function SeedCard({ seed, preview = false, excludeVideoId }) {
+  const relatedVideoIds = (seed.related_video_ids || []).filter((id) => id !== excludeVideoId);
   return (
     <article className="glass glass-hover flex h-full flex-col overflow-hidden rounded-2xl">
       <div className="relative aspect-[16/10] overflow-hidden border-b border-line/70 bg-panel2">
@@ -25,9 +27,9 @@ export default function SeedCard({ seed }) {
           <MapPin className="h-3 w-3" />
           Сид мира
         </span>
-        <span className="absolute right-2 top-2 rounded-full bg-void/70 p-0.5 backdrop-blur-sm">
+        {!preview && <span className="absolute right-2 top-2 rounded-full bg-void/70 p-0.5 backdrop-blur-sm">
           <FavoriteButton id={`seed-${seed.id}`} />
-        </span>
+        </span>}
       </div>
 
       <div className="flex flex-1 flex-col p-4">
@@ -55,7 +57,7 @@ export default function SeedCard({ seed }) {
               <Hash className="h-3.5 w-3.5 shrink-0 text-emerald" strokeWidth={1.8} />
               <span className="truncate">{seed.seed_code}</span>
             </span>
-            <CopyButton value={seed.seed_code} label="Сид" />
+            {preview ? <span className="text-[10px] text-mute">Скопировать</span> : <CopyButton value={seed.seed_code} label="Сид" />}
           </div>
 
           {seed.coordinates && (
@@ -64,7 +66,21 @@ export default function SeedCard({ seed }) {
                 <MapPin className="h-3.5 w-3.5 shrink-0 text-violet" strokeWidth={1.8} />
                 <span className="truncate">{seed.coordinates}</span>
               </span>
-              <CopyButton value={seed.coordinates} label="Коорд." />
+              {preview ? <span className="text-[10px] text-mute">Скопировать</span> : <CopyButton value={seed.coordinates} label="Коорд." />}
+            </div>
+          )}
+          {relatedVideoIds.length > 0 && (
+            <div className="border-t border-line pt-3">
+              <p className="text-[11px] text-mute">Видео с этим сидом</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {relatedVideoIds.slice(0, 3).map((videoId, index) => preview ? (
+                  <span key={videoId} className="text-xs text-emerald">Смотреть видео {index + 1}</span>
+                ) : (
+                  <Link key={videoId} to={`/videos/${videoId}`} className="text-xs text-emerald hover:underline">
+                    Смотреть видео {index + 1}
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </div>

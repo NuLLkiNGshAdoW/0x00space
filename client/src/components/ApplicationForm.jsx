@@ -1,9 +1,10 @@
 import { useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Send, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { submitApplication, ApiError } from "../services/api.js";
+import { getEvent, submitApplication, ApiError } from "../services/api.js";
 import { cn } from "../lib/utils.js";
 import { trackEvent } from "../lib/analytics.js";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Button from "./Button.jsx";
 
 const GAME_OPTIONS = ["Minecraft", "Phasmophobia", "Lethal Company", "Другая игра"];
@@ -55,6 +56,18 @@ function validate(form) {
 }
 
 export default function ApplicationForm() {
+  const [searchParams] = useSearchParams();
+  const eventId = searchParams.get("event_id") || "";
+  const eventQuery = useQuery({
+    queryKey: ["application-event", eventId],
+    queryFn: () => getEvent(eventId),
+    enabled: Boolean(eventId),
+    retry: false,
+  });
+  const eventCapacityFull = Boolean(
+    eventQuery.data?.max_participants != null &&
+    eventQuery.data.application_count >= eventQuery.data.max_participants,
+  );
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
@@ -97,6 +110,7 @@ export default function ApplicationForm() {
         game: form.game === "Другая игра" ? form.customGame.trim() : form.game,
         mic_or_experience_link: form.micOrExperience.trim() || null,
         video_idea: form.videoIdea.trim(),
+        event_id: eventId || null,
       });
       setStatus("success");
       trackEvent("application_submit", { game: form.game, status: "success" });
@@ -149,6 +163,13 @@ export default function ApplicationForm() {
               Заявка попадает в общую очередь. Если формат подойдёт, мы напишем и обсудим детали.
             </p>
           </div>
+          {eventId && eventQuery.data && <div className="mt-3 rounded-2xl border border-violet/30 bg-violet-soft/40 p-4">
+            <p className="text-xs font-medium text-violet">Заявка на ивент</p>
+            <p className="mt-1 text-sm font-semibold text-ink">{eventQuery.data.title}</p>
+            <p className="mt-1 text-xs text-mute">{eventQuery.data.game} · {new Date(eventQuery.data.starts_at).toLocaleString("ru-RU", { dateStyle: "medium", timeStyle: "short" })}</p>
+            {eventCapacityFull && <p role="status" className="mt-2 text-xs text-amber">Все места уже заняты.</p>}
+            <Link to="/#application" className="mt-2 inline-flex text-xs text-emerald hover:underline">Подать обычную заявку</Link>
+          </div>}
         </div>
 
         <form
@@ -201,18 +222,13 @@ export default function ApplicationForm() {
             </Field>
 
             <Field id="game" label="Игра">
-              <select
-                value={form.game}
-                id="game"
-                onChange={updateField("game")}
-                className={inputClass(false)}
-              >
-                {GAME_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              {eventId && eventQuery.data ? (
+                <input id="game" value={eventQuery.data.game} readOnly className={inputClass(false)} />
+              ) : (
+                <select value={form.game} id="game" onChange={updateField("game")} className={inputClass(false)}>
+                  {GAME_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              )}
             </Field>
 
             <Field id="age" label="Возраст" error={errors.age}>
@@ -299,6 +315,9 @@ export default function ApplicationForm() {
             </div>
           )}
 
+          {eventId && eventQuery.isPending && <p role="status" className="mt-4 text-xs text-mute">Загружаем сведения об ивенте…</p>}
+          {eventId && eventQuery.isError && <p role="alert" className="mt-4 text-xs text-violet">Не удалось загрузить ивент. Возможно, регистрация уже закрыта.</p>}
+
           <label className="mt-4 flex items-start gap-2 text-xs text-mute">
             <input
               type="checkbox"
@@ -333,7 +352,7 @@ export default function ApplicationForm() {
             </p>
           )}
 
-          <Button type="submit" disabled={status === "submitting"} className="mt-6 w-full">
+          <Button type="submit" disabled={status === "submitting" || (Boolean(eventId) && (!eventQuery.data || eventQuery.isError || eventCapacityFull))} className="mt-6 w-full">
             {status === "submitting" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (

@@ -96,19 +96,47 @@ def health_check():
 
 
 def _check_database_schema(database_engine=engine):
-    required_tables = {"applications", "resources", "seeds", "events", "game_leaderboard"}
+    required_tables = {
+        "applications", "resources", "seeds", "events", "game_leaderboard",
+        "resource_video_links", "seed_video_links",
+    }
+    required_columns = {
+        "applications": {"event_id"},
+        "resources": {"archived_at"},
+        "seeds": {"archived_at"},
+        "events": {"archived_at"},
+    }
     try:
         with database_engine.connect() as connection:
             connection.execute(text("SELECT 1"))
-            available_tables = set(inspect(connection).get_table_names())
+            database_inspector = inspect(connection)
+            available_tables = set(database_inspector.get_table_names())
+            available_columns = {
+                table: {item["name"] for item in database_inspector.get_columns(table)}
+                for table in required_columns
+                if table in available_tables
+            }
     except Exception:
-        return {"connected": False, "schema_ready": False, "missing_tables": []}
+        return {
+            "connected": False,
+            "schema_ready": False,
+            "missing_tables": [],
+            "missing_columns": [],
+        }
 
     missing_tables = sorted(required_tables - available_tables)
+    missing_columns = sorted(
+        f"{table}.{column}"
+        for table, columns in required_columns.items()
+        if table in available_tables
+        for column in columns
+        if column not in available_columns[table]
+    )
     return {
         "connected": True,
-        "schema_ready": not missing_tables,
+        "schema_ready": not missing_tables and not missing_columns,
         "missing_tables": missing_tables,
+        "missing_columns": missing_columns,
     }
 
 

@@ -29,11 +29,17 @@ def _build_message_text(application: Application) -> str:
         if application.mic_or_experience_link
         else ""
     )
+    event_line = (
+        f"📅 Ивент: <b>{_telegram_value(application.event.title)}</b>\n"
+        if application.event
+        else ""
+    )
     return (
         "🆕 <b>Новая заявка на участие — 0x00 SPACE</b>\n\n"
         f"👤 Ник: <b>{_telegram_value(application.nickname)}</b>\n"
         f"🎂 Возраст: {_telegram_value(application.age)}\n"
         f"🎮 Игра: {_telegram_value(application.game)}\n"
+        f"{event_line}"
         f"💬 Контакт: {_telegram_value(application.contact)}\n"
         f"{mic_line}"
         f"💡 Идея для видео:\n{_telegram_value(application.video_idea)}"

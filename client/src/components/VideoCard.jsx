@@ -4,19 +4,19 @@ import { formatDuration, formatViews, formatRelativeDate } from "../lib/utils.js
 import { trackEvent } from "../lib/analytics.js";
 import { Link } from "react-router-dom";
 import Card from "./Card.jsx";
+import FavoriteButton from "./FavoriteButton.jsx";
 
 export default function VideoCard({ video }) {
   const [imageFailed, setImageFailed] = useState(false);
   const isNew = Date.now() - new Date(video.published_at).getTime() < 7 * 24 * 60 * 60 * 1000;
 
   return (
-    <Card
-      as={Link}
-      to={`/videos/${video.video_id}`}
-      onClick={() => trackEvent("video_open", { video_id: video.video_id })}
-      interactive
-      className="video-card group flex h-full flex-col"
-    >
+    <Card interactive className="video-card relative flex h-full flex-col">
+      <Link
+        to={`/videos/${video.video_id}`}
+        onClick={() => trackEvent("video_open", { video_id: video.video_id })}
+        className="group flex h-full flex-col"
+      >
       <div className="relative aspect-video overflow-hidden border-b border-line/70 bg-panel2">
         {imageFailed ? (
           <div className="media-fallback relative flex h-full w-full flex-col items-center justify-center gap-2 text-mute">
@@ -77,6 +77,10 @@ export default function VideoCard({ video }) {
           <ArrowUpRight className="ml-auto h-4 w-4 text-mute transition-colors group-hover:text-emerald" />
         </div>
       </div>
+      </Link>
+      <span className="absolute right-2 top-2 z-10 rounded-full bg-void/75 p-0.5 backdrop-blur-sm">
+        <FavoriteButton id={`video-${video.video_id}`} label="Добавить видео в избранное" />
+      </span>
     </Card>
   );
 }

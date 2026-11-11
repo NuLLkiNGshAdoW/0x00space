@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import Column, Integer, MetaData, Table, create_engine
 
 from app.database import Base
 from app.models import Application, Event, Resource, Seed
@@ -25,7 +25,11 @@ def test_database_health_reports_missing_catalog_tables():
     assert payload == {
         "connected": True,
         "schema_ready": False,
-        "missing_tables": ["applications", "events", "game_leaderboard", "resources", "seeds"],
+        "missing_tables": [
+            "applications", "events", "game_leaderboard", "resource_video_links",
+            "resources", "seed_video_links", "seeds",
+        ],
+        "missing_columns": [],
     }
     engine.dispose()
 
@@ -36,7 +40,32 @@ def test_database_health_reports_ready_schema():
 
     payload = main_module._check_database_schema(engine)
 
-    assert payload == {"connected": True, "schema_ready": True, "missing_tables": []}
+    assert payload == {
+        "connected": True,
+        "schema_ready": True,
+        "missing_tables": [],
+        "missing_columns": [],
+    }
+    engine.dispose()
+
+
+def test_database_health_reports_missing_archive_migration_columns():
+    engine = create_engine("sqlite://")
+    metadata = MetaData()
+    for table in (
+        "applications", "resources", "seeds", "events", "game_leaderboard",
+        "resource_video_links", "seed_video_links",
+    ):
+        Table(table, metadata, Column("id", Integer, primary_key=True))
+    metadata.create_all(bind=engine)
+
+    payload = main_module._check_database_schema(engine)
+
+    assert payload["schema_ready"] is False
+    assert payload["missing_tables"] == []
+    assert payload["missing_columns"] == [
+        "applications.event_id", "events.archived_at", "resources.archived_at", "seeds.archived_at"
+    ]
     engine.dispose()
 
 
