@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import Card from "./Card.jsx";
 import FavoriteButton from "./FavoriteButton.jsx";
 
-export default function VideoCard({ video }) {
+export default function VideoCard({ video, priority = false }) {
   const [imageFailed, setImageFailed] = useState(false);
   const isNew = Date.now() - new Date(video.published_at).getTime() < 7 * 24 * 60 * 60 * 1000;
 
@@ -28,10 +28,13 @@ export default function VideoCard({ video }) {
         ) : (
           <img
             src={video.thumbnail_url}
+            srcSet={youtubeThumbnailSrcSet(video.thumbnail_url)}
             alt=""
             width="480"
             height="270"
-            loading="lazy"
+            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             decoding="async"
             onError={() => setImageFailed(true)}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -83,4 +86,16 @@ export default function VideoCard({ video }) {
       </span>
     </Card>
   );
+}
+
+function youtubeThumbnailSrcSet(source) {
+  try {
+    const url = new URL(source);
+    if (url.hostname !== "i.ytimg.com" || url.search) return undefined;
+    const match = url.pathname.match(/^(.*\/)(?:default|mqdefault|hqdefault)\.jpg$/);
+    if (!match) return undefined;
+    return `${match[1]}mqdefault.jpg 320w, ${match[1]}hqdefault.jpg 480w`;
+  } catch {
+    return undefined;
+  }
 }

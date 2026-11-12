@@ -1,4 +1,3 @@
-import { lazy, Suspense } from "react";
 import { ChevronRight } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
@@ -7,9 +6,8 @@ import TelegramFloat from "../components/TelegramFloat.jsx";
 import { Link } from "react-router-dom";
 import Seo from "../components/Seo.jsx";
 import { absoluteUrl, breadcrumbSchema, SITE_NAME } from "../lib/seo.js";
-
-const LazyYouTubeGallery = lazy(() => import("../components/YouTubeGallery.jsx"));
-const LazyResourcesAndGuides = lazy(() => import("../components/ResourcesAndGuides.jsx"));
+import YouTubeGallery from "../components/YouTubeGallery.jsx";
+import ResourcesAndGuides from "../components/ResourcesAndGuides.jsx";
 
 export default function CollectionPage({ type }) {
   const isVideos = type === "videos";
@@ -68,21 +66,10 @@ export default function CollectionPage({ type }) {
           </div>
         </div>
 
-        <Suspense fallback={<CollectionLoadingState />}>
-          {isVideos ? <LazyYouTubeGallery /> : <LazyResourcesAndGuides />}
-        </Suspense>
+        {isVideos ? <YouTubeGallery /> : <ResourcesAndGuides />}
       </main>
       <TelegramFloat />
       <Footer />
-    </div>
-  );
-}
-
-function CollectionLoadingState() {
-  return (
-    <div className="container-app py-12 sm:py-16" role="status" aria-live="polite">
-      <div className="glass h-32 animate-pulse rounded-2xl" aria-hidden="true" />
-      <span className="sr-only">Загружаем материалы каталога…</span>
     </div>
   );
 }

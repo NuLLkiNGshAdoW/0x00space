@@ -81,3 +81,34 @@ test("event application link preselects its event and submits the event ID", asy
   await expect(form.getByRole("status")).toContainText("Заявка отправлена");
   expect(submittedApplication.event_id).toBe(event.id);
 });
+
+test("home highlights the next event with its application count and signup action", async ({ page }) => {
+  const event = {
+    id: "home-event",
+    title: "Космическое выживание",
+    description: "Собираем команду на совместную игру.",
+    game: "Minecraft",
+    starts_at: "2030-02-03T18:30:00",
+    image_url: null,
+    max_participants: 8,
+    status: "registration_open",
+    registration_url: null,
+    application_count: 3,
+  };
+  await page.route("**/api/**", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname.endsWith("/events")) {
+      return route.fulfill({ json: url.searchParams.get("status") === "registration_open" ? { items: [event], has_next: false } : { items: [], has_next: false } });
+    }
+    if (url.pathname.endsWith("/youtube/latest")) return route.fulfill({ json: [] });
+    if (url.pathname.endsWith("/backgrounds")) return route.fulfill({ json: { items: [], active: null, settings: {} } });
+    return route.fulfill({ json: [] });
+  });
+
+  await page.goto("/");
+
+  const feature = page.getByRole("region", { name: event.title });
+  await expect(feature.getByRole("heading", { name: event.title })).toBeVisible();
+  await expect(feature.getByText("Заявки: 3 / 8")).toBeVisible();
+  await expect(feature.getByRole("link", { name: "Подать заявку" })).toHaveAttribute("href", /event_id=home-event/);
+});

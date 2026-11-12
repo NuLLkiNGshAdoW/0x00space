@@ -4,13 +4,9 @@ import Navbar from "./components/Navbar.jsx";
 import HeroSection from "./components/HeroSection.jsx";
 import ApplicationForm from "./components/ApplicationForm.jsx";
 import Footer from "./components/Footer.jsx";
-import AboutAndFaq from "./components/AboutAndFaq.jsx";
 import ProfileBackdrop from "./components/ProfileBackdrop.jsx";
 import TelegramFloat from "./components/TelegramFloat.jsx";
-import FeaturedVideos from "./components/FeaturedVideos.jsx";
-import FeaturedResources from "./components/FeaturedResources.jsx";
-import CommunityBenefits from "./components/CommunityBenefits.jsx";
-import CollectionPage from "./pages/CollectionPage.jsx";
+import DeferredSection from "./components/DeferredSection.jsx";
 import Seo from "./components/Seo.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import OfflineNotice from "./components/OfflineNotice.jsx";
@@ -24,6 +20,12 @@ const LazyContentPage = lazy(() => import("./pages/ContentPage.jsx"));
 const LazyGamePage = lazy(() => import("./pages/GamePage.jsx"));
 const LazySearchPage = lazy(() => import("./pages/SearchPage.jsx"));
 const LazyFavoritesPage = lazy(() => import("./pages/FavoritesPage.jsx"));
+const LazyCollectionPage = lazy(() => import("./pages/CollectionPage.jsx"));
+const loadUpcomingEvent = () => import("./components/UpcomingEventSection.jsx");
+const loadFeaturedVideos = () => import("./components/FeaturedVideos.jsx");
+const loadFeaturedResources = () => import("./components/FeaturedResources.jsx");
+const loadCommunityBenefits = () => import("./components/CommunityBenefits.jsx");
+const loadAboutAndFaq = () => import("./components/AboutAndFaq.jsx");
 
 export default function App() {
   return (
@@ -55,11 +57,11 @@ export default function App() {
               </LazyRoute>
             }
           />
-          <Route path="/videos" element={<CollectionPage type="videos" />} />
+          <Route path="/videos" element={<LazyRoute><LazyCollectionPage type="videos" /></LazyRoute>} />
           <Route path="/search" element={<LazyRoute><LazySearchPage /></LazyRoute>} />
           <Route path="/favorites" element={<LazyRoute><LazyFavoritesPage /></LazyRoute>} />
           <Route path="/videos/:videoId" element={<VideoRoute />} />
-          <Route path="/materials" element={<CollectionPage type="materials" />} />
+          <Route path="/materials" element={<LazyRoute><LazyCollectionPage type="materials" /></LazyRoute>} />
           <Route
             path="/events"
             element={
@@ -193,10 +195,11 @@ function HomePage() {
       <Navbar />
       <main id="main-content">
         <HeroSection />
-        <FeaturedVideos />
-        <FeaturedResources />
-        <CommunityBenefits />
-        <AboutAndFaq />
+        <DeferredSection name="upcoming-event" load={loadUpcomingEvent} minHeight="14rem" />
+        <DeferredSection name="featured-videos" load={loadFeaturedVideos} minHeight="28rem" />
+        <DeferredSection name="featured-resources" load={loadFeaturedResources} minHeight="32rem" />
+        <DeferredSection name="community-benefits" load={loadCommunityBenefits} minHeight="22rem" />
+        <DeferredSection name="about-faq" load={loadAboutAndFaq} minHeight="48rem" />
         <ApplicationForm />
       </main>
       <TelegramFloat />

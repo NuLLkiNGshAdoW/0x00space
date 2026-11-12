@@ -8,7 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import { trackEvent } from "./lib/analytics.js";
 
 const GOOGLE_FONTS_URL =
-  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap";
+  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=optional";
 
 function loadFontsWithoutBlockingFirstPaint() {
   const stylesheet = document.createElement("link");

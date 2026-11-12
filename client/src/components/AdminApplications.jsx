@@ -25,7 +25,7 @@ export default function AdminApplications() {
   const applications = applicationsPage.items || [];
 
   return (
-    <section className="glass mt-8 rounded-2xl p-5 sm:p-7" aria-labelledby="admin-applications-title">
+    <section id="admin-applications" className="glass mt-8 scroll-mt-28 rounded-2xl p-5 sm:p-7" aria-labelledby="admin-applications-title">
       <h2 id="admin-applications-title" className="font-display text-2xl font-semibold text-ink">
         Заявки участников <span className="font-mono text-base text-mute">({applicationsPage.total})</span>
       </h2>

@@ -177,6 +177,7 @@ test("home distinguishes unavailable materials from an empty catalog", async ({ 
     route.fulfill({ status: 500, json: { detail: "database unavailable" } }),
   );
   await page.goto("/");
+  await page.locator('[data-deferred-section="featured-resources"]').scrollIntoViewIfNeeded();
 
   await expect(page.getByText("Сервер вернул ошибку.")).toBeVisible();
   await expect(page.getByText("Материалы появятся после следующего ролика.")).toHaveCount(0);
@@ -307,9 +308,9 @@ test("mobile quick navigation is thumb-friendly and stays clear of Telegram", as
 test("brand asset remains usable at the minimum supported width", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/");
-  const heroLogo = page.locator('img[src="/brand-logo-transparent.png"]');
-  await expect(heroLogo).toHaveAttribute("width", "1200");
-  await expect(heroLogo).toHaveAttribute("height", "675");
+  const heroLogo = page.locator('img[src="/brand-logo-transparent.webp"]');
+  await expect(heroLogo).toHaveAttribute("width", "600");
+  await expect(heroLogo).toHaveAttribute("height", "338");
   await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 320);
 });
 
@@ -416,6 +417,7 @@ test("navbar keeps branding and navigation separated across breakpoints", async 
 
 test("secondary copy remains opaque and readable over the backdrop", async ({ page }) => {
   await page.goto("/");
+  await page.locator('[data-deferred-section="community-benefits"]').scrollIntoViewIfNeeded();
   const copy = page.locator("#community-title").locator("..").locator("p.text-readable");
   await expect(copy).toHaveCSS("opacity", "1");
   await expect(copy).toHaveCSS("color", "rgb(226, 232, 240)");

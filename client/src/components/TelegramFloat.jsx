@@ -21,7 +21,7 @@ export default function TelegramFloat() {
 
   if (!visible || !mobileScrolled) return null;
   return (
-    <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-auto right-4 z-40 flex items-center gap-2 lg:bottom-5 lg:right-5">
+    <aside aria-label="Ссылки сообщества" className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-auto right-4 z-40 flex items-center gap-2 lg:bottom-5 lg:right-5">
       <button
         type="button"
         onClick={() => setVisible(false)}
@@ -40,6 +40,6 @@ export default function TelegramFloat() {
       >
         <Send className="h-4 w-4" /> <span className="hidden sm:inline">Telegram-канал</span>
       </a>
-    </div>
+    </aside>
   );
 }

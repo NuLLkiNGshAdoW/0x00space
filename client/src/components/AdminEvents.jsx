@@ -10,6 +10,7 @@ import {
 import { useDebouncedValue } from "../lib/useDebouncedValue.js";
 import useAdminDraft from "../lib/useAdminDraft.js";
 import { AdminListFilters, AdminListPagination } from "./AdminListControls.jsx";
+import AdminDialog from "./AdminDialog.jsx";
 import { EventCard as PublicEventCard } from "../pages/EventsPage.jsx";
 
 const ADMIN_PAGE_SIZE = 8;
@@ -126,7 +127,7 @@ export default function AdminEvents() {
   };
 
   return (
-    <section className="glass mt-8 rounded-2xl p-5 sm:p-7" aria-labelledby="admin-events-title">
+    <section id="admin-events" className="glass mt-8 scroll-mt-28 rounded-2xl p-5 sm:p-7" aria-labelledby="admin-events-title">
       <h2 id="admin-events-title" className="font-display text-2xl font-semibold text-ink">
         Игровые события
       </h2>
@@ -135,16 +136,7 @@ export default function AdminEvents() {
       </p>
 
       {previewing && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Предпросмотр события"
-        >
-          <div className="glass max-h-full w-full max-w-lg overflow-y-auto rounded-2xl p-5 sm:p-7">
-            <h3 className="mb-4 font-display text-xl font-semibold text-ink">
-              Предпросмотр события
-            </h3>
+        <AdminDialog title="Предпросмотр события" onClose={() => setPreviewing(false)}>
             <PublicEventCard event={{ ...draft, id: editingId || "preview-event" }} />
             {message && (
               <p role="alert" className="mt-3 text-sm text-violet">
@@ -163,12 +155,11 @@ export default function AdminEvents() {
                 {editingId ? "Сохранить изменения" : "Опубликовать"}
               </button>
             </div>
-          </div>
-        </div>
+        </AdminDialog>
       )}
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)]">
-        <form onSubmit={showPreview} className="grid content-start gap-4">
+        <form id="admin-new-event" onSubmit={showPreview} className="grid scroll-mt-28 content-start gap-4">
           <h3 className="text-lg font-semibold text-ink">
             {editingId ? "Изменить событие" : "Новое событие"}
           </h3>
@@ -242,7 +233,7 @@ export default function AdminEvents() {
             onChange={(registration_url) => setDraft({ ...draft, registration_url })}
             placeholder="https://…"
           />
-          <div className="flex flex-wrap gap-2">
+          <div className="sticky bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-20 -mx-2 flex flex-wrap gap-2 rounded-2xl border border-line bg-void/95 p-2 shadow-xl backdrop-blur-xl lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
             <button type="submit" className="button-primary">
               <Plus className="h-4 w-4" />
               Предпросмотр события

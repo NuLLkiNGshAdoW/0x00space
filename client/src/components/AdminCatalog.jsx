@@ -14,6 +14,7 @@ import {
 import { useDebouncedValue } from "../lib/useDebouncedValue.js";
 import useAdminDraft from "../lib/useAdminDraft.js";
 import { AdminListFilters, AdminListPagination } from "./AdminListControls.jsx";
+import AdminDialog from "./AdminDialog.jsx";
 import ResourceCard from "./ResourceCard.jsx";
 import SeedCard from "./SeedCard.jsx";
 import RelatedVideoPicker from "./RelatedVideoPicker.jsx";
@@ -232,7 +233,7 @@ export default function AdminCatalog() {
   };
 
   return (
-    <section className="glass mt-10 rounded-2xl p-5 sm:p-7" aria-labelledby="admin-catalog-title">
+    <section id="admin-catalog" className="glass mt-10 scroll-mt-28 rounded-2xl p-5 sm:p-7" aria-labelledby="admin-catalog-title">
       <h2 id="admin-catalog-title" className="font-display text-2xl font-semibold text-ink">
         Каталог материалов и сидов
       </h2>
@@ -289,7 +290,7 @@ export default function AdminCatalog() {
 
       {tab === "resources" ? (
         <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)]">
-          <form onSubmit={showResourcePreview} className="grid content-start gap-4">
+          <form id="admin-new-material" onSubmit={showResourcePreview} className="grid scroll-mt-28 content-start gap-4">
             <h3 className="text-lg font-semibold text-ink">
               {editingResourceId ? "Изменить материал" : "Новый материал"}
             </h3>
@@ -547,7 +548,7 @@ function TextAreaField({ label, value, onChange, placeholder = "" }) {
 
 function FormActions({ editing, onCancel }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="sticky bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-20 -mx-2 flex flex-wrap gap-2 rounded-2xl border border-line bg-void/95 p-2 shadow-xl backdrop-blur-xl lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
       <button type="submit" className="button-primary">
         <Plus className="h-4 w-4" />
         Предпросмотр
@@ -567,14 +568,7 @@ function FormActions({ editing, onCancel }) {
 
 function PreviewDialog({ title, editing, message, onBack, onPublish, children }) {
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-    >
-      <div className="glass max-h-full w-full max-w-lg overflow-y-auto rounded-2xl p-5 sm:p-7">
-        <h3 className="mb-4 font-display text-xl font-semibold text-ink">{title}</h3>
+    <AdminDialog title={title} onClose={onBack}>
         {children}
         {message && (
           <p role="alert" className="mt-3 text-sm text-violet">
@@ -593,8 +587,7 @@ function PreviewDialog({ title, editing, message, onBack, onPublish, children })
             {editing ? "Сохранить изменения" : "Опубликовать"}
           </button>
         </div>
-      </div>
-    </div>
+    </AdminDialog>
   );
 }
 

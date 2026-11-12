@@ -210,8 +210,8 @@ export default function YouTubeGallery() {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredVideos
               .slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
-              .map((video) => (
-                <VideoCard key={video.video_id} video={video} />
+              .map((video, index) => (
+                <VideoCard key={video.video_id} video={video} priority={index < 2} />
               ))}
           </div>
         )}

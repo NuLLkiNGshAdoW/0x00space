@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Check, ImagePlus, Trash2, Video } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Check,
+  ImagePlus,
+  LibraryBig,
+  MessageSquareText,
+  Trash2,
+  Video,
+} from "lucide-react";
 import {
   API_BASE_URL,
   API_ORIGIN,
   BACKGROUNDS_QUERY_KEY,
   BACKGROUNDS_QUERY_OPTIONS,
   checkAdmin,
+  getAdminApplications,
   loginAdmin,
   logoutAdmin,
   request as apiRequest,
@@ -20,11 +30,18 @@ import AdminApplications from "../components/AdminApplications.jsx";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
+const ADMIN_SECTIONS = [
+  { id: "admin-backgrounds", label: "Фон сайта", icon: ImagePlus },
+  { id: "admin-catalog", label: "Каталог", icon: LibraryBig },
+  { id: "admin-events", label: "События", icon: CalendarDays },
+  { id: "admin-applications", label: "Заявки", icon: MessageSquareText },
+];
 
 export default function AdminPage() {
   const queryClient = useQueryClient();
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
   const [items, setItems] = useState([]);
   const [active, setActive] = useState(null);
   const [file, setFile] = useState(null);
@@ -42,6 +59,12 @@ export default function AdminPage() {
     ...BACKGROUNDS_QUERY_OPTIONS,
     enabled: authenticated,
   });
+  const newApplicationsQuery = useQuery({
+    queryKey: ["admin-applications", "summary", "new"],
+    queryFn: () => getAdminApplications({ status: "new", page: 1, limit: 1 }),
+    enabled: authenticated,
+    staleTime: 30_000,
+  });
 
   useEffect(() => {
     const data = backgroundsQuery.data;
@@ -54,7 +77,8 @@ export default function AdminPage() {
   useEffect(() => {
     checkAdmin()
       .then(() => setAuthenticated(true))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setAuthChecking(false));
   }, []);
 
   useEffect(
@@ -184,6 +208,54 @@ export default function AdminPage() {
     }
   };
 
+  if (authChecking) {
+    return (
+      <main className="container-app flex min-h-screen items-center justify-center" role="status">
+        <div className="glass flex items-center gap-3 rounded-2xl px-5 py-4 text-sm text-mute">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald border-t-transparent" aria-hidden="true" />
+          Проверяем доступ…
+        </div>
+      </main>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <main id="main-content" className="container-app flex min-h-screen max-w-2xl flex-col justify-center py-10">
+        <Link to="/" className="mb-5 inline-flex min-h-10 w-fit items-center gap-2 rounded-xl border border-line bg-panel/60 px-3 text-sm text-mute transition-colors hover:border-emerald/40 hover:text-emerald">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> На сайт
+        </Link>
+        <section className="glass overflow-hidden rounded-3xl p-6 sm:p-9" aria-labelledby="admin-login-title">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-emerald">0x00 SPACE · ADMIN</p>
+          <h1 id="admin-login-title" className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink">
+            Вход в панель управления
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-mute">
+            Введите пароль администратора, чтобы управлять контентом и настройками сайта.
+          </p>
+          <form onSubmit={login} className="mt-7 grid gap-4">
+            <label className="grid gap-2 text-sm font-medium text-ink">
+              Пароль администратора
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                required
+                className="field-control w-full"
+                placeholder="Введите пароль"
+              />
+            </label>
+            <button type="submit" className="button-primary min-h-12 w-full">
+              Войти в админ-панель
+            </button>
+          </form>
+          {message && <p role="status" className="mt-4 rounded-xl border border-violet/30 bg-violet-soft/40 px-4 py-3 text-sm text-violet">{message}</p>}
+        </section>
+      </main>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <Seo
@@ -192,33 +264,101 @@ export default function AdminPage() {
         path="/admin"
         noindex
       />
-      <main id="main-content" className="container-app py-12 sm:py-20">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm text-mute hover:text-emerald"
+      <main id="main-content" className="container-app py-6 sm:py-10">
+        <header className="flex flex-wrap items-center justify-between gap-4">
+          <Link
+            to="/"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-line bg-panel/60 px-3 text-sm text-mute transition-colors hover:border-emerald/40 hover:text-emerald"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> На сайт
+          </Link>
+          <button
+            type="button"
+            onClick={logout}
+            className="inline-flex min-h-10 items-center rounded-xl border border-line px-3 text-sm text-mute transition-colors hover:border-violet/40 hover:text-violet"
+          >
+            Выйти из панели
+          </button>
+        </header>
+
+        <div className="mt-8 rounded-3xl border border-emerald/15 bg-gradient-to-br from-emerald/10 via-panel/60 to-violet/10 p-5 sm:mt-10 sm:p-8">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-emerald">
+            0x00 SPACE · ADMIN
+          </p>
+          <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            Панель управления
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-mute">
+            Управляйте оформлением сайта, материалами, событиями и заявками из одного места.
+          </p>
+        </div>
+
+        <nav
+          aria-label="Разделы админ-панели"
+          className="sticky top-3 z-30 mt-5 flex gap-2 overflow-x-auto rounded-2xl border border-line/80 bg-void/90 p-2 shadow-xl shadow-black/20 backdrop-blur-xl"
         >
-          <ArrowLeft className="h-4 w-4" /> На сайт
-        </Link>
-        <h1 className="mt-10 font-display text-3xl font-semibold text-ink">Управление фоном</h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-mute">
-          Загрузите изображение или живые обои MP4/WebM. Максимальный размер файла — 100 МБ.
-        </p>
+          {ADMIN_SECTIONS.map(({ id, label, icon: Icon }) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-sm text-mute transition-colors hover:bg-panel2 hover:text-emerald focus-visible:text-emerald sm:px-4"
+            >
+              <Icon className="h-4 w-4" aria-hidden="true" />
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        <section className="mt-5 grid gap-3 sm:grid-cols-[minmax(14rem,0.8fr)_2fr]" aria-label="Сводка и быстрые действия">
+          <a
+            href="#admin-applications"
+            className="group flex min-h-28 items-center justify-between gap-4 rounded-2xl border border-violet/25 bg-violet-soft/30 p-4 transition-colors hover:border-violet/50 hover:bg-violet-soft/50 sm:p-5"
+            aria-label={`Новые заявки: ${newApplicationsQuery.isPending ? "загрузка" : newApplicationsQuery.data?.total ?? "нет данных"}. Перейти к заявкам`}
+          >
+            <span>
+              <span className="block text-sm font-medium text-ink">Новые заявки</span>
+              <span className="mt-1 block text-xs text-mute">Ожидают вашего ответа</span>
+            </span>
+            <span className="font-display text-3xl font-semibold tabular-nums text-violet" aria-hidden="true">
+              {newApplicationsQuery.isPending ? "…" : newApplicationsQuery.data?.total ?? "—"}
+            </span>
+          </a>
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <a href="#admin-new-material" className="group flex min-h-14 items-center gap-3 rounded-2xl border border-line bg-panel/50 px-4 py-3 text-sm text-mute transition-colors hover:border-emerald/40 hover:text-emerald">
+              <LibraryBig className="h-4 w-4 shrink-0 text-emerald" aria-hidden="true" />
+              <span><span className="block font-medium text-ink group-hover:text-emerald">Добавить материал</span><span className="mt-0.5 block text-xs">Каталог и сиды</span></span>
+            </a>
+            <a href="#admin-new-event" className="group flex min-h-14 items-center gap-3 rounded-2xl border border-line bg-panel/50 px-4 py-3 text-sm text-mute transition-colors hover:border-emerald/40 hover:text-emerald">
+              <CalendarDays className="h-4 w-4 shrink-0 text-emerald" aria-hidden="true" />
+              <span><span className="block font-medium text-ink group-hover:text-emerald">Создать событие</span><span className="mt-0.5 block text-xs">Игровые ивенты</span></span>
+            </a>
+            <a href="#admin-background-upload" className="group flex min-h-14 items-center gap-3 rounded-2xl border border-line bg-panel/50 px-4 py-3 text-sm text-mute transition-colors hover:border-emerald/40 hover:text-emerald">
+              <ImagePlus className="h-4 w-4 shrink-0 text-emerald" aria-hidden="true" />
+              <span><span className="block font-medium text-ink group-hover:text-emerald">Сменить фон</span><span className="mt-0.5 block text-xs">Оформление сайта</span></span>
+            </a>
+          </div>
+        </section>
+
+        <section id="admin-backgrounds" aria-labelledby="admin-backgrounds-title" className="scroll-mt-28">
+        <div className="mt-8 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="eyebrow">Оформление</p>
+            <h2 id="admin-backgrounds-title" className="mt-2 font-display text-2xl font-semibold text-ink">
+              Фон сайта
+            </h2>
+          </div>
+          <span className="rounded-full border border-line bg-panel/60 px-3 py-1.5 text-xs text-mute">
+            Изображения и видео · до 100 МБ
+          </span>
+        </div>
         <form
-          onSubmit={authenticated ? upload : login}
-          className="glass mt-8 max-w-xl rounded-2xl p-5"
+          id="admin-background-upload"
+          onSubmit={upload}
+          className="glass mt-5 max-w-2xl scroll-mt-28 rounded-2xl p-5 sm:p-6"
         >
-          <label className="block text-sm text-ink">
-            Пароль администратора
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-line bg-void/60 px-3 py-2.5 text-ink"
-              placeholder="Пароль из ADMIN_PASSWORD в Render"
-            />
-          </label>
           <label
-            className="mt-5 flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-line p-4 text-sm text-mute hover:border-emerald/50"
+            className="flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-line bg-void/30 p-5 text-sm text-mute transition-colors hover:border-emerald/50 hover:bg-emerald/5 sm:p-7"
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
               event.preventDefault();
@@ -226,7 +366,10 @@ export default function AdminPage() {
             }}
           >
             <ImagePlus className="h-5 w-5 text-emerald" />
-            <span>{file ? file.name : "Выбрать JPG, PNG, WebP, MP4 или WebM"}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium text-ink">{file ? file.name : "Выберите файл или перетащите сюда"}</span>
+              <span className="mt-1 block text-xs text-mute">JPG, PNG, WebP, MP4 или WebM · до 100 МБ</span>
+            </span>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
@@ -256,7 +399,7 @@ export default function AdminPage() {
               />
             ))}
           <button disabled={progress !== null} className="button-primary mt-5 w-full">
-            {authenticated ? "Загрузить фон" : "Войти"}
+            {progress !== null ? `Загружаем… ${progress}%` : "Загрузить фон"}
           </button>
           {progress !== null && (
             <progress
@@ -266,20 +409,13 @@ export default function AdminPage() {
               aria-label={`Загрузка ${progress}%`}
             />
           )}
-          <button
-            type="button"
-            onClick={logout}
-            className="mt-3 w-full rounded-lg border border-line py-2 text-sm text-mute hover:text-ink"
-          >
-            Выйти и очистить пароль
-          </button>
           {message && (
-            <p role="status" className="mt-4 text-sm text-emerald">
+            <p role="status" className="mt-4 rounded-xl border border-emerald/20 bg-emerald/5 px-4 py-3 text-sm text-emerald">
               {message}
             </p>
           )}
         </form>
-        <section className="glass mt-6 max-w-xl rounded-2xl p-5">
+        <section className="glass mt-5 max-w-2xl rounded-2xl p-5 sm:p-6">
           <h2 className="font-display text-lg font-semibold text-ink">Настройки отображения</h2>
           <label className="mt-5 block text-sm text-ink">
             Затемнение: {Math.round(settings.shade * 100)}%
@@ -364,8 +500,8 @@ export default function AdminPage() {
             </button>
           </div>
         </section>
-        {authenticated && backgroundsQuery.isPending && <ApiState status="loading" />}
-        {authenticated && backgroundsQuery.isError && (
+        {backgroundsQuery.isPending && <ApiState status="loading" />}
+        {backgroundsQuery.isError && (
           <div className="mt-6 max-w-xl">
             <ApiState
               status="error"
@@ -374,7 +510,7 @@ export default function AdminPage() {
             />
           </div>
         )}
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => (
             <article key={item.id} className="glass overflow-hidden rounded-xl">
               {item.type === "video" ? (
@@ -436,13 +572,10 @@ export default function AdminPage() {
             </article>
           ))}
         </div>
-        {authenticated && (
-          <>
-            <AdminCatalog />
-            <AdminEvents />
-            <AdminApplications />
-          </>
-        )}
+        </section>
+        <AdminCatalog />
+        <AdminEvents />
+        <AdminApplications />
       </main>
     </div>
   );

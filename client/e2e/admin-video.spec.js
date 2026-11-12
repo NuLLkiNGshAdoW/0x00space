@@ -110,6 +110,34 @@ test("admin logout clears the authenticated UI", async ({ page }) => {
   await expect(page.getByText("Сессия завершена")).toBeVisible();
 });
 
+test("admin panel provides quick navigation to each management section", async ({ page }) => {
+  await page.route("**/api/auth/check", (route) =>
+    route.fulfill({ json: { authenticated: true } }),
+  );
+  await page.route("**/api/backgrounds", (route) =>
+    route.fulfill({ json: { items: [], active: null, settings: {} } }),
+  );
+  await page.route("**/api/admin/**", (route) =>
+    route.fulfill({ json: { items: [], total: 0, has_next: false } }),
+  );
+  await page.route("**/api/applications/admin**", (route) =>
+    route.fulfill({ json: { items: [], total: 3, has_next: false } }),
+  );
+
+  await page.goto("/admin");
+  const newApplications = page.getByRole("link", { name: /Новые заявки: 3/ });
+  await expect(newApplications).toBeVisible();
+  await page.getByRole("link", { name: /Добавить материал/ }).click();
+  await expect(page).toHaveURL(/#admin-new-material$/);
+  await expect(page.locator("#admin-new-material")).toBeInViewport();
+  await expect(page.getByRole("link", { name: /Создать событие/ })).toBeVisible();
+  const navigation = page.getByRole("navigation", { name: "Разделы админ-панели" });
+  await expect(navigation.getByRole("link")).toHaveCount(4);
+  await navigation.getByRole("link", { name: "Заявки" }).click();
+  await expect(page).toHaveURL(/#admin-applications$/);
+  await expect(page.getByRole("region", { name: /Заявки участников/ })).toBeVisible();
+});
+
 test("video detail remains usable on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.route("**/api/youtube/mobile-video", (route) =>

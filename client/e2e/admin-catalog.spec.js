@@ -122,6 +122,11 @@ test("admin creates, edits, archives and restores materials and Minecraft seeds"
   await catalog.getByRole("button", { name: "Предпросмотр", exact: true }).click();
   const resourcePreview = page.getByRole("dialog", { name: "Предпросмотр материала" });
   await expect(resourcePreview.getByText("Тестовый мод")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(resourcePreview).toBeHidden();
+  await expect(catalog.getByRole("button", { name: "Предпросмотр", exact: true })).toBeFocused();
+  await catalog.getByRole("button", { name: "Предпросмотр", exact: true }).click();
+  await expect(resourcePreview).toBeVisible();
   await resourcePreview.getByRole("button", { name: "Опубликовать" }).click();
   await expect(page.getByText("Материал сохранён")).toBeVisible();
   expect(resources[0].related_video_ids).toEqual(["dQw4w9WgXcQ"]);

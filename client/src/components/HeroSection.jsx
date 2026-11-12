@@ -114,12 +114,12 @@ export default function HeroSection() {
           <div className="glass glass-accent-border relative isolate overflow-hidden rounded-[2rem] p-2 shadow-2xl shadow-black/40">
             <div className="relative overflow-hidden rounded-[1.6rem] bg-void/80">
               <img
-                src="/brand-logo-transparent.png"
+                src="/brand-logo-transparent.webp"
                 alt=""
                 aria-hidden="true"
-                width="1200"
-                height="675"
-                loading="eager"
+                width="600"
+                height="338"
+                loading="lazy"
                 decoding="async"
                 className="pointer-events-none absolute -right-16 top-0 w-[135%] max-w-none object-contain opacity-25 mix-blend-screen"
               />

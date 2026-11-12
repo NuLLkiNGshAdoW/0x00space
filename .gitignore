@@ -13,6 +13,7 @@ client/node_modules/
 client/dist/
 client/test-results/
 client/playwright-report/
+client/.lighthouseci/
 
 # Локальная база и загруженные файлы
 server/*.db
