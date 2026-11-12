@@ -12,6 +12,7 @@ import httpx
 import re
 from datetime import datetime
 from typing import List
+from pydantic import ValidationError
 
 from app.config import get_settings
 from app.schemas import YoutubeVideoOut
@@ -30,10 +31,19 @@ def is_valid_video_id(video_id: str) -> bool:
     return bool(VIDEO_ID_RE.fullmatch(video_id))
 
 
+def _cached_video(value: object) -> YoutubeVideoOut:
+    if isinstance(value, YoutubeVideoOut):
+        return value
+    try:
+        return YoutubeVideoOut.model_validate(value)
+    except ValidationError as exc:
+        raise YoutubeApiError("Кеш YouTube содержит некорректные данные") from exc
+
+
 async def fetch_video(video_id: str) -> YoutubeVideoOut | None:
-    cached = cache.get(f"youtube:video:{video_id}")
+    cached = await cache.get(f"youtube:video:{video_id}")
     if cached is not None:
-        return cached
+        return _cached_video(cached)
     settings = get_settings()
     if not settings.YOUTUBE_API_KEY:
         raise YoutubeApiError("YOUTUBE_API_KEY должен быть задан в .env")
@@ -58,7 +68,7 @@ async def fetch_video(video_id: str) -> YoutubeVideoOut | None:
         result = YoutubeVideoOut(video_id=video["id"], title=snippet["title"], description=snippet.get("description", ""), thumbnail_url=thumbnail["url"], published_at=datetime.fromisoformat(snippet["publishedAt"].replace("Z", "+00:00")), is_short=duration <= 60, url=f"https://www.youtube.com/watch?v={video['id']}", duration_seconds=duration, view_count=int(video.get("statistics", {}).get("viewCount", 0)))
     except (KeyError, TypeError, ValueError) as exc:
         raise YoutubeApiError("YouTube API вернул неполные данные видео") from exc
-    cache.set(f"youtube:video:{video_id}", result, settings.YOUTUBE_CACHE_TTL_SECONDS)
+    await cache.set(f"youtube:video:{video_id}", result, settings.YOUTUBE_CACHE_TTL_SECONDS)
     return result
 
 
@@ -97,9 +107,11 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
     Возвращает последние `limit` видео/Shorts канала, используя кеш при наличии.
     """
     cache_key = f"{CACHE_KEY}:{limit}"
-    cached = cache.get(cache_key)
+    cached = await cache.get(cache_key)
     if cached is not None:
-        return cached
+        if not isinstance(cached, list):
+            raise YoutubeApiError("Кеш YouTube содержит некорректные данные")
+        return [_cached_video(video) for video in cached]
 
     settings = get_settings()
     if not settings.YOUTUBE_API_KEY or not settings.YOUTUBE_CHANNEL_ID:
@@ -149,7 +161,7 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
                 video_ids.append(video_id)
 
         if not video_ids:
-            cache.set(cache_key, [], settings.YOUTUBE_CACHE_TTL_SECONDS)
+            await cache.set(cache_key, [], settings.YOUTUBE_CACHE_TTL_SECONDS)
             return []
 
         # Шаг 3: получаем длительность видео, чтобы определить Shorts
@@ -194,5 +206,5 @@ async def fetch_latest_videos(limit: int = 12) -> List[YoutubeVideoOut]:
     # Сортируем от новых к старым на случай, если порядок из API не гарантирован
     result.sort(key=lambda v: v.published_at, reverse=True)
 
-    cache.set(cache_key, result, settings.YOUTUBE_CACHE_TTL_SECONDS)
+    await cache.set(cache_key, result, settings.YOUTUBE_CACHE_TTL_SECONDS)
     return result

@@ -8,8 +8,8 @@ import { captureError } from "../lib/monitoring.js";
 // В production Vercel не должен молча обращаться к localhost пользователя.
 // Same-origin fallback также позволяет подключить API через reverse proxy.
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.PROD ? "/api" : "http://localhost:8000/api");
+  import.meta.env?.VITE_API_BASE_URL ||
+  (import.meta.env?.PROD ? "/api" : "http://localhost:8000/api");
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
 /** Класс ошибки API — хранит HTTP-статус и сообщение от сервера. */
@@ -137,8 +137,11 @@ export function submitGameScore(payload) {
   });
 }
 
-export function loginAdmin(password) {
-  return request("/auth/login", { method: "POST", body: JSON.stringify({ password }) });
+export function loginAdmin(username, password) {
+  return request("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
 }
 export function checkAdmin() {
   return request("/auth/check");
@@ -257,6 +260,15 @@ export function getAdminApplications(options = {}) {
   if (options.page != null) params.set("page", options.page);
   if (options.limit != null) params.set("limit", options.limit);
   return request(`/applications/admin?${params}`);
+}
+
+export function getAdminAuditLog(options = {}) {
+  const params = new URLSearchParams();
+  if (options.entityType) params.set("entity_type", options.entityType);
+  if (options.action) params.set("action", options.action);
+  if (options.page != null) params.set("page", options.page);
+  if (options.limit != null) params.set("limit", options.limit);
+  return request(`/admin/audit?${params}`);
 }
 
 export function updateAdminApplicationStatus(applicationId, status) {

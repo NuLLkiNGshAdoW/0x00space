@@ -22,6 +22,8 @@ YOUTUBE_CHANNEL_ID=...
 
 ```env
 VITE_API_BASE_URL=https://zerox00space-api.onrender.com/api
+VITE_SENTRY_DSN=
+VITE_SENTRY_ENVIRONMENT=production
 ```
 
 1. В Vercel выберите **Import Project**.
@@ -32,12 +34,32 @@ VITE_API_BASE_URL=https://zerox00space-api.onrender.com/api
 ```env
 VITE_API_BASE_URL=https://zerox00space-api.onrender.com/api
 VITE_SITE_URL=https://ваш-проект.vercel.app
-# optional, leave empty for a no-op integration
 VITE_SENTRY_DSN=
+VITE_SENTRY_ENVIRONMENT=production
+# optional release override; Vercel uses its commit SHA by default
+VITE_SENTRY_RELEASE=
 ```
 
 5. Нажмите **Deploy**.
 6. Вернитесь в Render и замените `CORS_ORIGINS` на настоящий адрес Vercel.
+
+### Мониторинг ошибок Sentry
+
+Создайте отдельные проекты Sentry для React frontend и FastAPI backend. В Vercel задайте
+`VITE_SENTRY_DSN` (публичный ingest DSN frontend-проекта) и
+`VITE_SENTRY_ENVIRONMENT=production`. В Render задайте `SENTRY_DSN` backend-проекта и
+`SENTRY_ENVIRONMENT=production`; blueprint уже объявляет эти переменные. На frontend
+release берётся из `VERCEL_GIT_COMMIT_SHA`, на Render — из `RENDER_GIT_COMMIT`;
+для локальной сборки или другого хостинга можно задать `VITE_SENTRY_RELEASE` и
+`SENTRY_RELEASE`.
+
+SDK отключён, пока DSN не задан. По умолчанию отправляются ошибки React render, network,
+некорректных ответов и HTTP 5xx; ожидаемые 4xx не отправляются. Перед отправкой удаляются
+тексты исключений, адреса и query-параметры запросов, заголовки, cookies, тела запросов,
+breadcrumbs и user-данные. Performance tracing выключен. Для frontend DSN является
+публичным идентификатором ingest, а не секретом; не добавляйте в frontend auth token Sentry.
+В Sentry включите уведомления о новых issues и всплеске событий (например, 5 ошибок за 5 минут).
+Ожидаемые 4xx-ответы и сетевые таймауты SDK не отправляет.
 
 ## Проверка перед переключением трафика
 
@@ -61,7 +83,13 @@ VITE_SENTRY_DSN=
 
 ## Админ-сессия
 
-Браузер получает короткоживущую HttpOnly cookie через `/api/auth/login`; пароль в `localStorage` больше не используется. `ADMIN_SESSION_SECRET` должен быть отдельным случайным secret и задаётся в Render Environment отдельно от `ADMIN_PASSWORD` и `ADMIN_TOKEN`. На HTTPS включайте `COOKIE_SECURE=true`. Старый `ADMIN_TOKEN` и заголовок `X-Admin-Token` остаются только для backward compatibility скриптов и считаются deprecated; frontend их не использует. В production отсутствие `ADMIN_SESSION_SECRET` блокирует admin authentication. Неудачные логины ограничиваются в памяти процесса, поэтому для нескольких реплик нужен общий rate-limit на reverse proxy. На Render за Cloudflare задайте `TRUSTED_CLIENT_IP_HEADER=cf-connecting-ip`, иначе rate limit и блокировка логина увидят IP прокси и будут общими для всех посетителей.
+Администраторы входят по персональному логину и паролю; пароль хранится как PBKDF2-HMAC-SHA256 hash с индивидуальной солью. Браузер получает короткоживущую HttpOnly cookie, привязанную к ID аккаунта и его версии сессии. `ADMIN_SESSION_SECRET` — отдельный случайный secret, используемый только для подписи cookies. На HTTPS включайте `COOKIE_SECURE=true`. Общий `ADMIN_PASSWORD`, `ADMIN_TOKEN` и заголовок `X-Admin-Token` больше не поддерживаются.
+
+Для локальной разработки из каталога `server` создайте аккаунт командой `python -m scripts.manage_admin create <username>`. Другие команды: `list`, `set-password <username>`, `disable <username>`, `enable <username>` и `revoke-sessions <username>`. Пароль вводится через скрытый prompt, а смена пароля, блокировка, включение и явный отзыв сессий инвалидируют ранее выданные cookies. Не передавайте пароль аргументом командной строки.
+
+Перед выпуском новой версии на существующую production-базу примените `alembic upgrade head`, затем создайте первый аккаунт через CLI в окружении с production `DATABASE_URL`, `ADMIN_SESSION_SECRET` и `RATE_LIMIT_REDIS_URL`; только после этого переключайте трафик на новую версию. Новые административные маршруты требуют таблицу `admin_users`. В production отсутствие session secret или Redis URL блокирует запуск приложения. На Render за Cloudflare задайте `TRUSTED_CLIENT_IP_HEADER=cf-connecting-ip`, иначе rate limiter увидит адрес прокси вместо IP посетителей.
+
+Все `/api/*` маршруты, кроме `/api/health` и CORS preflight, ограничены общим per-IP sliding-window лимитом. В production счётчики API, неудачных входов, заявок и результатов игры хранятся в Redis; `RATE_LIMIT_REDIS_URL` обязателен для production PostgreSQL. Тот же Redis используется для кеша ответов YouTube с TTL из `YOUTUBE_CACHE_TTL_SECONDS`, поэтому реплики делят кеш и не дублируют запросы к YouTube API. Используйте приватный URL управляемого Redis. В Redis сохраняются только хеши IP-адресов, ключи rate limit автоматически истекают после окна ограничения. По умолчанию разрешено 120 запросов за 60 секунд; значения настраиваются через `API_RATE_LIMIT_REQUESTS` и `API_RATE_LIMIT_WINDOW_SECONDS`. Более строгие лимиты заявок и результатов игры также общие для реплик. Ответ при превышении — HTTP 429 с `Retry-After`. При недоступности Redis API закрывается с HTTP 503, а healthcheck сообщает `degraded`; автоматического возврата к локальному счётчику или кешу нет. В локальной разработке, если `RATE_LIMIT_REDIS_URL` не задан, используется ограничитель и кеш в памяти процесса. `TRUSTED_CLIENT_IP_HEADER` включайте только если backend нельзя обойти напрямую.
 
 ## Бэкапы Render и базы
 
@@ -88,6 +116,48 @@ pg_restore --exit-on-error --no-owner --no-acl \
 `BACKGROUND_UPLOAD_DIR` defaults to `uploads/backgrounds` and preserves the local URL `/media/backgrounds/<file>`. Set an absolute path for a mounted disk. `BACKGROUND_PUBLIC_BASE_URL` only changes the URL written to metadata; it does **not** upload files to S3, Cloudinary or another object store. Do not treat it as persistent storage.
 
 If a local file disappears after a Render restart, `GET /api/backgrounds` omits the unavailable item and returns `active: null` when the active file is gone. Activating an unavailable local item returns `409`; deleting its metadata remains possible and is safe to repeat. The frontend then uses its built-in fallback background. Uploads remain streamed in approximately 1 MiB chunks and are limited to 100 MiB.
+
+### Cloudflare R2 (optional)
+
+The backend supports an S3-compatible bucket for both media files and the background
+catalog. Cloudflare R2 currently includes monthly Standard-tier allowances of
+10 GB-month storage, 1 million Class A requests and 10 million Class B requests;
+internet egress is free. Usage above free allowances is billed, so this is not a
+hard spending cap. Check [current R2 pricing](https://developers.cloudflare.com/r2/pricing/)
+before enabling it and set usage alerts in Cloudflare.
+
+1. Create a Standard R2 bucket and an API token limited to that bucket.
+2. Enable public reads for the media bucket using a custom domain or R2 public URL.
+   Set `BACKGROUND_PUBLIC_BASE_URL` to that HTTPS URL without a trailing slash.
+3. Configure `BACKGROUND_STORAGE_BACKEND=s3`, `BACKGROUND_S3_ENDPOINT_URL`
+   (`https://<account-id>.r2.cloudflarestorage.com`), `BACKGROUND_S3_BUCKET`,
+   `BACKGROUND_S3_ACCESS_KEY_ID`, `BACKGROUND_S3_SECRET_ACCESS_KEY`, and
+   `BACKGROUND_S3_REGION=auto` in the backend's secret environment. Never put
+   access keys in frontend `VITE_*` variables or Git.
+4. The `.background-catalog.json` object stores the same public catalog/settings
+   exposed by `/api/backgrounds`; it contains no credentials. Keep the bucket
+   writable by the backend and public-readable through the configured media URL.
+5. Uploads up to 100 MiB are streamed to a temporary file before being sent to R2.
+   Health checks verify bucket access and a temporary write/delete operation.
+
+With `BACKGROUND_STORAGE_BACKEND=local` (the default), local development and
+existing behavior are unchanged. To migrate existing backgrounds, configure the
+R2 variables in the environment used for the migration and set
+`BACKGROUND_UPLOAD_DIR` to the directory containing the current local files and
+`metadata.json`. Pause background changes in the admin panel, then run from
+`server`:
+
+```bash
+python scripts/migrate_backgrounds_to_s3.py
+python scripts/migrate_backgrounds_to_s3.py --apply
+```
+
+The first command only validates and reports the plan. `--apply` uploads files,
+checks object sizes and SHA-256 checksums, and writes the catalog last. The script
+is safe to rerun when files and catalog already match; it refuses to replace a
+different destination catalog. Keep the existing local files until the new API
+configuration is deployed and `/api/backgrounds` returns the expected catalog.
+No R2 account or keys are required for local development.
 
 ## Database migrations
 
@@ -133,6 +203,14 @@ psql "$DATABASE_URL" -c 'SELECT version_num FROM alembic_version;'
 nullable `archived_at` колонками. Перед deploy новой версии API примените
 `alembic upgrade head`; healthcheck покажет `schema_ready: false` и недостающие
 колонки, пока миграция не завершится.
+
+Журнал действий администратора добавляет ревизия `20261112_0006` и таблица
+`admin_audit_logs`; ревизия `20261112_0007` добавляет аккаунты `admin_users` и
+привязку журнала к `actor_id`. Перед deploy примените `alembic upgrade head`. Журнал
+сохраняет тип действия, тип и ID сущности, список изменённых полей и только
+переход статуса заявки; содержимое и контакты заявок не сохраняются. Так как
+админка использует общий пароль, записи не различают конкретных людей.
+Healthcheck считает схему неготовой, пока таблица журнала не создана.
 
 ### A. Уже существующая production PostgreSQL
 

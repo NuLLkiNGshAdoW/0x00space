@@ -12,10 +12,10 @@ services:
         value: 3.12.7
       - key: DATABASE_URL
         sync: false
+      - key: RATE_LIMIT_REDIS_URL
+        sync: false
       - key: CORS_ORIGINS
         sync: false
-      - key: ADMIN_TOKEN
-        generateValue: true
       - key: ADMIN_SESSION_SECRET
         generateValue: true
       - key: COOKIE_SECURE
@@ -24,6 +24,8 @@ services:
         value: cf-connecting-ip
       - key: SENTRY_DSN
         sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: production
       - key: BACKGROUND_UPLOAD_DIR
         value: uploads/backgrounds
       - key: BACKGROUND_PUBLIC_BASE_URL

@@ -22,11 +22,11 @@ def test_baseline_upgrade_creates_only_current_model_tables(tmp_path):
         check=True,
     )
 
-    assert "20261112_0003" in result.stdout + result.stderr
+    assert "20261112_0007" in result.stdout + result.stderr
     tables = set(inspect(create_engine(environment["DATABASE_URL"])).get_table_names())
     assert tables == {
         "alembic_version", "applications", "resources", "seeds", "events", "game_leaderboard",
-        "resource_video_links", "seed_video_links",
+        "resource_video_links", "seed_video_links", "admin_audit_logs", "admin_users",
     }
     for table in ("resources", "seeds", "events"):
         assert "archived_at" in {column["name"] for column in inspect(create_engine(environment["DATABASE_URL"])).get_columns(table)}
@@ -34,6 +34,16 @@ def test_baseline_upgrade_creates_only_current_model_tables(tmp_path):
         column["name"]
         for column in inspect(create_engine(environment["DATABASE_URL"])).get_columns("applications")
     }
+    audit_columns = {
+        column["name"]
+        for column in inspect(create_engine(environment["DATABASE_URL"])).get_columns("admin_audit_logs")
+    }
+    assert {"actor", "actor_id", "action", "entity_type", "entity_id", "details", "created_at"} <= audit_columns
+    admin_columns = {
+        column["name"]
+        for column in inspect(create_engine(environment["DATABASE_URL"])).get_columns("admin_users")
+    }
+    assert {"username", "password_hash", "is_active", "session_version", "created_at"} <= admin_columns
 
 
 def test_archive_migration_preserves_existing_catalog_rows(tmp_path):
@@ -100,6 +110,8 @@ def test_existing_baseline_schema_can_be_stamped_without_losing_data(tmp_path):
     from sqlalchemy.orm import Session
 
     Base.metadata.create_all(bind=engine)
+    models.AdminAuditLog.__table__.drop(engine)
+    models.AdminUser.__table__.drop(engine)
     models.GameLeaderboardEntry.__table__.drop(engine)
     models.ResourceVideoLink.__table__.drop(engine)
     models.SeedVideoLink.__table__.drop(engine)

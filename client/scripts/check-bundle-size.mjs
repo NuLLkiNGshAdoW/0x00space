@@ -1,11 +1,13 @@
-import { readdir, stat } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 
 const assetsDirectory = new URL("../dist/assets/", import.meta.url);
 const assetNames = await readdir(assetsDirectory);
-const entryName = assetNames.find((name) => /^index-.*\.js$/.test(name));
+const html = await readFile(new URL("../dist/index.html", import.meta.url), "utf8");
+const entryUrl = html.match(/<script\b(?=[^>]*\btype="module")(?=[^>]*\bsrc="([^"]+)")[^>]*>/)?.[1];
+const entryName = entryUrl?.split("/").pop();
 
-if (!entryName) {
-  throw new Error("Production entry JavaScript bundle was not found in dist/assets.");
+if (!entryName || !assetNames.includes(entryName)) {
+  throw new Error("Production entry JavaScript bundle referenced by index.html was not found.");
 }
 
 const { size } = await stat(new URL(entryName, assetsDirectory));

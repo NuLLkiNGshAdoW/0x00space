@@ -2,12 +2,13 @@ import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Send, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { getEvent, submitApplication, ApiError } from "../services/api.js";
+import { OTHER_GAME, validateApplicationForm } from "../lib/application-validation.js";
 import { cn } from "../lib/utils.js";
 import { trackEvent } from "../lib/analytics.js";
 import { Link, useSearchParams } from "react-router-dom";
 import Button from "./Button.jsx";
 
-const GAME_OPTIONS = ["Minecraft", "Phasmophobia", "Lethal Company", "Другая игра"];
+const GAME_OPTIONS = ["Minecraft", "Phasmophobia", "Lethal Company", OTHER_GAME];
 
 const INITIAL_FORM = {
   nickname: "",
@@ -19,41 +20,6 @@ const INITIAL_FORM = {
   videoIdea: "",
   consent: false,
 };
-
-function validate(form) {
-  const errors = {};
-
-  if (form.nickname.trim().length < 2) {
-    errors.nickname = "Укажите ник или имя — минимум 2 символа";
-  }
-  if (form.nickname.trim().length > 64) {
-    errors.nickname = "Ник не должен быть длиннее 64 символов";
-  }
-  if (form.contact.trim().length < 2) {
-    errors.contact = "Укажите Discord или Telegram для связи";
-  }
-  if (form.contact.trim().length > 64) {
-    errors.contact = "Контакт не должен быть длиннее 64 символов";
-  }
-  if (form.game === "Другая игра" && form.customGame.trim().length < 2) {
-    errors.customGame = "Напишите, в какую игру хотите поиграть";
-  }
-  if (form.game === "Другая игра" && form.customGame.trim().length > 64) {
-    errors.customGame = "Название игры не должно быть длиннее 64 символов";
-  }
-  const age = Number(form.age);
-  if (!form.age || Number.isNaN(age) || !Number.isInteger(age) || age < 6 || age > 100) {
-    errors.age = "Возраст от 6 до 100 лет";
-  }
-  if (form.videoIdea.trim().length < 5) {
-    errors.videoIdea = "Опишите идею подробнее — хотя бы несколько слов";
-  }
-  if (!form.consent) {
-    errors.consent = "Подтвердите согласие на обработку данных";
-  }
-
-  return errors;
-}
 
 export default function ApplicationForm() {
   const [searchParams] = useSearchParams();
@@ -84,18 +50,19 @@ export default function ApplicationForm() {
   const updateField = (field) => (e) => {
     const next = { ...form, [field]: e.target.value };
     setForm(next);
-    if (touched[field]) setErrors((current) => ({ ...current, [field]: validate(next)[field] }));
+    if (touched[field])
+      setErrors((current) => ({ ...current, [field]: validateApplicationForm(next)[field] }));
   };
 
   const handleBlur = (field) => {
     setTouched((current) => ({ ...current, [field]: true }));
-    setErrors((current) => ({ ...current, [field]: validate(form)[field] }));
+    setErrors((current) => ({ ...current, [field]: validateApplicationForm(form)[field] }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationErrors = validate(form);
+    const validationErrors = validateApplicationForm(form);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
 
@@ -107,7 +74,7 @@ export default function ApplicationForm() {
         nickname: form.nickname.trim(),
         age: Number(form.age),
         contact: form.contact.trim(),
-        game: form.game === "Другая игра" ? form.customGame.trim() : form.game,
+        game: form.game === OTHER_GAME ? form.customGame.trim() : form.game,
         mic_or_experience_link: form.micOrExperience.trim() || null,
         video_idea: form.videoIdea.trim(),
         event_id: eventId || null,
@@ -163,13 +130,30 @@ export default function ApplicationForm() {
               Заявка попадает в общую очередь. Если формат подойдёт, мы напишем и обсудим детали.
             </p>
           </div>
-          {eventId && eventQuery.data && <div className="mt-3 rounded-2xl border border-violet/30 bg-violet-soft/40 p-4">
-            <p className="text-xs font-medium text-violet">Заявка на ивент</p>
-            <p className="mt-1 text-sm font-semibold text-ink">{eventQuery.data.title}</p>
-            <p className="mt-1 text-xs text-mute">{eventQuery.data.game} · {new Date(eventQuery.data.starts_at).toLocaleString("ru-RU", { dateStyle: "medium", timeStyle: "short" })}</p>
-            {eventCapacityFull && <p role="status" className="mt-2 text-xs text-amber">Все места уже заняты.</p>}
-            <Link to="/#application" className="mt-2 inline-flex text-xs text-emerald hover:underline">Подать обычную заявку</Link>
-          </div>}
+          {eventId && eventQuery.data && (
+            <div className="mt-3 rounded-2xl border border-violet/30 bg-violet-soft/40 p-4">
+              <p className="text-xs font-medium text-violet">Заявка на ивент</p>
+              <p className="mt-1 text-sm font-semibold text-ink">{eventQuery.data.title}</p>
+              <p className="mt-1 text-xs text-mute">
+                {eventQuery.data.game} ·{" "}
+                {new Date(eventQuery.data.starts_at).toLocaleString("ru-RU", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </p>
+              {eventCapacityFull && (
+                <p role="status" className="mt-2 text-xs text-amber">
+                  Все места уже заняты.
+                </p>
+              )}
+              <Link
+                to="/#application"
+                className="mt-2 inline-flex text-xs text-emerald hover:underline"
+              >
+                Подать обычную заявку
+              </Link>
+            </div>
+          )}
         </div>
 
         <form
@@ -223,10 +207,24 @@ export default function ApplicationForm() {
 
             <Field id="game" label="Игра">
               {eventId && eventQuery.data ? (
-                <input id="game" value={eventQuery.data.game} readOnly className={inputClass(false)} />
+                <input
+                  id="game"
+                  value={eventQuery.data.game}
+                  readOnly
+                  className={inputClass(false)}
+                />
               ) : (
-                <select value={form.game} id="game" onChange={updateField("game")} className={inputClass(false)}>
-                  {GAME_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+                <select
+                  value={form.game}
+                  id="game"
+                  onChange={updateField("game")}
+                  className={inputClass(false)}
+                >
+                  {GAME_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
                 </select>
               )}
             </Field>
@@ -249,7 +247,7 @@ export default function ApplicationForm() {
               />
             </Field>
 
-            {form.game === "Другая игра" && (
+            {form.game === OTHER_GAME && (
               <Field id="custom-game" label="Какая именно игра" error={errors.customGame}>
                 <input
                   type="text"
@@ -315,8 +313,16 @@ export default function ApplicationForm() {
             </div>
           )}
 
-          {eventId && eventQuery.isPending && <p role="status" className="mt-4 text-xs text-mute">Загружаем сведения об ивенте…</p>}
-          {eventId && eventQuery.isError && <p role="alert" className="mt-4 text-xs text-violet">Не удалось загрузить ивент. Возможно, регистрация уже закрыта.</p>}
+          {eventId && eventQuery.isPending && (
+            <p role="status" className="mt-4 text-xs text-mute">
+              Загружаем сведения об ивенте…
+            </p>
+          )}
+          {eventId && eventQuery.isError && (
+            <p role="alert" className="mt-4 text-xs text-violet">
+              Не удалось загрузить ивент. Возможно, регистрация уже закрыта.
+            </p>
+          )}
 
           <label className="mt-4 flex items-start gap-2 text-xs text-mute">
             <input
@@ -332,7 +338,7 @@ export default function ApplicationForm() {
                   ...current,
                   consent: nextConsent
                     ? undefined
-                    : validate({ ...form, consent: nextConsent }).consent,
+                    : validateApplicationForm({ ...form, consent: nextConsent }).consent,
                 }));
               }}
               className="mt-0.5 h-4 w-4 shrink-0 accent-emerald"
@@ -352,7 +358,14 @@ export default function ApplicationForm() {
             </p>
           )}
 
-          <Button type="submit" disabled={status === "submitting" || (Boolean(eventId) && (!eventQuery.data || eventQuery.isError || eventCapacityFull))} className="mt-6 w-full">
+          <Button
+            type="submit"
+            disabled={
+              status === "submitting" ||
+              (Boolean(eventId) && (!eventQuery.data || eventQuery.isError || eventCapacityFull))
+            }
+            className="mt-6 w-full"
+          >
             {status === "submitting" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (

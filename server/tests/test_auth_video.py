@@ -1,47 +1,93 @@
 from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
+from redis.exceptions import ConnectionError as RedisConnectionError
 
+from app import models
 from app.config import get_settings
 from app.main import app
 from app.schemas import ApplicationCreate, YoutubeVideoOut
 from app.services.admin_auth import valid_session
 import app.routers.youtube as youtube_router
 import app.routers.backgrounds as backgrounds_router
+import app.routers.auth as auth_router
 
 
-def test_admin_cookie_login_and_logout(monkeypatch):
-    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
-    monkeypatch.setenv("ADMIN_SESSION_SECRET", "test-session-secret")
-    get_settings.cache_clear()
-    client = TestClient(app)
+def test_admin_cookie_login_and_logout(admin_auth):
+    client, username, password, _ = admin_auth
 
-    assert client.post("/api/auth/login", json={"password": "wrong"}).status_code == 401
-    login = client.post("/api/auth/login", json={"password": "test-password"})
+    assert client.post(
+        "/api/auth/login", json={"username": username, "password": "wrong"}
+    ).status_code == 401
+    login = client.post(
+        "/api/auth/login",
+        json={"username": f" {username.upper()} ", "password": password},
+    )
     assert login.status_code == 200
+    assert login.json() == {"authenticated": True, "username": username}
     assert "HttpOnly" in login.headers["set-cookie"]
-    assert client.get("/api/auth/check").json() == {"authenticated": True}
+    assert client.get("/api/auth/check").json() == {"authenticated": True, "username": username}
     assert client.post("/api/auth/logout").status_code == 200
     assert client.get("/api/auth/check").status_code == 401
 
 
-def test_production_cookie_allows_cross_site_frontend(monkeypatch):
-    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
-    monkeypatch.setenv("ADMIN_SESSION_SECRET", "test-session-secret")
+def test_admin_session_is_revoked_when_account_version_changes(admin_auth):
+    client, username, password, session_factory = admin_auth
+    assert client.post(
+        "/api/auth/login", json={"username": username, "password": password}
+    ).status_code == 200
+    with session_factory() as db:
+        user = db.query(models.AdminUser).filter_by(username=username).one()
+        user.session_version += 1
+        db.commit()
+    assert client.get("/api/auth/check").status_code == 401
+
+
+def test_disabled_admin_cannot_log_in_or_keep_existing_session(admin_auth):
+    client, username, password, session_factory = admin_auth
+    assert client.post(
+        "/api/auth/login", json={"username": username, "password": password}
+    ).status_code == 200
+    with session_factory() as db:
+        user = db.query(models.AdminUser).filter_by(username=username).one()
+        user.is_active = False
+        user.session_version += 1
+        db.commit()
+    assert client.get("/api/auth/check").status_code == 401
+    assert client.post(
+        "/api/auth/login", json={"username": username, "password": password}
+    ).status_code == 401
+
+
+def test_admin_login_fails_closed_when_redis_failure_limiter_is_unavailable(
+    monkeypatch, admin_auth
+):
+    client, username, password, _ = admin_auth
+
+    def unavailable(_):
+        raise RedisConnectionError("offline")
+
+    monkeypatch.setattr(auth_router, "login_allowed", unavailable)
+    response = client.post(
+        "/api/auth/login",
+        json={"username": username, "password": password},
+    )
+
+    assert response.status_code == 503
+
+
+def test_production_cookie_allows_cross_site_frontend(monkeypatch, admin_auth):
+    client, username, password, _ = admin_auth
     monkeypatch.setenv("COOKIE_SECURE", "true")
     get_settings.cache_clear()
-    client = TestClient(app)
-
-    response = client.post("/api/auth/login", json={"password": "test-password"})
+    response = client.post("/api/auth/login", json={"username": username, "password": password})
 
     assert response.status_code == 200
     assert "samesite=none" in response.headers["set-cookie"].lower()
     assert "Secure" in response.headers["set-cookie"]
 
 
-def test_malformed_admin_cookie_is_rejected_without_server_error(monkeypatch):
-    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
-    get_settings.cache_clear()
+def test_malformed_admin_cookie_is_rejected_without_server_error(admin_auth):
     assert valid_session("not-a-valid-base64-session.abc") is False
 
 
@@ -79,15 +125,14 @@ def test_video_detail_validates_id_and_returns_related(monkeypatch):
     assert response.json()["related"] == []
 
 
-def test_uploaded_background_becomes_global_active(monkeypatch, tmp_path):
-    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
-    monkeypatch.setenv("ADMIN_SESSION_SECRET", "test-session-secret")
+def test_uploaded_background_becomes_global_active(monkeypatch, tmp_path, admin_auth):
+    client, username, password, _ = admin_auth
     get_settings.cache_clear()
     monkeypatch.setattr(backgrounds_router, "UPLOAD_DIR", tmp_path)
     monkeypatch.setattr(backgrounds_router, "META_FILE", tmp_path / "metadata.json")
-    client = TestClient(app)
-
-    assert client.post("/api/auth/login", json={"password": "test-password"}).status_code == 200
+    assert client.post(
+        "/api/auth/login", json={"username": username, "password": password}
+    ).status_code == 200
     response = client.post(
         "/api/backgrounds/upload",
         files={"file": ("background.png", b"\x89PNG\r\n\x1a\nvalid-data", "image/png")},
@@ -98,14 +143,14 @@ def test_uploaded_background_becomes_global_active(monkeypatch, tmp_path):
     assert public["active"]["id"] == response.json()["id"]
 
 
-def test_background_delete_rejects_path_traversal(monkeypatch, tmp_path):
-    monkeypatch.setenv("ADMIN_PASSWORD", "test-password")
-    monkeypatch.setenv("ADMIN_SESSION_SECRET", "test-session-secret")
+def test_background_delete_rejects_path_traversal(monkeypatch, tmp_path, admin_auth):
+    client, username, password, _ = admin_auth
     get_settings.cache_clear()
     monkeypatch.setattr(backgrounds_router, "UPLOAD_DIR", tmp_path)
     monkeypatch.setattr(backgrounds_router, "META_FILE", tmp_path / "metadata.json")
-    client = TestClient(app)
-    assert client.post("/api/auth/login", json={"password": "test-password"}).status_code == 200
+    assert client.post(
+        "/api/auth/login", json={"username": username, "password": password}
+    ).status_code == 200
 
     backgrounds_router.META_FILE.write_text(
         '{"active": {"id": "bad"}, "items": [{"id": "bad", "filename": "../outside.txt", "url": "/media/backgrounds/outside.txt"}]}',

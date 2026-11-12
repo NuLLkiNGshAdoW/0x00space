@@ -1,14 +1,24 @@
 """API для публичного активного фона и защищённого управления им."""
 import json
-import re
+import tempfile
 import uuid
 from pathlib import Path
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, File, Header, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
+from app.database import get_db
 from app.services.admin_auth import authenticate
 from app.config import get_settings
+from app.services.background_files import (
+    CONTENT_TYPES,
+    FILE_NAME_RE,
+    MAX_BACKGROUND_SIZE,
+    has_valid_signature,
+)
+from app.services import background_storage
 from app import schemas
 
 router = APIRouter(prefix="/backgrounds", tags=["backgrounds"])
@@ -17,15 +27,19 @@ UPLOAD_DIR = Path(get_settings().BACKGROUND_UPLOAD_DIR)
 if not UPLOAD_DIR.is_absolute():
     UPLOAD_DIR = ROOT / UPLOAD_DIR
 META_FILE = UPLOAD_DIR / "metadata.json"
-ALLOWED = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "video/mp4": ".mp4", "video/webm": ".webm"}
-MAX_SIZE = 100 * 1024 * 1024
+ALLOWED = {content_type: extension for extension, content_type in CONTENT_TYPES.items()}
+MAX_SIZE = MAX_BACKGROUND_SIZE
 UPLOAD_CHUNK_SIZE = 1024 * 1024
 MAX_DISPLAY_NAME_LENGTH = 255
-FILE_NAME_RE = re.compile(r"^[a-f0-9]{32}\.(jpg|png|webp|mp4|webm)$")
 DEFAULT_SETTINGS = {"shade": 0.68, "blur": 0, "position": "center", "speed": 1, "rotation_minutes": 0}
 
 
 def _read_meta():
+    if background_storage.object_storage_enabled():
+        try:
+            return json.loads(background_storage.read_catalog())
+        except FileNotFoundError:
+            return {"active": None, "items": [], "settings": DEFAULT_SETTINGS.copy()}
     if not META_FILE.exists():
         return {"active": None, "items": [], "settings": DEFAULT_SETTINGS.copy()}
     try:
@@ -35,6 +49,9 @@ def _read_meta():
 
 
 def _write_meta(data):
+    if background_storage.object_storage_enabled():
+        background_storage.write_catalog(json.dumps(data, ensure_ascii=False).encode("utf-8"))
+        return
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     temporary = META_FILE.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -72,6 +89,9 @@ def _item_filename(item: dict) -> str | None:
 
 def _item_has_file(item: dict) -> bool:
     """Check local availability without allowing metadata to escape the upload root."""
+    if background_storage.object_storage_enabled():
+        filename = _item_filename(item)
+        return bool(filename and FILE_NAME_RE.fullmatch(filename))
     if get_settings().BACKGROUND_PUBLIC_BASE_URL:
         # An explicitly configured public base may point at an external store.
         return True
@@ -88,8 +108,8 @@ def _available_items(data: dict) -> list[dict]:
     return [item for item in data.get("items", []) if _item_has_file(item)]
 
 
-def _check_admin(request: Request, token: str | None):
-    authenticate(request, token)
+def _check_admin(request: Request, db: Session):
+    return authenticate(request, db)
 
 
 @router.get("")
@@ -102,8 +122,12 @@ def get_backgrounds():
 
 
 @router.put("/settings", response_model=schemas.BackgroundSettings)
-def update_settings(payload: schemas.BackgroundSettingsUpdate, request: Request, x_admin_token: str | None = Header(default=None)):
-    _check_admin(request, x_admin_token)
+def update_settings(
+    payload: schemas.BackgroundSettingsUpdate,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    _check_admin(request, db)
     data = _read_meta()
     settings = {**DEFAULT_SETTINGS, **data.get("settings", {})}
     settings.update(payload.model_dump(exclude_unset=True))
@@ -114,8 +138,8 @@ def update_settings(payload: schemas.BackgroundSettingsUpdate, request: Request,
 
 
 @router.post("/reset")
-def reset_background(request: Request, x_admin_token: str | None = Header(default=None)):
-    _check_admin(request, x_admin_token)
+def reset_background(request: Request, db: Session = Depends(get_db)):
+    _check_admin(request, db)
     data = _read_meta()
     data["active"] = None
     _write_meta(data)
@@ -123,64 +147,74 @@ def reset_background(request: Request, x_admin_token: str | None = Header(defaul
 
 
 @router.post("/upload", status_code=201)
-async def upload_background(request: Request, file: UploadFile = File(...), x_admin_token: str | None = Header(default=None)):
-    _check_admin(request, x_admin_token)
+async def upload_background(
+    request: Request,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    _check_admin(request, db)
     extension = ALLOWED.get(file.content_type or "")
     if not extension:
         raise HTTPException(status_code=415, detail="Разрешены JPG, PNG, WebP, MP4 и WebM")
 
     file_id = uuid.uuid4().hex
     filename = f"{file_id}{extension}"
-    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    file_path = _safe_file_path(filename)
-    # Не держим весь upload в RAM: на Render Free это могло бы привести к
-    # OOM при загрузке разрешённого файла размером до 100 МБ.
     total_size = 0
     header = bytearray()
+    use_object_storage = background_storage.object_storage_enabled()
+    file_path = None if use_object_storage else _safe_file_path(filename)
+    if file_path is not None:
+        UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    # Keep uploads bounded in memory even when the object store is enabled.
+    temporary_file = tempfile.SpooledTemporaryFile(max_size=UPLOAD_CHUNK_SIZE)
     try:
-        with file_path.open("wb") as destination:
-            while chunk := await file.read(UPLOAD_CHUNK_SIZE):
-                total_size += len(chunk)
-                if len(header) < 16:
-                    header.extend(chunk[: 16 - len(header)])
-                if total_size > MAX_SIZE:
-                    raise HTTPException(status_code=413, detail="Файл слишком большой. Максимум 100 МБ")
-                destination.write(chunk)
-        if not _has_valid_signature(extension, bytes(header)):
+        while chunk := await file.read(UPLOAD_CHUNK_SIZE):
+            total_size += len(chunk)
+            if len(header) < 16:
+                header.extend(chunk[: 16 - len(header)])
+            if total_size > MAX_SIZE:
+                raise HTTPException(status_code=413, detail="Файл слишком большой. Максимум 100 МБ")
+            temporary_file.write(chunk)
+        if not has_valid_signature(extension, bytes(header)):
             raise HTTPException(status_code=415, detail="Содержимое файла не соответствует заявленному формату")
+        temporary_file.seek(0)
+        if use_object_storage:
+            await run_in_threadpool(background_storage.upload_object, filename, temporary_file, file.content_type)
+        else:
+            with file_path.open("wb") as destination:
+                while chunk := temporary_file.read(UPLOAD_CHUNK_SIZE):
+                    destination.write(chunk)
     except Exception:
-        file_path.unlink(missing_ok=True)
+        temporary_file.close()
+        if file_path is not None:
+            file_path.unlink(missing_ok=True)
         raise
-    display_name = (file.filename or filename).replace("\x00", "").strip()[:MAX_DISPLAY_NAME_LENGTH]
-    item = {"id": file_id, "filename": filename, "name": display_name or filename, "url": _public_url(filename), "type": "video" if extension in {".mp4", ".webm"} else "image"}
-    data = _read_meta()
-    data["items"] = [*data.get("items", []), item]
-    # Новая загрузка сразу становится глобальным активным фоном. Раньше
-    # preview был виден только в окне админки, потому что старый active
-    # оставался включённым для всех остальных клиентов.
-    data["active"] = item
+    temporary_file.close()
     try:
-        _write_meta(data)
+        display_name = (file.filename or filename).replace("\x00", "").strip()[:MAX_DISPLAY_NAME_LENGTH]
+        item = {"id": file_id, "filename": filename, "name": display_name or filename, "url": _public_url(filename), "type": "video" if extension in {".mp4", ".webm"} else "image"}
+        data = await run_in_threadpool(_read_meta) if use_object_storage else _read_meta()
+        data["items"] = [*data.get("items", []), item]
+        # Новая загрузка сразу становится глобальным активным фоном. Раньше
+        # preview был виден только в окне админки, потому что старый active
+        # оставался включённым для всех остальных клиентов.
+        data["active"] = item
+        if use_object_storage:
+            await run_in_threadpool(_write_meta, data)
+        else:
+            _write_meta(data)
     except Exception:
-        file_path.unlink(missing_ok=True)
+        if use_object_storage:
+            await run_in_threadpool(background_storage.delete_object, filename)
+        else:
+            file_path.unlink(missing_ok=True)
         raise
     return item
 
 
-def _has_valid_signature(extension: str, header: bytes) -> bool:
-    signatures = {
-        ".jpg": header.startswith(b"\xff\xd8\xff"),
-        ".png": header.startswith(b"\x89PNG\r\n\x1a\n"),
-        ".webp": header.startswith(b"RIFF") and header[8:12] == b"WEBP",
-        ".mp4": len(header) >= 8 and header[4:8] == b"ftyp",
-        ".webm": header.startswith(b"\x1a\x45\xdf\xa3"),
-    }
-    return signatures.get(extension, False)
-
-
 @router.post("/{background_id}/activate")
-def activate_background(background_id: str, request: Request, x_admin_token: str | None = Header(default=None)):
-    _check_admin(request, x_admin_token)
+def activate_background(background_id: str, request: Request, db: Session = Depends(get_db)):
+    _check_admin(request, db)
     data = _read_meta()
     item = next((entry for entry in data.get("items", []) if entry["id"] == background_id), None)
     if not item:
@@ -193,8 +227,8 @@ def activate_background(background_id: str, request: Request, x_admin_token: str
 
 
 @router.delete("/{background_id}")
-def delete_background(background_id: str, request: Request, x_admin_token: str | None = Header(default=None)):
-    _check_admin(request, x_admin_token)
+def delete_background(background_id: str, request: Request, db: Session = Depends(get_db)):
+    _check_admin(request, db)
     data = _read_meta()
     item = next((entry for entry in data.get("items", []) if entry["id"] == background_id), None)
     if not item:
@@ -203,7 +237,12 @@ def delete_background(background_id: str, request: Request, x_admin_token: str |
     if filename:
         # A valid but already-missing file is fine; an invalid metadata path is
         # still rejected so corruption cannot weaken traversal protection.
-        _safe_file_path(filename).unlink(missing_ok=True)
+        if background_storage.object_storage_enabled():
+            if not FILE_NAME_RE.fullmatch(filename):
+                raise HTTPException(status_code=400, detail="Недопустимое имя файла")
+            background_storage.delete_object(filename)
+        else:
+            _safe_file_path(filename).unlink(missing_ok=True)
     data["items"] = [entry for entry in data["items"] if entry["id"] != background_id]
     if data.get("active", {}).get("id") == background_id:
         remaining = _available_items(data)

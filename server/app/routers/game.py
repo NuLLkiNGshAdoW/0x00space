@@ -1,34 +1,43 @@
 """Public endpoints for the browser-based space-runner leaderboard."""
-from collections import defaultdict, deque
-from time import monotonic
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from redis.exceptions import RedisError
 from sqlalchemy.orm import Session
 
 from app import models, schemas
+from app.config import get_settings
 from app.database import get_db
 from app.services.client_ip import get_client_ip
+from app.services.monitoring import capture_exception
+from app.services.rate_limit import create_rate_limiter
 
 router = APIRouter(prefix="/game", tags=["game"])
 
-_submit_log: dict[str, deque[float]] = defaultdict(deque)
 _RATE_WINDOW_SECONDS = 3600
 _RATE_LIMIT = 12
+_settings = get_settings()
+_submit_limiter = create_rate_limiter(
+    _settings.RATE_LIMIT_REDIS_URL,
+    _RATE_LIMIT,
+    _RATE_WINDOW_SECONDS,
+    "0x00space:rate-limit:game-scores",
+)
 
 
 def _check_submit_rate_limit(request: Request) -> None:
-    client_key = get_client_ip(request)
-    now = monotonic()
-    recent = _submit_log[client_key]
-    while recent and now - recent[0] > _RATE_WINDOW_SECONDS:
-        recent.popleft()
-    if len(recent) >= _RATE_LIMIT:
+    try:
+        retry_after = _submit_limiter.retry_after(get_client_ip(request))
+    except RedisError as exc:
+        capture_exception(exc, source="game_score_rate_limit")
+        raise HTTPException(
+            status_code=503,
+            detail="Ограничитель отправки результатов временно недоступен.",
+        ) from exc
+    if retry_after is not None:
         raise HTTPException(
             status_code=429,
             detail="Слишком много отправок результата. Попробуйте позже.",
-            headers={"Retry-After": str(_RATE_WINDOW_SECONDS)},
+            headers={"Retry-After": str(retry_after)},
         )
-    recent.append(now)
 
 
 @router.get("/leaderboard", response_model=list[schemas.GameScoreOut])

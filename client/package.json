@@ -12,12 +12,15 @@
     "seo:indexnow": "node scripts/indexnow.mjs",
     "lint": "eslint .",
     "format:check": "prettier --check .",
+    "format:check:changed": "node scripts/check-changed-format.mjs",
+    "test:unit": "node --test src/lib/application-validation.test.js src/lib/monitoring.test.js src/services/api.test.js",
     "test:e2e": "playwright test",
     "test:a11y": "playwright test e2e/accessibility.spec.js",
     "audit:lighthouse": "lhci autorun"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.103.1",
+    "@sentry/react": "^11.12.0",
     "lucide-react": "^0.446.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

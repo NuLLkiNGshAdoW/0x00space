@@ -25,30 +25,38 @@ test("video detail displays catalog entries explicitly linked to that video", as
   await page.route("**/api/youtube/abcdefghijk", (route) =>
     route.fulfill({ json: { video, related: [] } }),
   );
-  await page.route(/\/api\/resources\?.*video_id=abcdefghijk/, (route) => route.fulfill({
-    json: {
-      items: [{
-        id: "linked-resource",
-        title: "Мод из этого выпуска",
-        description: "Материал вручную привязан к ролику.",
-        resource_type: "mod",
-        game_category: "minecraft",
-        game_version: "1.21",
-        download_url: "https://example.test/mod.zip",
-        cover_image_url: null,
-        related_video_ids: ["abcdefghijk"],
-      }],
-      has_next: false,
-    },
-  }));
-  await page.route(/\/api\/seeds\?.*video_id=abcdefghijk/, (route) => route.fulfill({
-    json: { items: [], has_next: false },
-  }));
+  await page.route(/\/api\/resources\?.*video_id=abcdefghijk/, (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            id: "linked-resource",
+            title: "Мод из этого выпуска",
+            description: "Материал вручную привязан к ролику.",
+            resource_type: "mod",
+            game_category: "minecraft",
+            game_version: "1.21",
+            download_url: "https://example.test/mod.zip",
+            cover_image_url: null,
+            related_video_ids: ["abcdefghijk"],
+          },
+        ],
+        has_next: false,
+      },
+    }),
+  );
+  await page.route(/\/api\/seeds\?.*video_id=abcdefghijk/, (route) =>
+    route.fulfill({
+      json: { items: [], has_next: false },
+    }),
+  );
 
   await page.goto("/videos/abcdefghijk");
 
   const recommendations = page.getByRole("region", { name: "Материалы к этому видео" });
-  await expect(recommendations.getByRole("heading", { name: "Мод из этого выпуска" })).toBeVisible();
+  await expect(
+    recommendations.getByRole("heading", { name: "Мод из этого выпуска" }),
+  ).toBeVisible();
 });
 
 test("video detail shows a not found state", async ({ page }) => {
@@ -78,14 +86,15 @@ test("admin login does not persist the password in localStorage", async ({ page 
     route.fulfill({ status: 401, json: { detail: "Нужна авторизация администратора." } }),
   );
   await page.route("**/api/auth/login", (route) =>
-    route.fulfill({ json: { authenticated: true } }),
+    route.fulfill({ json: { authenticated: true, username: "test-admin" } }),
   );
   await page.route("**/api/backgrounds", (route) =>
     route.fulfill({ json: { items: [], active: null, settings: {} } }),
   );
   await page.goto("/admin");
-  await page.getByLabel("Пароль администратора").fill("test-password");
-  await page.getByRole("button", { name: "Войти" }).click();
+  await page.getByLabel("Логин").fill("test-admin");
+  await page.getByLabel("Пароль").fill("test-password");
+  await page.getByRole("button", { name: "Войти в админ-панель" }).click();
   await expect(page.getByText("Вход выполнен")).toBeVisible();
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
 });
@@ -95,7 +104,7 @@ test("admin logout clears the authenticated UI", async ({ page }) => {
     route.fulfill({ status: 401, json: { detail: "Не авторизован" } }),
   );
   await page.route("**/api/auth/login", (route) =>
-    route.fulfill({ json: { authenticated: true } }),
+    route.fulfill({ json: { authenticated: true, username: "test-admin" } }),
   );
   await page.route("**/api/auth/logout", (route) =>
     route.fulfill({ json: { authenticated: false } }),
@@ -104,8 +113,9 @@ test("admin logout clears the authenticated UI", async ({ page }) => {
     route.fulfill({ json: { items: [], active: null, settings: {} } }),
   );
   await page.goto("/admin");
-  await page.getByLabel("Пароль администратора").fill("test-password");
-  await page.getByRole("button", { name: "Войти" }).click();
+  await page.getByLabel("Логин").fill("test-admin");
+  await page.getByLabel("Пароль").fill("test-password");
+  await page.getByRole("button", { name: "Войти в админ-панель" }).click();
   await page.getByRole("button", { name: /Выйти/ }).click();
   await expect(page.getByText("Сессия завершена")).toBeVisible();
 });
@@ -132,7 +142,7 @@ test("admin panel provides quick navigation to each management section", async (
   await expect(page.locator("#admin-new-material")).toBeInViewport();
   await expect(page.getByRole("link", { name: /Создать событие/ })).toBeVisible();
   const navigation = page.getByRole("navigation", { name: "Разделы админ-панели" });
-  await expect(navigation.getByRole("link")).toHaveCount(4);
+  await expect(navigation.getByRole("link")).toHaveCount(5);
   await navigation.getByRole("link", { name: "Заявки" }).click();
   await expect(page).toHaveURL(/#admin-applications$/);
   await expect(page.getByRole("region", { name: /Заявки участников/ })).toBeVisible();

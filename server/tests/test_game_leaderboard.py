@@ -6,6 +6,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
 from app.main import app
+from app.services.rate_limit import InMemoryRateLimiter
 import app.routers.game as game_router
 
 
@@ -26,7 +27,7 @@ def leaderboard_client():
         finally:
             db.close()
 
-    game_router._submit_log.clear()
+    game_router._submit_limiter = InMemoryRateLimiter(limit=12, window_seconds=3600)
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as client:
         yield client

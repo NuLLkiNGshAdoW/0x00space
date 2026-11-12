@@ -26,8 +26,8 @@ def test_database_health_reports_missing_catalog_tables():
         "connected": True,
         "schema_ready": False,
         "missing_tables": [
-            "applications", "events", "game_leaderboard", "resource_video_links",
-            "resources", "seed_video_links", "seeds",
+            "admin_audit_logs", "admin_users", "applications", "events", "game_leaderboard",
+            "resource_video_links", "resources", "seed_video_links", "seeds",
         ],
         "missing_columns": [],
     }
@@ -57,6 +57,19 @@ def test_database_health_reports_missing_archive_migration_columns():
         "resource_video_links", "seed_video_links",
     ):
         Table(table, metadata, Column("id", Integer, primary_key=True))
+    Table(
+        "admin_audit_logs",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column("actor", Integer),
+        Column("action", Integer),
+        Column("entity_type", Integer),
+        Column("entity_id", Integer),
+        Column("details", Integer),
+        Column("created_at", Integer),
+        Column("actor_id", Integer),
+    )
+    Table("admin_users", metadata, Column("id", Integer, primary_key=True))
     metadata.create_all(bind=engine)
 
     payload = main_module._check_database_schema(engine)

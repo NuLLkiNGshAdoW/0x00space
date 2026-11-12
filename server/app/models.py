@@ -5,7 +5,7 @@ import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, Integer, Text, DateTime, Enum, Boolean, ForeignKey, Index
+from sqlalchemy import Column, String, Integer, Text, DateTime, Enum, Boolean, ForeignKey, Index, JSON
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -173,3 +173,31 @@ class GameLeaderboardEntry(Base):
     difficulty = Column(String(16), nullable=False)
     ship = Column(String(24), nullable=False)
     updated_at = Column(DateTime, default=utc_now_naive, nullable=False)
+
+
+class AdminUser(Base):
+    """Named administrator account with revocable signed sessions."""
+    __tablename__ = "admin_users"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    username = Column(String(64), nullable=False, unique=True, index=True)
+    password_hash = Column(String(256), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+    session_version = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, default=utc_now_naive, nullable=False)
+
+
+class AdminAuditLog(Base):
+    """Privacy-conscious log of successful administrator changes."""
+    __tablename__ = "admin_audit_logs"
+
+    id = Column(String, primary_key=True, default=gen_uuid)
+    actor = Column(String(64), nullable=False)
+    actor_id = Column(String, ForeignKey("admin_users.id", ondelete="SET NULL"), nullable=True, index=True)
+    action = Column(String(64), nullable=False)
+    entity_type = Column(String(64), nullable=False)
+    entity_id = Column(String(64), nullable=False)
+    details = Column(JSON, nullable=False, default=dict)
+    created_at = Column(DateTime, default=utc_now_naive, nullable=False)
+
+    __table_args__ = (Index("ix_admin_audit_logs_created_at", "created_at"),)

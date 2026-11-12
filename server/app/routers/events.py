@@ -1,7 +1,7 @@
 """Публичные события и административное управление ими."""
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import case, func, or_
 from sqlalchemy.orm import Session
 from typing import Literal
@@ -9,12 +9,13 @@ from typing import Literal
 from app import models, schemas
 from app.database import get_db
 from app.services.admin_auth import authenticate
+from app.services.admin_audit import record_admin_action
 
 router = APIRouter(tags=["events"])
 
 
-def _admin(request: Request, x_admin_token: str | None = Header(default=None)):
-    authenticate(request, x_admin_token)
+def _admin(request: Request, db: Session):
+    return authenticate(request, db)
 
 
 def _event_values(payload: schemas.EventCreate):
@@ -97,10 +98,21 @@ def get_event(event_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/admin/events", response_model=schemas.EventOut, status_code=201)
-def create_event(payload: schemas.EventCreate, request: Request, db: Session = Depends(get_db), x_admin_token: str | None = Header(default=None)):
-    _admin(request, x_admin_token)
-    event = models.Event(**_event_values(payload))
+def create_event(payload: schemas.EventCreate, request: Request, db: Session = Depends(get_db)):
+    admin = _admin(request, db)
+    values = _event_values(payload)
+    event = models.Event(**values)
     db.add(event)
+    db.flush()
+    record_admin_action(
+        db,
+        action="created",
+        entity_type="event",
+        entity_id=event.id,
+        actor_id=admin.id,
+        actor=admin.username,
+        details={"fields": sorted(values.keys())},
+    )
     db.commit()
     db.refresh(event)
     return event
@@ -114,9 +126,8 @@ def list_admin_events(
     page: int = Query(1, ge=1),
     limit: int = Query(8, ge=1, le=50),
     db: Session = Depends(get_db),
-    x_admin_token: str | None = Header(default=None),
 ):
-    _admin(request, x_admin_token)
+    _admin(request, db)
     query = db.query(models.Event)
     if archive == "active":
         query = query.filter(models.Event.archived_at.is_(None))
@@ -153,25 +164,40 @@ def list_admin_events(
 
 
 @router.put("/admin/events/{event_id}", response_model=schemas.EventOut)
-def update_event(event_id: str, payload: schemas.EventCreate, request: Request, db: Session = Depends(get_db), x_admin_token: str | None = Header(default=None)):
-    _admin(request, x_admin_token)
+def update_event(event_id: str, payload: schemas.EventCreate, request: Request, db: Session = Depends(get_db)):
+    admin = _admin(request, db)
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if event is None:
         raise HTTPException(status_code=404, detail="Событие не найдено")
-    for key, value in _event_values(payload).items():
+    values = _event_values(payload)
+    changed_fields = [key for key, value in values.items() if getattr(event, key) != value]
+    for key, value in values.items():
         setattr(event, key, value)
+    if changed_fields:
+        record_admin_action(
+            db,
+            action="updated",
+            entity_type="event",
+            entity_id=event.id,
+            actor_id=admin.id,
+            actor=admin.username,
+            details={"fields": sorted(changed_fields)},
+        )
     db.commit()
     db.refresh(event)
     return event
 
 
 @router.delete("/admin/events/{event_id}", status_code=204)
-def delete_event(event_id: str, request: Request, db: Session = Depends(get_db), x_admin_token: str | None = Header(default=None)):
-    _admin(request, x_admin_token)
+def delete_event(event_id: str, request: Request, db: Session = Depends(get_db)):
+    admin = _admin(request, db)
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if event is None:
         raise HTTPException(status_code=404, detail="Событие не найдено")
     event.archived_at = event.archived_at or datetime.utcnow()
+    record_admin_action(
+        db, action="archived", entity_type="event", entity_id=event.id, actor_id=admin.id, actor=admin.username
+    )
     db.commit()
 
 
@@ -180,13 +206,15 @@ def restore_event(
     event_id: str,
     request: Request,
     db: Session = Depends(get_db),
-    x_admin_token: str | None = Header(default=None),
 ):
-    _admin(request, x_admin_token)
+    admin = _admin(request, db)
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if event is None:
         raise HTTPException(status_code=404, detail="Событие не найдено")
     event.archived_at = None
+    record_admin_action(
+        db, action="restored", entity_type="event", entity_id=event.id, actor_id=admin.id, actor=admin.username
+    )
     db.commit()
     db.refresh(event)
     return event

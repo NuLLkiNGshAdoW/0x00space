@@ -3,7 +3,7 @@ Pydantic-схемы (DTO) — контракт между фронтендом �
 """
 from datetime import datetime
 import re
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, Field, ConfigDict, field_validator
@@ -356,6 +356,29 @@ class GameScoreOut(BaseModel):
     difficulty: str
     ship: str
     updated_at: datetime
+
+
+# ---------- Admin audit log ----------
+
+class AdminAuditLogOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    actor: str
+    actor_id: Optional[str]
+    action: str
+    entity_type: str
+    entity_id: str
+    details: dict[str, Any]
+    created_at: datetime
+
+
+class AdminAuditPage(BaseModel):
+    items: list[AdminAuditLogOut]
+    page: int
+    limit: int
+    total: int
+    has_next: bool
 
 
 # ---------- YouTube ----------

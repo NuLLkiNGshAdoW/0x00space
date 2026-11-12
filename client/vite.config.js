@@ -31,8 +31,12 @@ function seoVerificationPlugin(env) {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const sentryRelease = env.VITE_SENTRY_RELEASE || process.env.VERCEL_GIT_COMMIT_SHA || "";
   return {
     plugins: [react(), seoVerificationPlugin(env)],
+    define: {
+      "import.meta.env.VITE_SENTRY_RELEASE": JSON.stringify(sentryRelease),
+    },
     server: {
       port: 5173,
     },

@@ -6,9 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { onCLS, onINP, onLCP } from "web-vitals";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import { trackEvent } from "./lib/analytics.js";
+import { initializeMonitoring } from "./lib/monitoring.js";
 
 const GOOGLE_FONTS_URL =
   "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=optional";
+
+initializeMonitoring();
 
 function loadFontsWithoutBlockingFirstPaint() {
   const stylesheet = document.createElement("link");
@@ -28,11 +31,15 @@ function loadFontsWithoutBlockingFirstPaint() {
 window.requestAnimationFrame(loadFontsWithoutBlockingFirstPaint);
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch((error) => {
-      console.warn("Не удалось включить офлайн-режим:", error);
-    });
-  }, { once: true });
+  window.addEventListener(
+    "load",
+    () => {
+      navigator.serviceWorker.register("/sw.js").catch((error) => {
+        console.warn("Не удалось включить офлайн-режим:", error);
+      });
+    },
+    { once: true },
+  );
 }
 
 function reportWebVital({ name, value, rating }) {

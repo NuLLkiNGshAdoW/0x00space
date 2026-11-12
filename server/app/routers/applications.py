@@ -1,41 +1,49 @@
 """
 Эндпоинты для заявок на участие.
 """
-from collections import defaultdict, deque
-from time import monotonic
-
-from fastapi import APIRouter, Depends, BackgroundTasks, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, Query, Request
+from redis.exceptions import RedisError
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from app.database import get_db, SessionLocal
 from app import models, schemas
+from app.config import get_settings
 from app.services.client_ip import get_client_ip
+from app.services.rate_limit import create_rate_limiter
+from app.services.monitoring import capture_exception
 from app.services.telegram import notify_new_application
 from app.services.admin_auth import authenticate
+from app.services.admin_audit import record_admin_action
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
-# Простая защита MVP от случайного/автоматического спама. Для нескольких
-# production-инстансов этот лимит следует перенести в Redis или reverse-proxy.
-_request_log: dict[str, deque[float]] = defaultdict(deque)
 _RATE_WINDOW_SECONDS = 3600
 _RATE_LIMIT = 5
+_settings = get_settings()
+_request_limiter = create_rate_limiter(
+    _settings.RATE_LIMIT_REDIS_URL,
+    _RATE_LIMIT,
+    _RATE_WINDOW_SECONDS,
+    "0x00space:rate-limit:applications",
+)
 
 
 def _check_rate_limit(request: Request) -> None:
-    client_key = get_client_ip(request)
-    now = monotonic()
-    recent = _request_log[client_key]
-    while recent and now - recent[0] > _RATE_WINDOW_SECONDS:
-        recent.popleft()
-    if len(recent) >= _RATE_LIMIT:
+    try:
+        retry_after = _request_limiter.retry_after(get_client_ip(request))
+    except RedisError as exc:
+        capture_exception(exc, source="application_rate_limit")
+        raise HTTPException(
+            status_code=503,
+            detail="Ограничитель заявок временно недоступен.",
+        ) from exc
+    if retry_after is not None:
         raise HTTPException(
             status_code=429,
             detail="Слишком много заявок. Попробуйте снова позже.",
-            headers={"Retry-After": str(_RATE_WINDOW_SECONDS)},
+            headers={"Retry-After": str(retry_after)},
         )
-    recent.append(now)
 
 
 async def _send_telegram_and_update_flag(application_id: str):
@@ -126,9 +134,8 @@ def list_admin_applications(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=50),
     db: Session = Depends(get_db),
-    x_admin_token: str | None = Header(default=None),
 ):
-    authenticate(request, x_admin_token)
+    authenticate(request, db)
     query = db.query(models.Application)
     if status is not None:
         query = query.filter(models.Application.status == status)
@@ -157,13 +164,23 @@ def update_application_status(
     payload: schemas.ApplicationStatusUpdate,
     request: Request,
     db: Session = Depends(get_db),
-    x_admin_token: str | None = Header(default=None),
 ):
-    authenticate(request, x_admin_token)
+    admin = authenticate(request, db)
     application = db.get(models.Application, application_id)
     if application is None:
         raise HTTPException(status_code=404, detail="Заявка не найдена")
+    previous_status = application.status
     application.status = payload.status
+    if previous_status != payload.status:
+        record_admin_action(
+            db,
+            action="status_changed",
+            entity_type="application",
+            entity_id=application.id,
+            actor_id=admin.id,
+            actor=admin.username,
+            details={"from": previous_status.value, "to": payload.status.value},
+        )
     db.commit()
     db.refresh(application)
     return application

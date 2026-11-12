@@ -3,7 +3,7 @@
 """
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import case, func, or_
 from typing import Literal, Optional
@@ -11,12 +11,13 @@ from typing import Literal, Optional
 from app.database import get_db
 from app import models, schemas
 from app.services.admin_auth import authenticate
+from app.services.admin_audit import record_admin_action
 
 router = APIRouter(tags=["resources"])
 
 
-def _require_admin(request: Request, x_admin_token: str | None) -> None:
-    authenticate(request, x_admin_token)
+def _require_admin(request: Request, db: Session):
+    return authenticate(request, db)
 
 
 @router.get("/resources/filters")
@@ -100,10 +101,9 @@ def list_admin_resources(
     archive: Literal["active", "archived", "all"] = Query("active"),
     page: int = Query(1, ge=1),
     limit: int = Query(8, ge=1, le=50),
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    _require_admin(request, db)
     query = db.query(models.Resource)
     if archive == "active":
         query = query.filter(models.Resource.archived_at.is_(None))
@@ -142,10 +142,9 @@ def list_admin_resources(
 def create_resource(
     payload: schemas.ResourceWrite,
     request: Request,
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    admin = _require_admin(request, db)
     values = payload.model_dump()
     related_video_ids = values.pop("related_video_ids", [])
     values["download_url"] = str(values["download_url"])
@@ -155,6 +154,16 @@ def create_resource(
         related_videos=[models.ResourceVideoLink(video_id=video_id) for video_id in related_video_ids],
     )
     db.add(resource)
+    db.flush()
+    record_admin_action(
+        db,
+        action="created",
+        entity_type="resource",
+        entity_id=resource.id,
+        actor_id=admin.id,
+        actor=admin.username,
+        details={"fields": sorted([*values.keys(), "related_video_ids"])},
+    )
     db.commit()
     db.refresh(resource)
     return resource
@@ -165,10 +174,9 @@ def update_resource(
     resource_id: str,
     payload: schemas.ResourceWrite,
     request: Request,
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    admin = _require_admin(request, db)
     resource = db.get(models.Resource, resource_id)
     if resource is None:
         raise HTTPException(status_code=404, detail="Материал не найден")
@@ -176,6 +184,10 @@ def update_resource(
     related_video_ids = values.pop("related_video_ids", [])
     values["download_url"] = str(values["download_url"])
     values["cover_image_url"] = str(values["cover_image_url"]) if values["cover_image_url"] else None
+    changed_fields = [field for field, value in values.items() if getattr(resource, field) != value]
+    current_video_ids = sorted(link.video_id for link in resource.related_videos)
+    if current_video_ids != sorted(related_video_ids):
+        changed_fields.append("related_video_ids")
     for field, value in values.items():
         setattr(resource, field, value)
     existing_links = {link.video_id: link for link in resource.related_videos}
@@ -183,6 +195,16 @@ def update_resource(
         existing_links.get(video_id) or models.ResourceVideoLink(video_id=video_id)
         for video_id in related_video_ids
     ]
+    if changed_fields:
+        record_admin_action(
+            db,
+            action="updated",
+            entity_type="resource",
+            entity_id=resource.id,
+            actor_id=admin.id,
+            actor=admin.username,
+            details={"fields": sorted(changed_fields)},
+        )
     db.commit()
     db.refresh(resource)
     return resource
@@ -192,14 +214,16 @@ def update_resource(
 def delete_resource(
     resource_id: str,
     request: Request,
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    admin = _require_admin(request, db)
     resource = db.get(models.Resource, resource_id)
     if resource is None:
         raise HTTPException(status_code=404, detail="Материал не найден")
     resource.archived_at = resource.archived_at or datetime.utcnow()
+    record_admin_action(
+        db, action="archived", entity_type="resource", entity_id=resource.id, actor_id=admin.id, actor=admin.username
+    )
     db.commit()
 
 
@@ -207,14 +231,16 @@ def delete_resource(
 def restore_resource(
     resource_id: str,
     request: Request,
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    admin = _require_admin(request, db)
     resource = db.get(models.Resource, resource_id)
     if resource is None:
         raise HTTPException(status_code=404, detail="Материал не найден")
     resource.archived_at = None
+    record_admin_action(
+        db, action="restored", entity_type="resource", entity_id=resource.id, actor_id=admin.id, actor=admin.username
+    )
     db.commit()
     db.refresh(resource)
     return resource
@@ -268,10 +294,9 @@ def list_admin_seeds(
     archive: Literal["active", "archived", "all"] = Query("active"),
     page: int = Query(1, ge=1),
     limit: int = Query(8, ge=1, le=50),
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    _require_admin(request, db)
     query = db.query(models.Seed)
     if archive == "active":
         query = query.filter(models.Seed.archived_at.is_(None))
@@ -311,10 +336,9 @@ def list_admin_seeds(
 def create_seed(
     payload: schemas.SeedWrite,
     request: Request,
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    admin = _require_admin(request, db)
     values = payload.model_dump()
     related_video_ids = values.pop("related_video_ids", [])
     values["screenshot_url"] = str(values["screenshot_url"]) if values["screenshot_url"] else None
@@ -323,6 +347,16 @@ def create_seed(
         related_videos=[models.SeedVideoLink(video_id=video_id) for video_id in related_video_ids],
     )
     db.add(seed)
+    db.flush()
+    record_admin_action(
+        db,
+        action="created",
+        entity_type="seed",
+        entity_id=seed.id,
+        actor_id=admin.id,
+        actor=admin.username,
+        details={"fields": sorted([*values.keys(), "related_video_ids"])},
+    )
     db.commit()
     db.refresh(seed)
     return seed
@@ -333,16 +367,19 @@ def update_seed(
     seed_id: str,
     payload: schemas.SeedWrite,
     request: Request,
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    admin = _require_admin(request, db)
     seed = db.get(models.Seed, seed_id)
     if seed is None:
         raise HTTPException(status_code=404, detail="Сид не найден")
     values = payload.model_dump()
     related_video_ids = values.pop("related_video_ids", [])
     values["screenshot_url"] = str(values["screenshot_url"]) if values["screenshot_url"] else None
+    changed_fields = [field for field, value in values.items() if getattr(seed, field) != value]
+    current_video_ids = sorted(link.video_id for link in seed.related_videos)
+    if current_video_ids != sorted(related_video_ids):
+        changed_fields.append("related_video_ids")
     for field, value in values.items():
         setattr(seed, field, value)
     existing_links = {link.video_id: link for link in seed.related_videos}
@@ -350,6 +387,16 @@ def update_seed(
         existing_links.get(video_id) or models.SeedVideoLink(video_id=video_id)
         for video_id in related_video_ids
     ]
+    if changed_fields:
+        record_admin_action(
+            db,
+            action="updated",
+            entity_type="seed",
+            entity_id=seed.id,
+            actor_id=admin.id,
+            actor=admin.username,
+            details={"fields": sorted(changed_fields)},
+        )
     db.commit()
     db.refresh(seed)
     return seed
@@ -359,14 +406,16 @@ def update_seed(
 def delete_seed(
     seed_id: str,
     request: Request,
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    admin = _require_admin(request, db)
     seed = db.get(models.Seed, seed_id)
     if seed is None:
         raise HTTPException(status_code=404, detail="Сид не найден")
     seed.archived_at = seed.archived_at or datetime.utcnow()
+    record_admin_action(
+        db, action="archived", entity_type="seed", entity_id=seed.id, actor_id=admin.id, actor=admin.username
+    )
     db.commit()
 
 
@@ -374,14 +423,16 @@ def delete_seed(
 def restore_seed(
     seed_id: str,
     request: Request,
-    x_admin_token: str | None = Header(default=None),
     db: Session = Depends(get_db),
 ):
-    _require_admin(request, x_admin_token)
+    admin = _require_admin(request, db)
     seed = db.get(models.Seed, seed_id)
     if seed is None:
         raise HTTPException(status_code=404, detail="Сид не найден")
     seed.archived_at = None
+    record_admin_action(
+        db, action="restored", entity_type="seed", entity_id=seed.id, actor_id=admin.id, actor=admin.username
+    )
     db.commit()
     db.refresh(seed)
     return seed
