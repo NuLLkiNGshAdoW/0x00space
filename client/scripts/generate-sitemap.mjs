@@ -86,6 +86,142 @@ const STATIC_SEO_PAGES = [
   },
 ];
 
+const STATIC_PAGE_CONTENT = {
+  "/videos": {
+    heading: "Видео 0x00 SPACE",
+    sections: [
+      [
+        "Медиатека канала",
+        "Все ролики и Shorts канала в одном месте: ищите по названию, фильтруйте формат и открывайте выпуск.",
+      ],
+    ],
+  },
+  "/materials": {
+    heading: "Материалы и сиды Minecraft",
+    sections: [
+      [
+        "Арсенал игрока",
+        "Моды, шейдеры, текстур-паки, гайды и сиды миров. Фильтруйте по игре и забирайте то, что пригодится в следующем прохождении.",
+      ],
+      ["Гайды", "Инструкции по Minecraft и совместным играм собраны в разделе гайдов."],
+      ["Сиды", "Смотрите версии Minecraft и координаты интересных мест в разделе сидов."],
+    ],
+  },
+  "/events": {
+    heading: "Игровые ивенты 0x00 SPACE",
+    sections: [
+      ["Как принять участие", "Заполните заявку на главной странице и укажите игру и контакт."],
+      [
+        "Что потребуется",
+        "Рабочий микрофон, подходящая игра и готовность соблюдать правила общения в команде.",
+      ],
+      [
+        "Связь с участниками",
+        "Мы свяжемся с выбранными участниками по указанному контакту перед записью.",
+      ],
+    ],
+  },
+  "/about": {
+    heading: "О канале 0x00 SPACE",
+    sections: [
+      ["Что мы снимаем", "Выживание, кооперативные прохождения, хорроры, челленджи и инди-игры."],
+      [
+        "Для кого канал",
+        "Для игроков, которым нравятся атмосферные ролики и совместная игра с сообществом.",
+      ],
+      [
+        "Что есть на сайте",
+        "Видео, сиды, моды, гайды и возможность подать заявку на совместный ивент.",
+      ],
+    ],
+  },
+  "/faq": {
+    heading: "Частые вопросы",
+    sections: [
+      ["Как попасть в ролик?", "Заполните заявку на главной странице и оставьте рабочий контакт."],
+      [
+        "Где смотреть новые видео?",
+        "На странице видео публикуются последние ролики и Shorts с YouTube-канала.",
+      ],
+      [
+        "Где скачать материалы?",
+        "Откройте страницу материалов и воспользуйтесь поиском и фильтрами.",
+      ],
+    ],
+  },
+  "/guides": {
+    heading: "Гайды по Minecraft и кооперативным играм",
+    sections: [
+      [
+        "Установка модов и шейдеров",
+        "Проверяйте совместимость версии игры и загрузчика Fabric или Forge. Перед установкой сделайте резервную копию мира.",
+      ],
+      [
+        "Выбор сида для выживания",
+        "Учитывайте версию Minecraft и проверяйте координаты интересных мест в тестовом мире.",
+      ],
+      [
+        "Подготовка к кооперативной игре",
+        "Проверьте микрофон, договоритесь о голосовом чате и используйте только проверенные ссылки.",
+      ],
+    ],
+  },
+  "/seeds": {
+    heading: "Сиды Minecraft и координаты",
+    sections: [
+      ["Сиды из роликов", "Ищите опубликованные сиды и скриншоты в разделе материалов."],
+      [
+        "Как использовать сид",
+        "При создании мира откройте дополнительные настройки и вставьте код сида без лишних пробелов.",
+      ],
+      [
+        "Проверяйте версию Minecraft",
+        "Один и тот же сид может создавать разные структуры в разных версиях игры.",
+      ],
+    ],
+  },
+  "/contacts": {
+    heading: "Контакты 0x00 SPACE",
+    sections: [
+      [
+        "Заявка на участие",
+        "Используйте форму на главной странице, чтобы отправить заявку на участие в записи.",
+      ],
+      [
+        "Социальные сети",
+        "Официальные ссылки на YouTube, Telegram и VK находятся в шапке и подвале сайта.",
+      ],
+      ["Идея для видео", "Опишите идею в заявке или напишите в официальные сообщения сообщества."],
+    ],
+  },
+  "/privacy": {
+    heading: "Политика конфиденциальности",
+    sections: [
+      [
+        "Какие данные используются",
+        "Для обработки заявки нужны ник, возраст, контакт, выбранная игра и текст идеи.",
+      ],
+      [
+        "Для чего нужны данные",
+        "Данные используются для связи с участником и организации игровых записей.",
+      ],
+      [
+        "Удаление данных",
+        "Чтобы запросить удаление заявки, обратитесь через официальные контакты канала.",
+      ],
+    ],
+  },
+};
+
+const HOME_PAGE = {
+  title: "0x00 SPACE — Minecraft, кооп и хорроры",
+  description:
+    "0x00 SPACE — игровой канал о Minecraft, кооперативных играх и хоррорах. Видео, гайды, сиды миров и игровые ивенты.",
+  heading: "Minecraft, кооп и хорроры на одной частоте",
+  intro:
+    "Атмосферные прохождения, кооперативные приключения и полезные материалы из роликов. Смотри видео, выбирай игру и присоединяйся к следующему совместному запуску.",
+};
+
 function escapeXml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -103,6 +239,121 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;");
 }
 
+function safeVideoThumbnail(video) {
+  const fallback = `https://i.ytimg.com/vi/${video.video_id}/hqdefault.jpg`;
+  try {
+    const url = new URL(video.thumbnail_url || fallback);
+    return url.protocol === "https:" && url.hostname.endsWith("ytimg.com") ? url.href : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function renderVideoLinks(videos, limit) {
+  const items = videos.slice(0, limit);
+  if (!items.length) return "";
+  return `
+    <section aria-labelledby="latest-videos-title">
+      <h2 id="latest-videos-title">Последние видео 0x00 SPACE</h2>
+      <ul>
+        ${items
+          .map(
+            (video) => `
+              <li>
+                <a href="/videos/${encodeURIComponent(video.video_id)}">
+                  <img src="${escapeHtml(safeVideoThumbnail(video))}" alt="" width="160" height="90" loading="lazy" />
+                  ${escapeHtml(video.title || "Видео 0x00 SPACE")}
+                </a>
+                ${video.description ? `<p>${escapeHtml(String(video.description).slice(0, 300))}</p>` : ""}
+              </li>`,
+          )
+          .join("")}
+      </ul>
+    </section>`;
+}
+
+function renderStaticPageBody(page, videos) {
+  const content = STATIC_PAGE_CONTENT[page.path] || {};
+  const sections = (content.sections || [])
+    .map(
+      ([heading, text]) => `
+        <section>
+          <h2>${escapeHtml(heading)}</h2>
+          <p>${escapeHtml(text)}</p>
+        </section>`,
+    )
+    .join("");
+  const navigation = STATIC_SEO_PAGES.filter((item) => item.path !== page.path)
+    .map(
+      (item) =>
+        `<li><a href="${item.path}">${escapeHtml(item.title.replace(/\s+—\s+0x00 SPACE$/, ""))}</a></li>`,
+    )
+    .join("");
+  const videoList = page.path === "/videos" ? renderVideoLinks(videos, 50) : "";
+
+  return `
+    <main id="main-content" class="container-app py-10 sm:py-14">
+      <article>
+        <h1>${escapeHtml(content.heading || page.title.replace(/\s+—\s+0x00 SPACE$/, ""))}</h1>
+        <p>${escapeHtml(page.description)}</p>
+        ${sections}
+        ${videoList}
+        <nav aria-label="Разделы сайта">
+          <h2>Разделы сайта</h2>
+          <ul>${navigation}</ul>
+        </nav>
+      </article>
+    </main>`;
+}
+
+function renderHomePageBody(videos) {
+  return `
+    <main id="main-content" class="container-app py-10 sm:py-14">
+      <article>
+        <h1>${escapeHtml(HOME_PAGE.heading)}</h1>
+        <p>${escapeHtml(HOME_PAGE.intro)}</p>
+        <p><a href="https://youtube.com/@0x00space">Подписаться на YouTube 0x00 SPACE</a></p>
+        <nav aria-label="Разделы сайта">
+          <h2>Разделы сайта</h2>
+          <ul>
+            ${STATIC_SEO_PAGES.map((page) => `<li><a href="${page.path}">${escapeHtml(page.title.replace(/\s+—\s+0x00 SPACE$/, ""))}</a></li>`).join("")}
+          </ul>
+        </nav>
+        ${renderVideoLinks(videos, 6)}
+      </article>
+    </main>`;
+}
+
+function renderVideoPageBody(video, videos) {
+  const title = video.title || "Видео 0x00 SPACE";
+  const thumbnail = safeVideoThumbnail(video);
+  const youtubeUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(video.video_id)}`;
+  const description = String(video.description || title).slice(0, 4000);
+  return `
+    <main id="main-content" class="container-app py-10 sm:py-14">
+      <article>
+        <p><a href="/videos">Все видео 0x00 SPACE</a></p>
+        <h1>${escapeHtml(title)}</h1>
+        <p>${escapeHtml(description).replace(/\r?\n/g, "<br />")}</p>
+        <p><a href="${escapeHtml(youtubeUrl)}">Смотреть видео на YouTube</a></p>
+        <img src="${escapeHtml(thumbnail)}" alt="${escapeHtml(title)}" width="480" height="270" />
+      </article>
+      <nav aria-label="Другие видео">
+        <h2>Другие видео</h2>
+        <ul>
+          ${videos
+            .filter((item) => item.video_id !== video.video_id)
+            .slice(0, 10)
+            .map(
+              (item) =>
+                `<li><a href="/videos/${encodeURIComponent(item.video_id)}">${escapeHtml(item.title || "Видео 0x00 SPACE")}</a></li>`,
+            )
+            .join("")}
+        </ul>
+      </nav>
+    </main>`;
+}
+
 function replaceMeta(html, name, content, attribute = "name") {
   const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const pattern = new RegExp(`<meta\\b(?=[^>]*\\b${attribute}="${escapedName}")[^>]*>`, "i");
@@ -118,12 +369,19 @@ function replaceCanonical(html, canonical) {
   return html.replace("</head>", `    ${tag}\n  </head>`);
 }
 
-function renderSeoHtml(template, { title, description, path, image, type = "website", schema }) {
+function renderSeoHtml(
+  template,
+  { title, description, path, image, type = "website", schema, bodyHtml },
+) {
   const canonical = `${siteUrl}${path}`;
   const imageAlt = title.replace(/\s+—\s+0x00 SPACE$/, "");
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = replaceMeta(html, "description", description);
-  html = replaceMeta(html, "robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
+  html = replaceMeta(
+    html,
+    "robots",
+    "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  );
   html = replaceMeta(html, "og:title", title, "property");
   html = replaceMeta(html, "og:description", description, "property");
   html = replaceMeta(html, "og:type", type, "property");
@@ -149,6 +407,11 @@ function renderSeoHtml(template, { title, description, path, image, type = "webs
       "</head>",
       `    <script type="application/ld+json" data-seo-prerender="true">${jsonLd}</script>\n  </head>`,
     );
+  }
+  if (bodyHtml) {
+    const root = '<div id="root"></div>';
+    if (!html.includes(root)) throw new Error("Не найден контейнер приложения для SEO-разметки.");
+    html = html.replace(root, `<div id="root">${bodyHtml}</div>`);
   }
   return html;
 }
@@ -188,9 +451,18 @@ function staticPageSchema(page) {
       "@context": "https://schema.org",
       "@type": "FAQPage",
       mainEntity: [
-        ["Как попасть в ролик?", "Заполните заявку на главной странице и оставьте рабочий контакт."],
-        ["Где смотреть новые видео?", "На странице «Видео» публикуются последние ролики и Shorts канала."],
-        ["Где скачать материалы?", "Откройте страницу «Материалы», воспользуйтесь поиском и фильтрами."],
+        [
+          "Как попасть в ролик?",
+          "Заполните заявку на главной странице и оставьте рабочий контакт.",
+        ],
+        [
+          "Где смотреть новые видео?",
+          "На странице «Видео» публикуются последние ролики и Shorts канала.",
+        ],
+        [
+          "Где скачать материалы?",
+          "Откройте страницу «Материалы», воспользуйтесь поиском и фильтрами.",
+        ],
       ].map(([question, answer]) => ({
         "@type": "Question",
         name: question,
@@ -235,14 +507,24 @@ function videoSchema(video, path) {
 
 async function generateStaticSeoPages(outputDir, videos) {
   const template = await readFile(resolve(outputDir, "index.html"), "utf8");
+  const homeHtml = renderSeoHtml(template, {
+    ...HOME_PAGE,
+    path: "/",
+    image: `${siteUrl}/brand-logo-transparent.png`,
+    bodyHtml: renderHomePageBody(videos),
+  });
+  await writeFile(resolve(outputDir, "index.html"), homeHtml, "utf8");
+
   for (const page of STATIC_SEO_PAGES) {
-    const outputPath = page.path === "/"
-      ? resolve(outputDir, "index.html")
-      : resolve(outputDir, `${page.path.slice(1)}.html`);
+    const outputPath =
+      page.path === "/"
+        ? resolve(outputDir, "index.html")
+        : resolve(outputDir, `${page.path.slice(1)}.html`);
     const html = renderSeoHtml(template, {
       ...page,
       image: `${siteUrl}/brand-logo-transparent.png`,
       schema: staticPageSchema(page),
+      bodyHtml: renderStaticPageBody(page, videos),
     });
     await mkdir(dirname(outputPath), { recursive: true });
     await writeFile(outputPath, html, "utf8");
@@ -265,7 +547,9 @@ async function generateStaticSeoPages(outputDir, videos) {
   for (const video of videos) {
     const path = `/videos/${video.video_id}`;
     const title = `${video.title || "Видео"} — 0x00 SPACE`;
-    const description = String(video.description || video.title || "Видео и игровые истории 0x00 SPACE.")
+    const description = String(
+      video.description || video.title || "Видео и игровые истории 0x00 SPACE.",
+    )
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 200);
@@ -276,10 +560,13 @@ async function generateStaticSeoPages(outputDir, videos) {
       image: video.thumbnail_url || `https://i.ytimg.com/vi/${video.video_id}/hqdefault.jpg`,
       type: "video.other",
       schema: videoSchema(video, path),
+      bodyHtml: renderVideoPageBody(video, videos),
     });
     await writeFile(resolve(videoDir, `${video.video_id}.html`), html, "utf8");
   }
-  console.log(`[seo] Созданы HTML-head для ${STATIC_SEO_PAGES.length} страниц и ${videos.length} видео.`);
+  console.log(
+    `[seo] Созданы HTML-head для ${STATIC_SEO_PAGES.length} страниц и ${videos.length} видео.`,
+  );
 }
 
 function urlEntry(path, priority, changefreq, lastmod) {
@@ -305,9 +592,10 @@ function videoUrlEntry(video) {
   const publicationDate = Number.isNaN(publishedAt)
     ? ""
     : `<video:publication_date>${new Date(publishedAt).toISOString()}</video:publication_date>`;
-  const duration = Number.isInteger(video.duration_seconds) && video.duration_seconds > 0
-    ? `<video:duration>${video.duration_seconds}</video:duration>`
-    : "";
+  const duration =
+    Number.isInteger(video.duration_seconds) && video.duration_seconds > 0
+      ? `<video:duration>${video.duration_seconds}</video:duration>`
+      : "";
 
   return [
     "  <url>",
@@ -369,24 +657,20 @@ async function main() {
   const base = await buildBaseSitemap();
   const videos = await fetchLatestVideos();
   const seen = new Set();
-  const indexableVideos = videos
-    .filter((video) => {
-      if (!/^[A-Za-z0-9_-]{11}$/.test(video?.video_id || "") || seen.has(video.video_id)) {
-        return false;
-      }
-      seen.add(video.video_id);
-      return true;
-    });
+  const indexableVideos = videos.filter((video) => {
+    if (!/^[A-Za-z0-9_-]{11}$/.test(video?.video_id || "") || seen.has(video.video_id)) {
+      return false;
+    }
+    seen.add(video.video_id);
+    return true;
+  });
   const videoEntries = indexableVideos.map(videoUrlEntry);
 
   const withVideoNamespace = base.replace(
     "<urlset ",
     '<urlset xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" ',
   );
-  const sitemap = withVideoNamespace.replace(
-    "</urlset>",
-    `${videoEntries.join("\n")}\n</urlset>`,
-  );
+  const sitemap = withVideoNamespace.replace("</urlset>", `${videoEntries.join("\n")}\n</urlset>`);
   const outputDir = resolve(root, "dist");
   await mkdir(outputDir, { recursive: true });
   await generateStaticSeoPages(outputDir, indexableVideos);
